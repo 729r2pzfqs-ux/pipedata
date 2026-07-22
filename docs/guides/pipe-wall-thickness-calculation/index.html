@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipe Wall Thickness Calculation: Barlow &amp; B31.3</title>
+<meta name="description" content="Barlow&#x27;s formula t = PD/2S and the ASME B31.3 equation explained, with a full worked NPS 6 example covering corrosion allowance and 12.5% mill tolerance.">
+<link rel="canonical" href="https://pipedata.org/guides/pipe-wall-thickness-calculation/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pipe Wall Thickness Calculation: Barlow &amp; B31.3">
+<meta property="og:description" content="Barlow&#x27;s formula t = PD/2S and the ASME B31.3 equation explained, with a full worked NPS 6 example covering corrosion allowance and 12.5% mill tolerance.">
+<meta property="og:url" content="https://pipedata.org/guides/pipe-wall-thickness-calculation/">
+<meta property="og:site_name" content="PipeData">
+<meta property="og:image" content="https://pipedata.org/og-default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#2B4C7E">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://pipedata.org/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://pipedata.org/guides/"},{"@type":"ListItem","position":3,"name":"Pipe Wall Thickness Calculation"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is Barlow's formula?","acceptedAnswer":{"@type":"Answer","text":"t = PD / 2S, relating wall thickness to internal pressure, outside diameter and allowable stress. Rearranged as P = 2St / D it gives the pressure a known wall will hold."}},{"@type":"Question","name":"Why divide by 0.875 in wall thickness calculations?","acceptedAnswer":{"@type":"Answer","text":"Because pipe may be manufactured up to 12.5% under its nominal wall. The calculation gives a required minimum, so the nominal wall ordered must be that minimum divided by 0.875."}},{"@type":"Question","name":"Does Barlow's formula use the inside or outside diameter?","acceptedAnswer":{"@type":"Answer","text":"The outside diameter. Using the OD makes the result conservative, since the actual hoop stress develops at the mean diameter."}},{"@type":"Question","name":"What allowable stress should I use for A106 Grade B?","acceptedAnswer":{"@type":"Answer","text":"20,000 psi up to about 400 °F, falling as temperature rises — 17,300 psi at 650 °F and lower above that. The values come from ASME B31.3 Table A-1 and must be read at the design temperature."}},{"@type":"Question","name":"Is the pressure design thickness the final wall?","acceptedAnswer":{"@type":"Answer","text":"No. Add corrosion allowance, any threading or grooving depth, and then allow for mill tolerance. Sustained loads, thermal expansion and external pressure must also be checked separately."}}]}</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YQ4MS7NNDS"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-YQ4MS7NNDS');</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="20" width="56" height="24" rx="3" fill="#fff" opacity=".92"/><rect x="4" y="20" width="8" height="24" rx="2" fill="#D35400"/><rect x="52" y="20" width="8" height="24" rx="2" fill="#D35400"/><rect x="12" y="27" width="40" height="10" rx="2" fill="#2B4C7E"/></svg><span>Pipe<span class="dot">Data</span></span></a>
+    <nav class="site-nav">
+      <a href="/pipes/">Pipe</a>
+      <a href="/flanges/">Flanges</a>
+      <a href="/fittings/">Fittings</a>
+      <a href="/compare/">Compare</a>
+      <a href="/guides/">Guides</a>
+      <a href="/reference/">Reference</a>
+      <a href="/about/">About</a>
+    </nav>
+  </div>
+</header>
+<main>
+<nav class="breadcrumbs" aria-label="Breadcrumb"><div class="wrap"><ol><li><a href="/">Home</a></li><li><a href="/guides/">Guides</a></li><li><span aria-current="page">Pipe Wall Thickness Calculation</span></li></ol></div></nav><div class="wrap"><div class="page-head"><h1>Pipe Wall Thickness Calculation</h1><p class="lede">Barlow's formula, the ASME B31.3 refinement of it, and the two steps after the equation — corrosion allowance and mill tolerance — that decide which schedule you actually buy.</p></div><dl class="facts"><div><dt>Barlow&#x27;s formula</dt><dd>t = P·D / 2S</dd></div><div><dt>ASME B31.3</dt><dd>t = P·D / 2(SEW + PY)</dd></div><div><dt>Mill tolerance</dt><dd>−12.5% on nominal wall</dd></div><div><dt>Worked example</dt><dd>NPS 6 at 900 psig</dd></div></dl><div class="callout"><p><strong>Short answer.</strong> Barlow's formula, t = PD/2S, gives the wall thickness needed to contain pressure in a thin-walled pipe. ASME B31.3 uses a refined version that adds the joint quality factor E, the weld strength reduction factor W and the coefficient Y. Whichever you use, the pressure design thickness is only the starting point: corrosion allowance is added to it, and the sum is then divided by 0.875 to allow for the 12.5% mill tolerance before a schedule is chosen.</p></div><h2>Barlow's formula</h2><p>Barlow's formula comes straight from a force balance on a thin cylinder. Internal pressure acting across the diameter must be carried by hoop stress in two wall sections:</p><p class="formula">P · D = 2 · S · t &nbsp;⟹&nbsp; t = P·D / (2·S) &nbsp;·&nbsp; P = 2·S·t / D</p><p>D is the <strong>outside</strong> diameter, which makes the result conservative — the true hoop stress is developed at the mean diameter. S is the allowable stress for the material at the design temperature, not the yield or tensile strength.</p><h2>The ASME B31.3 equation</h2><p>B31.3 paragraph 304.1.2 refines Barlow with three factors:</p><p class="formula">t = P·D / [ 2 · (S·E·W + P·Y) ]</p><div class="table-scroll"><table class="specs"><caption>Terms in the ASME B31.3 pressure design thickness equation.</caption><thead><tr><th scope="col">Symbol</th><th scope="col">Meaning</th><th scope="col">Typical value</th></tr></thead><tbody><tr><td><strong>P</strong></td><td>Internal design gauge pressure</td><td>From the process design</td></tr><tr><td><strong>D</strong></td><td>Pipe outside diameter</td><td>From ASME B36.10M</td></tr><tr><td><strong>S</strong></td><td>Allowable stress at design temperature</td><td>20,000 psi for A106 Gr B at ambient</td></tr><tr><td><strong>E</strong></td><td>Quality factor — the longitudinal weld joint factor</td><td>1.00 seamless, 0.85 ERW, 0.60 furnace butt welded</td></tr><tr><td><strong>W</strong></td><td>Weld strength reduction factor</td><td>1.00 below about 950 °F</td></tr><tr><td><strong>Y</strong></td><td>Coefficient from B31.3 Table 304.1.1</td><td>0.4 for ferritic steel below 900 °F</td></tr></tbody></table></div><p class="table-note">Y accounts for the difference between thin-wall and thick-wall behaviour; the equation reduces to Barlow when Y = 0.</p><h2>Worked example: NPS 6 at 900 psig</h2><p>Seamless A106 Gr B pipe, outside diameter 6.625 in (168.3 mm), design pressure 900 psig, allowable stress 20,000 psi, E = 1.0, W = 1.0, Y = 0.4, corrosion allowance 1/16 in.</p><ol><li><strong>Barlow:</strong> t = 900 × 6.625 / (2 × 20000) = 0.1491 in</li><li><strong>B31.3:</strong> t = 900 × 6.625 / [2 × (20000 × 1.0 × 1.0 + 900 × 0.4)] = 0.1464 in</li><li><strong>Add corrosion allowance:</strong> 0.1464 + 0.0625 = 0.2089 in required minimum</li><li><strong>Allow mill tolerance:</strong> 0.2089 / 0.875 = 0.2388 in nominal wall required</li><li><strong>Select a schedule:</strong> the thinnest NPS 6 schedule meeting 0.2388 in is <a href="/pipes/nps-6/schedule-40/">Schedule 40</a> at 0.280 in.</li></ol><p>Note how little difference the B31.3 refinement makes here — 0.1464 in against Barlow's 0.1491 in. The PY term matters at high pressure and thick wall; at moderate pressure Barlow is a perfectly good first pass.</p><h2>The 12.5% mill tolerance</h2><p>This is the step most often skipped, and it is not optional. Pipe is permitted to be manufactured up to 12.5% thinner than its nominal wall. The calculation produces a <em>minimum</em> thickness, so the nominal wall ordered must be that minimum divided by 0.875 — about 14.3% thicker. Buying to the calculated figure means accepting pipe that can legally arrive under it.</p><p class="formula">t<sub>nominal</sub> = (t<sub>pressure</sub> + corrosion allowance) / 0.875</p><h2>Allowable pressure by schedule, NPS 6</h2><p>The same equation rearranged: what each published NPS 6 schedule will hold at S = 20,000 psi, E = 1.0, Y = 0.4.</p><p class="units-note">Dimensions are given in <strong>inches</strong>, with the millimetre equivalent beneath in grey.</p><div class="table-scroll"><table class="specs"><caption>NPS 6 allowable pressure by schedule, S = 20,000 psi.</caption><thead><tr><th scope="col">Schedule</th><th scope="col">Nominal wall</th><th scope="col">Wall at −12.5%</th><th scope="col">Allowable P (B31.3)</th><th scope="col">Allowable P (Barlow)</th><th scope="col">Meets 0.239 in?</th></tr></thead><tbody><tr><td><strong><a href="/pipes/nps-6/schedule-5/">Sch 5</a></strong></td><td>0.109<span class="mm">2.77 mm</span></td><td>0.0954<span class="mm">2.42 mm</span></td><td>667 psig</td><td>658 psig</td><td><span class="na">No</span></td></tr><tr><td><strong><a href="/pipes/nps-6/schedule-10/">Sch 10</a></strong></td><td>0.134<span class="mm">3.40 mm</span></td><td>0.1173<span class="mm">2.98 mm</span></td><td>822 psig</td><td>809 psig</td><td><span class="na">No</span></td></tr><tr><td><strong><a href="/pipes/nps-6/schedule-40/">Sch 40</a></strong></td><td>0.280<span class="mm">7.11 mm</span></td><td>0.2450<span class="mm">6.22 mm</span></td><td>1,750 psig</td><td>1,691 psig</td><td><span class="yes">Yes</span></td></tr><tr><td><strong><a href="/pipes/nps-6/schedule-std/">STD</a></strong></td><td>0.280<span class="mm">7.11 mm</span></td><td>0.2450<span class="mm">6.22 mm</span></td><td>1,750 psig</td><td>1,691 psig</td><td><span class="yes">Yes</span></td></tr><tr><td><strong><a href="/pipes/nps-6/schedule-80/">Sch 80</a></strong></td><td>0.432<span class="mm">10.97 mm</span></td><td>0.3780<span class="mm">9.60 mm</span></td><td>2,752 psig</td><td>2,608 psig</td><td><span class="yes">Yes</span></td></tr><tr><td><strong><a href="/pipes/nps-6/schedule-xs/">XS</a></strong></td><td>0.432<span class="mm">10.97 mm</span></td><td>0.3780<span class="mm">9.60 mm</span></td><td>2,752 psig</td><td>2,608 psig</td><td><span class="yes">Yes</span></td></tr><tr><td><strong><a href="/pipes/nps-6/schedule-120/">Sch 120</a></strong></td><td>0.562<span class="mm">14.27 mm</span></td><td>0.4918<span class="mm">12.49 mm</span></td><td>3,640 psig</td><td>3,393 psig</td><td><span class="yes">Yes</span></td></tr><tr><td><strong><a href="/pipes/nps-6/schedule-160/">Sch 160</a></strong></td><td>0.719<span class="mm">18.26 mm</span></td><td>0.6291<span class="mm">15.98 mm</span></td><td>4,754 psig</td><td>4,341 psig</td><td><span class="yes">Yes</span></td></tr><tr><td><strong><a href="/pipes/nps-6/schedule-xxs/">XXS</a></strong></td><td>0.864<span class="mm">21.95 mm</span></td><td>0.7560<span class="mm">19.20 mm</span></td><td>5,824 psig</td><td>5,217 psig</td><td><span class="yes">Yes</span></td></tr></tbody></table></div><p class="table-note">Pressure design only — no allowance for bending, external load, thermal expansion or occasional loads, all of which B31.3 requires to be considered separately.</p><h2>What the equation does not cover</h2><p>Pressure design thickness is one of several checks. B31.3 also requires the wall to handle sustained loads including weight, thermal expansion stress, occasional loads such as wind and seismic, and any external pressure. On a large-diameter thin-wall line, collapse under vacuum or under burial load frequently governs over internal pressure entirely.</p><div class="callout"><p>See also: <a href="/reference/schedule-chart/">schedule chart</a> · <a href="/compare/seamless-vs-welded-pipe/">joint factor E</a> · <a href="/reference/material-grades/">material grades</a> · <a href="/guides/pipe-schedule-explained/">what a schedule is</a>.</p></div><section class="faq"><h2>Common questions</h2><details><summary>What is Barlow&#x27;s formula?</summary><div><p>t = PD / 2S, relating wall thickness to internal pressure, outside diameter and allowable stress. Rearranged as P = 2St / D it gives the pressure a known wall will hold.</p></div></details><details><summary>Why divide by 0.875 in wall thickness calculations?</summary><div><p>Because pipe may be manufactured up to 12.5% under its nominal wall. The calculation gives a required minimum, so the nominal wall ordered must be that minimum divided by 0.875.</p></div></details><details><summary>Does Barlow&#x27;s formula use the inside or outside diameter?</summary><div><p>The outside diameter. Using the OD makes the result conservative, since the actual hoop stress develops at the mean diameter.</p></div></details><details><summary>What allowable stress should I use for A106 Grade B?</summary><div><p>20,000 psi up to about 400 °F, falling as temperature rises — 17,300 psi at 650 °F and lower above that. The values come from ASME B31.3 Table A-1 and must be read at the design temperature.</p></div></details><details><summary>Is the pressure design thickness the final wall?</summary><div><p>No. Add corrosion allowance, any threading or grooving depth, and then allow for mill tolerance. Sustained loads, thermal expansion and external pressure must also be checked separately.</p></div></details></section></div></main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div>
+        <h3>Pipe</h3>
+        <ul>
+          <li><a href="/pipes/">All NPS sizes</a></li>
+          <li><a href="/pipes/schedule-40/">Schedule 40</a></li>
+          <li><a href="/pipes/schedule-80/">Schedule 80</a></li>
+          <li><a href="/reference/pipe-weight-chart/">Weight chart</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Flanges &amp; fittings</h3>
+        <ul>
+          <li><a href="/flanges/weld-neck/">Weld neck</a></li>
+          <li><a href="/flanges/blind/">Blind</a></li>
+          <li><a href="/flanges/large/">Large diameter (B16.47)</a></li>
+          <li><a href="/fittings/90-degree-elbow/">90° LR elbow</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Compare</h3>
+        <ul>
+          <li><a href="/compare/">All comparisons</a></li>
+          <li><a href="/compare/schedule-40-vs-schedule-80/">Sch 40 vs Sch 80</a></li>
+          <li><a href="/compare/class-150-vs-class-300/">Class 150 vs 300</a></li>
+          <li><a href="/compare/weld-neck-vs-slip-on-flange/">Weld neck vs slip-on</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Guides</h3>
+        <ul>
+          <li><a href="/guides/">All guides</a></li>
+          <li><a href="/guides/pipe-sizing/">Pipe sizing</a></li>
+          <li><a href="/guides/pipe-wall-thickness-calculation/">Wall thickness</a></li>
+          <li><a href="/guides/flange-bolt-torque/">Bolt torque</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Reference</h3>
+        <ul>
+          <li><a href="/reference/nps-dn-conversion/">NPS to DN</a></li>
+          <li><a href="/reference/schedule-chart/">Schedule chart</a></li>
+          <li><a href="/reference/pressure-temperature-ratings/">P-T ratings</a></li>
+          <li><a href="/reference/material-grades/">Material grades</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Site</h3>
+        <ul>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+          <li><a href="/sitemap.xml">Sitemap</a></li>
+          <li><a href="mailto:info@pipedata.org">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <p><strong>Reference only.</strong> PipeData reproduces dimensional and rating
+      data from published industry standards for quick lookup. It is not a substitute
+      for the standards themselves. Confirm every dimension against a current copy of
+      the governing ASME, ASTM or API document before fabrication, procurement or
+      design. PipeData is an independent project and is not affiliated with ASME,
+      ASTM, API or MSS.</p>
+      <p>© 2026 PipeData.org · <a href="mailto:info@pipedata.org">info@pipedata.org</a></p>
+    </div>
+  </div>
+</footer>
+<script src="/js/search.js" defer></script>
+</body>
+</html>

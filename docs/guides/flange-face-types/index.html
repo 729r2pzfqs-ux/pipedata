@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flange Face Types: RF, FF and RTJ Selection</title>
+<meta name="description" content="Choose a flange face by service: RF as the default, FF against cast iron, RTJ above Class 600. Selection table, dimensions and the mistakes that cause leaks.">
+<link rel="canonical" href="https://pipedata.org/guides/flange-face-types/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flange Face Types: RF, FF and RTJ Selection">
+<meta property="og:description" content="Choose a flange face by service: RF as the default, FF against cast iron, RTJ above Class 600. Selection table, dimensions and the mistakes that cause leaks.">
+<meta property="og:url" content="https://pipedata.org/guides/flange-face-types/">
+<meta property="og:site_name" content="PipeData">
+<meta property="og:image" content="https://pipedata.org/og-default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#2B4C7E">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://pipedata.org/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://pipedata.org/guides/"},{"@type":"ListItem","position":3,"name":"Choosing a Flange Face Type"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which flange face should I use as a default?","acceptedAnswer":{"@type":"Answer","text":"Raised face. It is the ASME B16.5 default, the most widely available, and suitable for most service through Class 600."}},{"@type":"Question","name":"Why must a flat face be used against cast iron?","acceptedAnswer":{"@type":"Answer","text":"Because a raised face concentrates load inside the bolt circle and bends the mating flange. Cast iron is brittle and cracks rather than yielding, so a steel flange bolting to a cast iron one should be flat faced with a full-face gasket."}},{"@type":"Question","name":"Can I bolt an RF flange to an RTJ flange?","acceptedAnswer":{"@type":"Answer","text":"No. The RTJ flange has a machined groove where the RF gasket would need a flat surface, so there is nothing to seal against. Face types must match."}},{"@type":"Question","name":"How tall is a raised face?","acceptedAnswer":{"@type":"Answer","text":"1/16 in (1.6 mm) for Classes 150 and 300, and 1/4 in (6.4 mm) for Class 400 and above. The B16.5 thickness tables exclude it."}},{"@type":"Question","name":"Should flange faces be machined smooth?","acceptedAnswer":{"@type":"Answer","text":"No. B16.5 specifies a serrated finish of 125 to 500 microinches Ra. A smooth face gives the gasket nothing to grip and seals worse than a properly serrated one."}}]}</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YQ4MS7NNDS"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-YQ4MS7NNDS');</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="20" width="56" height="24" rx="3" fill="#fff" opacity=".92"/><rect x="4" y="20" width="8" height="24" rx="2" fill="#D35400"/><rect x="52" y="20" width="8" height="24" rx="2" fill="#D35400"/><rect x="12" y="27" width="40" height="10" rx="2" fill="#2B4C7E"/></svg><span>Pipe<span class="dot">Data</span></span></a>
+    <nav class="site-nav">
+      <a href="/pipes/">Pipe</a>
+      <a href="/flanges/">Flanges</a>
+      <a href="/fittings/">Fittings</a>
+      <a href="/compare/">Compare</a>
+      <a href="/guides/">Guides</a>
+      <a href="/reference/">Reference</a>
+      <a href="/about/">About</a>
+    </nav>
+  </div>
+</header>
+<main>
+<nav class="breadcrumbs" aria-label="Breadcrumb"><div class="wrap"><ol><li><a href="/">Home</a></li><li><a href="/guides/">Guides</a></li><li><span aria-current="page">Choosing a Flange Face Type</span></li></ol></div></nav><div class="wrap"><div class="page-head"><h1>Choosing a Flange Face Type</h1><p class="lede">Raised face, flat face and ring type joint — which to specify for a given service, and the face-mixing mistakes that show up as leaks on commissioning.</p></div><dl class="facts"><div><dt>Faces in B16.5</dt><dd>6</dd></div><div><dt>Default</dt><dd>Raised face (RF)</dd></div><div><dt>RF height, Cl 150/300</dt><dd>1/16 in</dd></div><div><dt>RF height, Cl 400+</dt><dd>1/4 in</dd></div></dl><div class="callout"><p><strong>Short answer.</strong> Pick the face from what you are bolting to and how hot the joint runs. Raised face is the default and covers most service. Flat face is mandatory against cast iron and other brittle castings — a raised face will crack them. Ring type joint takes over at high pressure and temperature, typically Class 600 and above, where a metal seal outlasts a compressed gasket.</p></div><h2>Choosing a face</h2><div class="table-scroll"><table class="specs"><caption>Flange face selection by service.</caption><thead><tr><th scope="col">If the joint is…</th><th scope="col">Use</th><th scope="col">Because</th></tr></thead><tbody><tr><td><strong>Ordinary process or utility, Class 150–600</strong></td><td>Raised face (RF)</td><td>The B16.5 default. Cheapest, most available, works with sheet and spiral wound gaskets.</td></tr><tr><td><strong>Against a cast iron pump, valve or equipment flange</strong></td><td>Flat face (FF) with a full-face gasket</td><td>A raised face bends the brittle casting inside the bolt circle as the bolts pull it in, and cracks it.</td></tr><tr><td><strong>Class 600 and above, or above about 800 °F</strong></td><td>Ring type joint (RTJ)</td><td>A yielded metal ring survives thermal cycling that relaxes a compressed gasket, and it is pressure-energised.</td></tr><tr><td><strong>Hydrocarbon service at high pressure</strong></td><td>Ring type joint (RTJ)</td><td>The usual specification choice where a leak is a fire or toxic release.</td></tr><tr><td><strong>Frequently dismantled, gasket must not blow out</strong></td><td>Tongue and groove (T&amp;G)</td><td>The gasket is trapped in the groove and cannot be extruded or over-compressed.</td></tr><tr><td><strong>Cryogenic or very low temperature</strong></td><td>RTJ or RF with a suitable gasket</td><td>Differential contraction relaxes bolt load; a metal seal or a spring-energised gasket handles it better.</td></tr><tr><td><strong>Behind a stub end (lap joint)</strong></td><td>The stub end face governs</td><td>The backing flange never contacts the gasket, so the stub end's face is what matters.</td></tr></tbody></table></div><p class="table-note">Face type must match on both halves of a joint. RF will not seal against RTJ, and RF against FF is the cracked-casting case.</p><h2>Raised face dimensions</h2><p>The raised face outside diameter is the gasket contact diameter, and it is common to Classes 150 through 600 in a given size. The tabulated flange thickness in B16.5 <em>excludes</em> the raised face, so a flange always measures thicker than the table by the face height.</p><p class="units-note">Dimensions are given in <strong>inches</strong>, with the millimetre equivalent beneath in grey.</p><div class="table-scroll"><table class="specs"><caption>Raised face gasket contact diameters and face heights, ASME B16.5.</caption><thead><tr><th scope="col">NPS</th><th scope="col">Raised face OD</th><th scope="col">Class 150 flange OD</th><th scope="col">RF height, Cl 150/300</th><th scope="col">RF height, Cl 400+</th></tr></thead><tbody><tr><td><strong><a href="/flanges/nps-1-2/">NPS 1/2</a></strong></td><td>1.38<span class="mm">35.05 mm</span></td><td>3.50<span class="mm">88.90 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-3-4/">NPS 3/4</a></strong></td><td>1.69<span class="mm">42.93 mm</span></td><td>3.88<span class="mm">98.55 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-1/">NPS 1</a></strong></td><td>2.00<span class="mm">50.80 mm</span></td><td>4.25<span class="mm">107.95 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-1-1-4/">NPS 1 1/4</a></strong></td><td>2.50<span class="mm">63.50 mm</span></td><td>4.62<span class="mm">117.35 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-1-1-2/">NPS 1 1/2</a></strong></td><td>2.88<span class="mm">73.15 mm</span></td><td>5.00<span class="mm">127.00 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-2/">NPS 2</a></strong></td><td>3.62<span class="mm">91.95 mm</span></td><td>6.00<span class="mm">152.40 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-2-1-2/">NPS 2 1/2</a></strong></td><td>4.12<span class="mm">104.65 mm</span></td><td>7.00<span class="mm">177.80 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-3/">NPS 3</a></strong></td><td>5.00<span class="mm">127.00 mm</span></td><td>7.50<span class="mm">190.50 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-3-1-2/">NPS 3 1/2</a></strong></td><td>5.50<span class="mm">139.70 mm</span></td><td>8.50<span class="mm">215.90 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-4/">NPS 4</a></strong></td><td>6.19<span class="mm">157.23 mm</span></td><td>9.00<span class="mm">228.60 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-5/">NPS 5</a></strong></td><td>7.31<span class="mm">185.67 mm</span></td><td>10.00<span class="mm">254.00 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-6/">NPS 6</a></strong></td><td>8.50<span class="mm">215.90 mm</span></td><td>11.00<span class="mm">279.40 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-8/">NPS 8</a></strong></td><td>10.62<span class="mm">269.75 mm</span></td><td>13.50<span class="mm">342.90 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-10/">NPS 10</a></strong></td><td>12.75<span class="mm">323.85 mm</span></td><td>16.00<span class="mm">406.40 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-12/">NPS 12</a></strong></td><td>15.00<span class="mm">381.00 mm</span></td><td>19.00<span class="mm">482.60 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-14/">NPS 14</a></strong></td><td>16.25<span class="mm">412.75 mm</span></td><td>21.00<span class="mm">533.40 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-16/">NPS 16</a></strong></td><td>18.50<span class="mm">469.90 mm</span></td><td>23.50<span class="mm">596.90 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-18/">NPS 18</a></strong></td><td>21.00<span class="mm">533.40 mm</span></td><td>25.00<span class="mm">635.00 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-20/">NPS 20</a></strong></td><td>23.00<span class="mm">584.20 mm</span></td><td>27.50<span class="mm">698.50 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr><tr><td><strong><a href="/flanges/nps-24/">NPS 24</a></strong></td><td>27.25<span class="mm">692.15 mm</span></td><td>32.00<span class="mm">812.80 mm</span></td><td>0.0625<span class="mm">1.59 mm</span></td><td>0.250<span class="mm">6.35 mm</span></td></tr></tbody></table></div><p class="table-note">Raised face OD is common to Classes 150–600. Classes 900, 1500 and 2500 use different gasket surfaces in several sizes — check B16.5 Table 9.</p><h2>Surface finish</h2><p>ASME B16.5 requires a serrated finish on raised and flat faces, concentric or spiral, at 125 to 500 microinches Ra. This is counter-intuitive but important: a face machined smooth seals <em>worse</em>, because the gasket has nothing to key into and can slide radially under pressure. If a face has been skimmed during repair, the serration must be restored.</p><h2>The mistakes that cause leaks</h2><ul><li><strong>Mixing faces.</strong> RF against RTJ cannot seal. RF against FF cracks castings. Both are found on site more often than they should be.</li><li><strong>Ring gasket on a flat face.</strong> A flat face needs a full-face gasket covering the bolt holes; a ring gasket lets the flange bend inside the bolt circle.</li><li><strong>Reusing an RTJ ring.</strong> The ring seals by yielding. Once used it is deformed and will not seal again.</li><li><strong>Ignoring the face height in spool dimensions.</strong> The 1/4 in face at Class 400 and above adds to the make-up length and to the bolt length required.</li><li><strong>Damaged serrations.</strong> A radial scratch across the face is a leak path; circumferential marks generally are not.</li></ul><div class="callout"><p>See also: <a href="/reference/flange-face-types/">all six face types in detail</a> · <a href="/compare/raised-face-vs-ring-type-joint/">RF vs RTJ compared</a> · <a href="/guides/flange-bolt-torque/">bolt torque</a> · <a href="/flanges/">flange dimensions</a>.</p></div><section class="faq"><h2>Common questions</h2><details><summary>Which flange face should I use as a default?</summary><div><p>Raised face. It is the ASME B16.5 default, the most widely available, and suitable for most service through Class 600.</p></div></details><details><summary>Why must a flat face be used against cast iron?</summary><div><p>Because a raised face concentrates load inside the bolt circle and bends the mating flange. Cast iron is brittle and cracks rather than yielding, so a steel flange bolting to a cast iron one should be flat faced with a full-face gasket.</p></div></details><details><summary>Can I bolt an RF flange to an RTJ flange?</summary><div><p>No. The RTJ flange has a machined groove where the RF gasket would need a flat surface, so there is nothing to seal against. Face types must match.</p></div></details><details><summary>How tall is a raised face?</summary><div><p>1/16 in (1.6 mm) for Classes 150 and 300, and 1/4 in (6.4 mm) for Class 400 and above. The B16.5 thickness tables exclude it.</p></div></details><details><summary>Should flange faces be machined smooth?</summary><div><p>No. B16.5 specifies a serrated finish of 125 to 500 microinches Ra. A smooth face gives the gasket nothing to grip and seals worse than a properly serrated one.</p></div></details></section></div></main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div>
+        <h3>Pipe</h3>
+        <ul>
+          <li><a href="/pipes/">All NPS sizes</a></li>
+          <li><a href="/pipes/schedule-40/">Schedule 40</a></li>
+          <li><a href="/pipes/schedule-80/">Schedule 80</a></li>
+          <li><a href="/reference/pipe-weight-chart/">Weight chart</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Flanges &amp; fittings</h3>
+        <ul>
+          <li><a href="/flanges/weld-neck/">Weld neck</a></li>
+          <li><a href="/flanges/blind/">Blind</a></li>
+          <li><a href="/flanges/large/">Large diameter (B16.47)</a></li>
+          <li><a href="/fittings/90-degree-elbow/">90° LR elbow</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Compare</h3>
+        <ul>
+          <li><a href="/compare/">All comparisons</a></li>
+          <li><a href="/compare/schedule-40-vs-schedule-80/">Sch 40 vs Sch 80</a></li>
+          <li><a href="/compare/class-150-vs-class-300/">Class 150 vs 300</a></li>
+          <li><a href="/compare/weld-neck-vs-slip-on-flange/">Weld neck vs slip-on</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Guides</h3>
+        <ul>
+          <li><a href="/guides/">All guides</a></li>
+          <li><a href="/guides/pipe-sizing/">Pipe sizing</a></li>
+          <li><a href="/guides/pipe-wall-thickness-calculation/">Wall thickness</a></li>
+          <li><a href="/guides/flange-bolt-torque/">Bolt torque</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Reference</h3>
+        <ul>
+          <li><a href="/reference/nps-dn-conversion/">NPS to DN</a></li>
+          <li><a href="/reference/schedule-chart/">Schedule chart</a></li>
+          <li><a href="/reference/pressure-temperature-ratings/">P-T ratings</a></li>
+          <li><a href="/reference/material-grades/">Material grades</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Site</h3>
+        <ul>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+          <li><a href="/sitemap.xml">Sitemap</a></li>
+          <li><a href="mailto:info@pipedata.org">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <p><strong>Reference only.</strong> PipeData reproduces dimensional and rating
+      data from published industry standards for quick lookup. It is not a substitute
+      for the standards themselves. Confirm every dimension against a current copy of
+      the governing ASME, ASTM or API document before fabrication, procurement or
+      design. PipeData is an independent project and is not affiliated with ASME,
+      ASTM, API or MSS.</p>
+      <p>© 2026 PipeData.org · <a href="mailto:info@pipedata.org">info@pipedata.org</a></p>
+    </div>
+  </div>
+</footer>
+<script src="/js/search.js" defer></script>
+</body>
+</html>

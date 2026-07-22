@@ -16,8 +16,10 @@ ASME B16 and B36 standards. Imperial primary, metric alongside.
 | ASME B16.9 | Buttweld fittings — elbows, tees, reducers, cap | 8 + index |
 | ASME A13.1 | Pipe marker colour scheme and legend sizing | 1 |
 | Reference | NPS/DN, schedules, P-T ratings, materials, bolting, faces | 12 + index |
+| Compare | Schedule, flange type, flange class, material and fitting pairs | 24 + index |
+| Guides | Sizing, wall thickness, test pressure, torque, material choice | 10 + index |
 
-702 pages total.
+738 pages total.
 
 ### Page granularity
 
@@ -47,6 +49,28 @@ that claim was wrong (it said 5S and 10S are thinner than anything in B36.10M �
 they are not; they match Schedule 5 and Schedule 10 in every published size).
 Prefer computing this kind of cross-table claim over writing it out, so a data
 edit cannot leave stale prose behind.
+
+The comparison and guide pages follow the same rule, and building them turned up
+four hand-written claims that the data contradicted:
+
+- A pipe sizing example asserted the answer was NPS 6. Computed against the flow
+  areas, the smallest Schedule 40 size meeting the duty is NPS 5. The example now
+  selects the size from the data and notes when it lands on one many specs omit.
+- The 45° elbow page claimed the tabulated centre-to-end ratio is tan 22.5° in
+  every size. B16.9 publishes rounded figures, so it is nearer 0.417 from NPS 4
+  up and reaches 0.587 at NPS 1. The page now derives both and says the table
+  governs, not the formula.
+- Schedule 40's NPS 24 wall was written as 0.687 in; B36.10M publishes 0.688.
+- The Schedule 10 vs 40 page ran the comparison in one direction and described it
+  in the other, calling Schedule 10 "89% lighter" when 89% is how much heavier
+  Schedule 40 is. `sched_spread()` now returns both directions (`wt_avg` /
+  `wt_rev`) so the framing and the arithmetic cannot disagree.
+
+Note the shape of these: every one of them was a number a reasonable engineer
+would accept on sight. The audits catch duplicate and over-long metadata, not
+wrong arithmetic — so a numeric claim in prose should be computed from `data/`
+wherever it possibly can be, and spot-checked against the built HTML when it
+cannot.
 
 ### Data accuracy
 
@@ -95,6 +119,19 @@ The build fails rather than shipping bad SEO:
 
 Both run over everything `head()` emitted, so a new page type is covered
 automatically without being registered anywhere.
+
+Neither gate checks arithmetic or links. After a build that adds pages, it is
+worth walking `docs/` for `href="/..."` targets that do not exist and for
+`FAQPage` / `BreadcrumbList` blocks that failed to render — both are a few lines
+of Python over the output and both have caught real problems.
+
+### Adding a comparison or guide
+
+`compare()` and `guide()` wrap `_section_page()`, which emits the page, appends
+it to `COMPARE_PAGES` / `GUIDE_PAGES` for the section index, and registers it for
+search. A new page needs a call in `main()` and nothing else — the index, the
+sitemap and both audits pick it up from the registry. Keep the call in the order
+you want it to appear on the index.
 
 ## Analytics
 

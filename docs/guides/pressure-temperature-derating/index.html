@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pressure-Temperature Derating Explained | B16.5</title>
+<meta name="description" content="A flange class selects a rating curve, not a pressure. How to read ASME B16.5 P-T tables, interpolate between temperatures, and avoid the common derating traps.">
+<link rel="canonical" href="https://pipedata.org/guides/pressure-temperature-derating/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pressure-Temperature Derating Explained | B16.5">
+<meta property="og:description" content="A flange class selects a rating curve, not a pressure. How to read ASME B16.5 P-T tables, interpolate between temperatures, and avoid the common derating traps.">
+<meta property="og:url" content="https://pipedata.org/guides/pressure-temperature-derating/">
+<meta property="og:site_name" content="PipeData">
+<meta property="og:image" content="https://pipedata.org/og-default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#2B4C7E">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://pipedata.org/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://pipedata.org/guides/"},{"@type":"ListItem","position":3,"name":"Pressure-Temperature Derating"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is a Class 150 flange rated for 150 psi?","acceptedAnswer":{"@type":"Answer","text":"No. A Class 150 carbon steel flange is rated 285 psig at 100 °F and drops below 150 psig only above about 550 °F. The class number is a series label, not a working pressure."}},{"@type":"Question","name":"Can I interpolate between temperatures in the P-T tables?","acceptedAnswer":{"@type":"Answer","text":"Yes. ASME B16.5 permits linear interpolation between listed temperatures. Extrapolation beyond the ends of the table is not permitted."}},{"@type":"Question","name":"Should I use the fluid temperature or the metal temperature?","acceptedAnswer":{"@type":"Answer","text":"The metal temperature. For uninsulated flanges it is normally taken as equal to the fluid temperature; a lower metal temperature may be used where it can be justified."}},{"@type":"Question","name":"Why does stainless hold its rating better at high temperature?","acceptedAnswer":{"@type":"Answer","text":"Because austenitic stainless retains allowable stress far better above about 600 °F. Carbon steel loses strength steadily and is additionally limited by oxidation and graphitisation."}},{"@type":"Question","name":"What limits the rating below −20 °F?","acceptedAnswer":{"@type":"Answer","text":"Material toughness, not pressure. B16.5 does not rate below −20 °F; use below that requires impact testing under the applicable code."}}]}</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YQ4MS7NNDS"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-YQ4MS7NNDS');</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="20" width="56" height="24" rx="3" fill="#fff" opacity=".92"/><rect x="4" y="20" width="8" height="24" rx="2" fill="#D35400"/><rect x="52" y="20" width="8" height="24" rx="2" fill="#D35400"/><rect x="12" y="27" width="40" height="10" rx="2" fill="#2B4C7E"/></svg><span>Pipe<span class="dot">Data</span></span></a>
+    <nav class="site-nav">
+      <a href="/pipes/">Pipe</a>
+      <a href="/flanges/">Flanges</a>
+      <a href="/fittings/">Fittings</a>
+      <a href="/compare/">Compare</a>
+      <a href="/guides/">Guides</a>
+      <a href="/reference/">Reference</a>
+      <a href="/about/">About</a>
+    </nav>
+  </div>
+</header>
+<main>
+<nav class="breadcrumbs" aria-label="Breadcrumb"><div class="wrap"><ol><li><a href="/">Home</a></li><li><a href="/guides/">Guides</a></li><li><span aria-current="page">Pressure-Temperature Derating</span></li></ol></div></nav><div class="wrap"><div class="page-head"><h1>Pressure-Temperature Derating</h1><p class="lede">Why a Class 150 flange is not a 150 psi flange, how to read the rating out of B16.5 at your actual temperature, and where the derating catches designs out.</p></div><dl class="facts"><div><dt>Ratings are</dt><dd>Maximum allowable working gauge pressure</dd></div><div><dt>Basis</dt><dd>Metal temperature, not fluid temperature</dd></div><div><dt>Interpolation</dt><dd>Permitted between listed temperatures</dd></div><div><dt>Extrapolation</dt><dd>Not permitted</dd></div></dl><div class="callout"><p><strong>Short answer.</strong> A pressure class is not a pressure. It selects a curve, and the pressure a component may hold is read off that curve at the metal temperature, for the material group the component is made from. Ratings fall as temperature rises because the material's allowable stress falls. Linear interpolation between listed temperatures is permitted; extrapolation beyond the table is not.</p></div><h2>Reading a rating in four steps</h2><ol><li><strong>Find the material group.</strong> A105 carbon steel is Group 1.1; F304/F316 stainless is Group 2.1; the L grades are Group 2.2. The group, not the class, determines the shape of the curve.</li><li><strong>Use the metal temperature.</strong> B16.5 rates on the temperature of the flange metal. For uninsulated flanges that is usually taken as the fluid temperature; where they differ and it can be justified, the actual metal temperature may be used.</li><li><strong>Read across to the class.</strong> That gives the maximum allowable working gauge pressure.</li><li><strong>Interpolate if needed.</strong> Linear interpolation between two listed temperatures is permitted.</li></ol><h2>Worked example: interpolation</h2><p>A Class 300 A105 flange operating at 450 °F. The table lists 635 psig at 400 °F and 605 psig at 500 °F.</p><p class="formula">P = 635 + (605 − 635) × (450 − 400) / (500 − 400) = 620 psig</p><p>So the flange is rated 620 psig at 450 °F. Note that this is a linear interpolation between two tabulated points, not a formula — B16.5 permits it precisely because the underlying allowable stress curve is close to linear over a 100 °F interval.</p><h2>Group 1.1 carbon steel, every class</h2><div class="table-scroll"><table class="specs"><caption>ASME B16.5 pressure-temperature ratings for material Group 1.1, psig.</caption><thead><tr><th scope="col">Temperature</th><th scope="col">Class 150</th><th scope="col">Class 300</th><th scope="col">Class 400</th><th scope="col">Class 600</th><th scope="col">Class 900</th><th scope="col">Class 1500</th><th scope="col">Class 2500</th></tr></thead><tbody><tr><td><strong>100 °F</strong></td><td>285</td><td>740</td><td>990</td><td>1480</td><td>2220</td><td>3705</td><td>6170</td></tr><tr><td><strong>200 °F</strong></td><td>260</td><td>680</td><td>900</td><td>1350</td><td>2025</td><td>3375</td><td>5625</td></tr><tr><td><strong>300 °F</strong></td><td>230</td><td>655</td><td>875</td><td>1315</td><td>1970</td><td>3280</td><td>5470</td></tr><tr><td><strong>400 °F</strong></td><td>200</td><td>635</td><td>845</td><td>1270</td><td>1900</td><td>3170</td><td>5280</td></tr><tr><td><strong>500 °F</strong></td><td>170</td><td>605</td><td>805</td><td>1205</td><td>1810</td><td>3015</td><td>5025</td></tr><tr><td><strong>600 °F</strong></td><td>140</td><td>570</td><td>755</td><td>1135</td><td>1705</td><td>2840</td><td>4730</td></tr><tr><td><strong>650 °F</strong></td><td>125</td><td>550</td><td>730</td><td>1100</td><td>1650</td><td>2745</td><td>4575</td></tr><tr><td><strong>700 °F</strong></td><td>110</td><td>530</td><td>710</td><td>1065</td><td>1600</td><td>2665</td><td>4440</td></tr><tr><td><strong>750 °F</strong></td><td>95</td><td>505</td><td>675</td><td>1015</td><td>1520</td><td>2535</td><td>4230</td></tr><tr><td><strong>800 °F</strong></td><td>80</td><td>410</td><td>550</td><td>825</td><td>1235</td><td>2055</td><td>3430</td></tr><tr><td><strong>850 °F</strong></td><td>65</td><td>270</td><td>355</td><td>535</td><td>805</td><td>1340</td><td>2230</td></tr><tr><td><strong>900 °F</strong></td><td>50</td><td>170</td><td>230</td><td>345</td><td>515</td><td>860</td><td>1430</td></tr><tr><td><strong>950 °F</strong></td><td>35</td><td>105</td><td>140</td><td>205</td><td>310</td><td>515</td><td>860</td></tr><tr><td><strong>1000 °F</strong></td><td>20</td><td>50</td><td>70</td><td>105</td><td>155</td><td>260</td><td>430</td></tr></tbody></table></div><p class="table-note">Group 1.1 covers A105, A216 WCB, A515/A516 Gr 70 and A350 LF2 as forged. See the <a href="/reference/pressure-temperature-ratings/">full rating tables</a> for the other groups.</p><h2>How much rating is lost, and where</h2><p>The two material families behave completely differently. Carbon steel starts higher and falls away steadily. Austenitic stainless starts lower and then flattens — it holds most of its rating right through to 1000 °F.</p><div class="table-scroll"><table class="specs"><caption>Rating retained against the ambient value, Class 150.</caption><thead><tr><th scope="col">Temperature</th><th scope="col">Class 150 carbon</th><th scope="col">Retained</th><th scope="col">Class 150 stainless</th><th scope="col">Retained</th></tr></thead><tbody><tr><td><strong>100 °F</strong></td><td>285 psig</td><td>0%</td><td>275 psig</td><td>0%</td></tr><tr><td><strong>200 °F</strong></td><td>260 psig</td><td>-9%</td><td>235 psig</td><td>-15%</td></tr><tr><td><strong>300 °F</strong></td><td>230 psig</td><td>-19%</td><td>215 psig</td><td>-22%</td></tr><tr><td><strong>400 °F</strong></td><td>200 psig</td><td>-30%</td><td>195 psig</td><td>-29%</td></tr><tr><td><strong>500 °F</strong></td><td>170 psig</td><td>-40%</td><td>170 psig</td><td>-38%</td></tr><tr><td><strong>600 °F</strong></td><td>140 psig</td><td>-51%</td><td>140 psig</td><td>-49%</td></tr><tr><td><strong>650 °F</strong></td><td>125 psig</td><td>-56%</td><td>125 psig</td><td>-55%</td></tr><tr><td><strong>700 °F</strong></td><td>110 psig</td><td>-61%</td><td>110 psig</td><td>-60%</td></tr><tr><td><strong>750 °F</strong></td><td>95 psig</td><td>-67%</td><td>95 psig</td><td>-65%</td></tr><tr><td><strong>800 °F</strong></td><td>80 psig</td><td>-72%</td><td>80 psig</td><td>-71%</td></tr><tr><td><strong>850 °F</strong></td><td>65 psig</td><td>-77%</td><td>65 psig</td><td>-76%</td></tr><tr><td><strong>900 °F</strong></td><td>50 psig</td><td>-82%</td><td>50 psig</td><td>-82%</td></tr><tr><td><strong>950 °F</strong></td><td>35 psig</td><td>-88%</td><td>35 psig</td><td>-87%</td></tr><tr><td><strong>1000 °F</strong></td><td>20 psig</td><td>-93%</td><td>20 psig</td><td>-93%</td></tr></tbody></table></div><p class="table-note">Percentages are relative to each material's own 100 °F rating, so they show shape rather than absolute capacity.</p><h2>Where derating catches people out</h2><ul><li><strong>Steam service in Class 150.</strong> A Class 150 carbon steel flange holds 285 psig cold but only 140 psig at 600 °F. Saturated steam at 150 psig is around 366 °F, which is within rating — but a small superheat or an upset can put the joint outside it.</li><li><strong>Steam-out and regeneration.</strong> Lines are often steamed out at temperatures far above their normal operating point. The rating at the steam-out temperature governs, not the rating at the process temperature.</li><li><strong>Mixed material groups in one joint.</strong> A stainless flange bolted to a carbon steel flange is limited by whichever has the lower rating at temperature — and which one that is changes with temperature.</li><li><strong>Valves and fittings are not all B16.5.</strong> A B16.34 valve, a B16.47 large flange and a B16.5 flange in the same line have different rating tables. The lowest-rated component governs the line.</li><li><strong>Bolting material matters.</strong> The tabulated ratings assume bolting of at least the strength B16.5 specifies. Lower-strength bolting derates the joint further.</li></ul><h2>The −20 °F to 100 °F column</h2><p>The first column covers everything from −20 °F up to 100 °F with a single value. Below −20 °F, B16.5 does not extend the rating — the limit becomes the material's toughness, and impact testing under the applicable code decides whether the material may be used at all. That is a material qualification question, not a pressure rating one.</p><div class="callout"><p>See also: <a href="/reference/pressure-temperature-ratings/">full P-T rating tables</a> · <a href="/compare/class-150-vs-class-300/">Class 150 vs 300</a> · <a href="/compare/carbon-steel-vs-stainless-steel-pipe/">carbon vs stainless</a> · <a href="/guides/hydrostatic-test-pressure/">test pressure</a>.</p></div><section class="faq"><h2>Common questions</h2><details><summary>Is a Class 150 flange rated for 150 psi?</summary><div><p>No. A Class 150 carbon steel flange is rated 285 psig at 100 °F and drops below 150 psig only above about 550 °F. The class number is a series label, not a working pressure.</p></div></details><details><summary>Can I interpolate between temperatures in the P-T tables?</summary><div><p>Yes. ASME B16.5 permits linear interpolation between listed temperatures. Extrapolation beyond the ends of the table is not permitted.</p></div></details><details><summary>Should I use the fluid temperature or the metal temperature?</summary><div><p>The metal temperature. For uninsulated flanges it is normally taken as equal to the fluid temperature; a lower metal temperature may be used where it can be justified.</p></div></details><details><summary>Why does stainless hold its rating better at high temperature?</summary><div><p>Because austenitic stainless retains allowable stress far better above about 600 °F. Carbon steel loses strength steadily and is additionally limited by oxidation and graphitisation.</p></div></details><details><summary>What limits the rating below −20 °F?</summary><div><p>Material toughness, not pressure. B16.5 does not rate below −20 °F; use below that requires impact testing under the applicable code.</p></div></details></section></div></main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div>
+        <h3>Pipe</h3>
+        <ul>
+          <li><a href="/pipes/">All NPS sizes</a></li>
+          <li><a href="/pipes/schedule-40/">Schedule 40</a></li>
+          <li><a href="/pipes/schedule-80/">Schedule 80</a></li>
+          <li><a href="/reference/pipe-weight-chart/">Weight chart</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Flanges &amp; fittings</h3>
+        <ul>
+          <li><a href="/flanges/weld-neck/">Weld neck</a></li>
+          <li><a href="/flanges/blind/">Blind</a></li>
+          <li><a href="/flanges/large/">Large diameter (B16.47)</a></li>
+          <li><a href="/fittings/90-degree-elbow/">90° LR elbow</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Compare</h3>
+        <ul>
+          <li><a href="/compare/">All comparisons</a></li>
+          <li><a href="/compare/schedule-40-vs-schedule-80/">Sch 40 vs Sch 80</a></li>
+          <li><a href="/compare/class-150-vs-class-300/">Class 150 vs 300</a></li>
+          <li><a href="/compare/weld-neck-vs-slip-on-flange/">Weld neck vs slip-on</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Guides</h3>
+        <ul>
+          <li><a href="/guides/">All guides</a></li>
+          <li><a href="/guides/pipe-sizing/">Pipe sizing</a></li>
+          <li><a href="/guides/pipe-wall-thickness-calculation/">Wall thickness</a></li>
+          <li><a href="/guides/flange-bolt-torque/">Bolt torque</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Reference</h3>
+        <ul>
+          <li><a href="/reference/nps-dn-conversion/">NPS to DN</a></li>
+          <li><a href="/reference/schedule-chart/">Schedule chart</a></li>
+          <li><a href="/reference/pressure-temperature-ratings/">P-T ratings</a></li>
+          <li><a href="/reference/material-grades/">Material grades</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Site</h3>
+        <ul>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+          <li><a href="/sitemap.xml">Sitemap</a></li>
+          <li><a href="mailto:info@pipedata.org">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <p><strong>Reference only.</strong> PipeData reproduces dimensional and rating
+      data from published industry standards for quick lookup. It is not a substitute
+      for the standards themselves. Confirm every dimension against a current copy of
+      the governing ASME, ASTM or API document before fabrication, procurement or
+      design. PipeData is an independent project and is not affiliated with ASME,
+      ASTM, API or MSS.</p>
+      <p>© 2026 PipeData.org · <a href="mailto:info@pipedata.org">info@pipedata.org</a></p>
+    </div>
+  </div>
+</footer>
+<script src="/js/search.js" defer></script>
+</body>
+</html>

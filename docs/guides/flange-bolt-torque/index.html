@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flange Bolt Torque: Values, Formula and Sequence</title>
+<meta name="description" content="Flange bolt torque from T = K·F·d, computed for every B16.5 bolt size at 40 and 50 ksi, lubricated and dry, with the PCC-1 tightening sequence.">
+<link rel="canonical" href="https://pipedata.org/guides/flange-bolt-torque/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flange Bolt Torque: Values, Formula and Sequence">
+<meta property="og:description" content="Flange bolt torque from T = K·F·d, computed for every B16.5 bolt size at 40 and 50 ksi, lubricated and dry, with the PCC-1 tightening sequence.">
+<meta property="og:url" content="https://pipedata.org/guides/flange-bolt-torque/">
+<meta property="og:site_name" content="PipeData">
+<meta property="og:image" content="https://pipedata.org/og-default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#2B4C7E">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://pipedata.org/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://pipedata.org/guides/"},{"@type":"ListItem","position":3,"name":"Flange Bolt Torque"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I calculate flange bolt torque?","acceptedAnswer":{"@type":"Answer","text":"T = K · F · d / 12 for lb-ft, where F is the target bolt load (bolt stress × tensile stress area), d is the nominal diameter in inches, and K is the nut factor — about 0.16 lubricated and 0.20 dry."}},{"@type":"Question","name":"What is the nut factor K?","acceptedAnswer":{"@type":"Answer","text":"An empirical coefficient rolling up thread and nut-face friction. 0.16 is typical for a well-lubricated stud with anti-seize, 0.20 for a dry one. Because most of the torque goes into friction, K dominates the resulting bolt load."}},{"@type":"Question","name":"What bolt stress should I target for A193 B7 studs?","acceptedAnswer":{"@type":"Answer","text":"50,000 psi is a common general-purpose target, with 40,000 psi used for softer gaskets and lower classes. B7 has a minimum yield of 105,000 psi, so 50 ksi is under half yield."}},{"@type":"Question","name":"Why does a flange joint need retorquing?","acceptedAnswer":{"@type":"Answer","text":"Gaskets relax and bolts creep slightly after initial bolt-up, and the first thermal cycle relaxes them further. A retorque after 4 to 24 hours or after the first heat-up recovers the lost load."}},{"@type":"Question","name":"Is torque an accurate way to set bolt load?","acceptedAnswer":{"@type":"Answer","text":"Not very. Scatter of ±25 to ±30% on the resulting bolt load is normal even with a calibrated wrench, because friction varies. Critical joints use hydraulic tensioning or ultrasonic bolt measurement instead."}}]}</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YQ4MS7NNDS"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-YQ4MS7NNDS');</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="20" width="56" height="24" rx="3" fill="#fff" opacity=".92"/><rect x="4" y="20" width="8" height="24" rx="2" fill="#D35400"/><rect x="52" y="20" width="8" height="24" rx="2" fill="#D35400"/><rect x="12" y="27" width="40" height="10" rx="2" fill="#2B4C7E"/></svg><span>Pipe<span class="dot">Data</span></span></a>
+    <nav class="site-nav">
+      <a href="/pipes/">Pipe</a>
+      <a href="/flanges/">Flanges</a>
+      <a href="/fittings/">Fittings</a>
+      <a href="/compare/">Compare</a>
+      <a href="/guides/">Guides</a>
+      <a href="/reference/">Reference</a>
+      <a href="/about/">About</a>
+    </nav>
+  </div>
+</header>
+<main>
+<nav class="breadcrumbs" aria-label="Breadcrumb"><div class="wrap"><ol><li><a href="/">Home</a></li><li><a href="/guides/">Guides</a></li><li><span aria-current="page">Flange Bolt Torque</span></li></ol></div></nav><div class="wrap"><div class="page-head"><h1>Flange Bolt Torque</h1><p class="lede">Where torque values come from, computed for every bolt diameter in ASME B16.5 — plus the tightening sequence that decides whether the joint actually seals.</p></div><dl class="facts"><div><dt>Torque equation</dt><dd>T = K · F · d</dd></div><div><dt>Nut factor K</dt><dd>0.16 lubricated · 0.20 dry</dd></div><div><dt>Typical target stress</dt><dd>50,000 psi for A193 B7</dd></div><div><dt>Pattern</dt><dd>Cross-pattern, in at least four passes</dd></div></dl><div class="callout"><p><strong>Short answer.</strong> Bolt torque is not a property of the flange — it is whatever produces the bolt stress the joint needs. The working relationship is T = K·F·d, where F is the target bolt load, d is the nominal bolt diameter and K is the nut factor, around 0.16 well lubricated and 0.20 dry. Lubrication is not a detail: a dry bolt reaches roughly 20% less preload at the same torque.</p></div><h2>The torque equation</h2><p>Torque is an indirect way of producing bolt tension, and most of it is spent overcoming friction rather than stretching the bolt. That is why the nut factor dominates the result:</p><p class="formula">T (lb-ft) = K · F (lbf) · d (in) / 12<br>F = target bolt stress × tensile stress area<br>A<sub>s</sub> = π/4 · (d − 0.9743/n)²</p><p>Roughly half the applied torque is lost to friction under the nut face, and another 40% to friction in the threads. Only about 10% actually goes into stretching the bolt — which is why torque control has a scatter of ±25 to ±30% on bolt load even when done carefully, and why critical joints are bolt-tensioned or ultrasonically measured instead.</p><h2>Torque by bolt size</h2><p>Computed for ASTM A193 Grade B7 studs at the target stresses shown. These are the bolt diameters that appear in the ASME B16.5 flange tables.</p><div class="table-scroll"><table class="specs"><caption>Computed bolt torque for A193 B7 studs, T = K·F·d.</caption><thead><tr><th scope="col">Bolt size</th><th scope="col">Thread</th><th scope="col">Stress area</th><th scope="col">Bolt load at 50 ksi</th><th scope="col">Torque, lubricated (lb-ft)</th><th scope="col">Torque, dry (lb-ft)</th><th scope="col">Torque at 40 ksi, lubricated (lb-ft)</th></tr></thead><tbody><tr><td><strong>1/2 in</strong></td><td>13 TPI</td><td>0.1419 in²</td><td>7.1 kip</td><td>47</td><td>59</td><td>38</td></tr><tr><td><strong>5/8 in</strong></td><td>11 TPI</td><td>0.2260 in²</td><td>11.3 kip</td><td>94</td><td>118</td><td>75</td></tr><tr><td><strong>3/4 in</strong></td><td>10 TPI</td><td>0.3345 in²</td><td>16.7 kip</td><td>167</td><td>209</td><td>134</td></tr><tr><td><strong>7/8 in</strong></td><td>9 TPI</td><td>0.4617 in²</td><td>23.1 kip</td><td>269</td><td>337</td><td>215</td></tr><tr><td><strong>1 in</strong></td><td>8 TPI</td><td>0.6057 in²</td><td>30.3 kip</td><td>404</td><td>505</td><td>323</td></tr><tr><td><strong>1 1/8 in</strong></td><td>8 TPI</td><td>0.7905 in²</td><td>39.5 kip</td><td>593</td><td>741</td><td>474</td></tr><tr><td><strong>1 1/4 in</strong></td><td>8 TPI</td><td>0.9997 in²</td><td>50.0 kip</td><td>833</td><td>1,041</td><td>666</td></tr><tr><td><strong>1 3/8 in</strong></td><td>8 TPI</td><td>1.2335 in²</td><td>61.7 kip</td><td>1,131</td><td>1,413</td><td>905</td></tr><tr><td><strong>1 1/2 in</strong></td><td>8 TPI</td><td>1.4918 in²</td><td>74.6 kip</td><td>1,492</td><td>1,865</td><td>1,193</td></tr><tr><td><strong>1 5/8 in</strong></td><td>8 TPI</td><td>1.7747 in²</td><td>88.7 kip</td><td>1,923</td><td>2,403</td><td>1,538</td></tr><tr><td><strong>1 3/4 in</strong></td><td>8 TPI</td><td>2.0822 in²</td><td>104.1 kip</td><td>2,429</td><td>3,036</td><td>1,943</td></tr><tr><td><strong>1 7/8 in</strong></td><td>8 TPI</td><td>2.4141 in²</td><td>120.7 kip</td><td>3,018</td><td>3,772</td><td>2,414</td></tr><tr><td><strong>2 in</strong></td><td>8 TPI</td><td>2.7706 in²</td><td>138.5 kip</td><td>3,694</td><td>4,618</td><td>2,955</td></tr><tr><td><strong>2 1/4 in</strong></td><td>8 TPI</td><td>3.5573 in²</td><td>177.9 kip</td><td>5,336</td><td>6,670</td><td>4,269</td></tr><tr><td><strong>2 1/2 in</strong></td><td>8 TPI</td><td>4.4421 in²</td><td>222.1 kip</td><td>7,404</td><td>9,254</td><td>5,923</td></tr><tr><td><strong>2 3/4 in</strong></td><td>8 TPI</td><td>5.4251 in²</td><td>271.3 kip</td><td>9,946</td><td>12,433</td><td>7,957</td></tr><tr><td><strong>3 in</strong></td><td>8 TPI</td><td>6.5063 in²</td><td>325.3 kip</td><td>13,013</td><td>16,266</td><td>10,410</td></tr><tr><td><strong>3 1/2 in</strong></td><td>8 TPI</td><td>8.9632 in²</td><td>448.2 kip</td><td>20,914</td><td>26,143</td><td>16,731</td></tr></tbody></table></div><p class="table-note">Lubricated assumes K = 0.16, dry K = 0.20. These are computed reference values, not a substitute for the gasket manufacturer's assembly procedure or a project-specific bolt-up specification.</p><div class="callout"><p>For a broader torque reference beyond flange bolting — fastener grades, metric sizes and general assembly torque — see <a href="https://torquespec.org" rel="noopener">torquespec.org</a>.</p></div><h2>Worked example: NPS 6 Class 300</h2><p>ASME B16.5 gives an NPS 6 Class 300 flange 12 bolts of 3/4 in diameter on a 10.62 in bolt circle.</p><ol><li>Stress area per bolt: A<sub>s</sub> = 0.3345 in²</li><li>Target load per bolt at 50,000 psi: 16.7 kip</li><li>Torque, lubricated: T = 0.16 × 16,723 × 0.750 / 12 = 167 lb-ft</li><li>Total bolt load on the joint: 12 × 16.7 = 201 kip</li></ol><p>That total is the number worth carrying away. The joint is held together by hundreds of thousands of pounds of clamping force, and the gasket only seals while that force stays above what the internal pressure is trying to push apart.</p><h2>Tightening sequence</h2><p>Sequence matters as much as the final torque. Tightening one bolt fully before its neighbours cocks the flange and crushes the gasket unevenly — the joint then leaks at low pressure no matter what the torque wrench said.</p><div class="table-scroll"><table class="specs"><caption>Flange bolt-up sequence, following ASME PCC-1 practice.</caption><thead><tr><th scope="col">Pass</th><th scope="col">Torque</th><th scope="col">Pattern</th></tr></thead><tbody><tr><td><strong>1 — snug</strong></td><td>20–30% of target</td><td>Cross-pattern (star), hand tight then snug</td></tr><tr><td><strong>2</strong></td><td>50–70% of target</td><td>Cross-pattern</td></tr><tr><td><strong>3</strong></td><td>100% of target</td><td>Cross-pattern</td></tr><tr><td><strong>4 — check</strong></td><td>100% of target</td><td>Clockwise, bolt to bolt, until no nut turns</td></tr><tr><td><strong>5 — retorque</strong></td><td>100% of target</td><td>After 4–24 hours, or after the first thermal cycle, to recover gasket relaxation</td></tr></tbody></table></div><p class="table-note">ASME PCC-1 Guidelines for Pressure Boundary Bolted Flange Joint Assembly is the reference for joint assembly and gives legacy and alternative patterns in full.</p><h2>What changes the number</h2><p>Gasket type is the largest single influence on target stress. A spiral wound gasket needs enough load to seat the winding but not so much that it crushes past its compression stop; a kammprofile needs less; a sheet gasket less again; and an RTJ ring needs enough to yield it into the groove. Always take the seating stress from the gasket manufacturer and work back to torque from there, rather than starting from a generic bolt torque table.</p><div class="callout"><p>See also: <a href="/reference/flange-bolt-chart/">flange bolt chart</a> · <a href="/compare/raised-face-vs-ring-type-joint/">RF vs RTJ</a> · <a href="/guides/flange-face-types/">choosing a flange face</a> · <a href="/flanges/">flange dimensions</a>.</p></div><section class="faq"><h2>Common questions</h2><details><summary>How do I calculate flange bolt torque?</summary><div><p>T = K · F · d / 12 for lb-ft, where F is the target bolt load (bolt stress × tensile stress area), d is the nominal diameter in inches, and K is the nut factor — about 0.16 lubricated and 0.20 dry.</p></div></details><details><summary>What is the nut factor K?</summary><div><p>An empirical coefficient rolling up thread and nut-face friction. 0.16 is typical for a well-lubricated stud with anti-seize, 0.20 for a dry one. Because most of the torque goes into friction, K dominates the resulting bolt load.</p></div></details><details><summary>What bolt stress should I target for A193 B7 studs?</summary><div><p>50,000 psi is a common general-purpose target, with 40,000 psi used for softer gaskets and lower classes. B7 has a minimum yield of 105,000 psi, so 50 ksi is under half yield.</p></div></details><details><summary>Why does a flange joint need retorquing?</summary><div><p>Gaskets relax and bolts creep slightly after initial bolt-up, and the first thermal cycle relaxes them further. A retorque after 4 to 24 hours or after the first heat-up recovers the lost load.</p></div></details><details><summary>Is torque an accurate way to set bolt load?</summary><div><p>Not very. Scatter of ±25 to ±30% on the resulting bolt load is normal even with a calibrated wrench, because friction varies. Critical joints use hydraulic tensioning or ultrasonic bolt measurement instead.</p></div></details></section></div></main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div>
+        <h3>Pipe</h3>
+        <ul>
+          <li><a href="/pipes/">All NPS sizes</a></li>
+          <li><a href="/pipes/schedule-40/">Schedule 40</a></li>
+          <li><a href="/pipes/schedule-80/">Schedule 80</a></li>
+          <li><a href="/reference/pipe-weight-chart/">Weight chart</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Flanges &amp; fittings</h3>
+        <ul>
+          <li><a href="/flanges/weld-neck/">Weld neck</a></li>
+          <li><a href="/flanges/blind/">Blind</a></li>
+          <li><a href="/flanges/large/">Large diameter (B16.47)</a></li>
+          <li><a href="/fittings/90-degree-elbow/">90° LR elbow</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Compare</h3>
+        <ul>
+          <li><a href="/compare/">All comparisons</a></li>
+          <li><a href="/compare/schedule-40-vs-schedule-80/">Sch 40 vs Sch 80</a></li>
+          <li><a href="/compare/class-150-vs-class-300/">Class 150 vs 300</a></li>
+          <li><a href="/compare/weld-neck-vs-slip-on-flange/">Weld neck vs slip-on</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Guides</h3>
+        <ul>
+          <li><a href="/guides/">All guides</a></li>
+          <li><a href="/guides/pipe-sizing/">Pipe sizing</a></li>
+          <li><a href="/guides/pipe-wall-thickness-calculation/">Wall thickness</a></li>
+          <li><a href="/guides/flange-bolt-torque/">Bolt torque</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Reference</h3>
+        <ul>
+          <li><a href="/reference/nps-dn-conversion/">NPS to DN</a></li>
+          <li><a href="/reference/schedule-chart/">Schedule chart</a></li>
+          <li><a href="/reference/pressure-temperature-ratings/">P-T ratings</a></li>
+          <li><a href="/reference/material-grades/">Material grades</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Site</h3>
+        <ul>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+          <li><a href="/sitemap.xml">Sitemap</a></li>
+          <li><a href="mailto:info@pipedata.org">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <p><strong>Reference only.</strong> PipeData reproduces dimensional and rating
+      data from published industry standards for quick lookup. It is not a substitute
+      for the standards themselves. Confirm every dimension against a current copy of
+      the governing ASME, ASTM or API document before fabrication, procurement or
+      design. PipeData is an independent project and is not affiliated with ASME,
+      ASTM, API or MSS.</p>
+      <p>© 2026 PipeData.org · <a href="mailto:info@pipedata.org">info@pipedata.org</a></p>
+    </div>
+  </div>
+</footer>
+<script src="/js/search.js" defer></script>
+</body>
+</html>
