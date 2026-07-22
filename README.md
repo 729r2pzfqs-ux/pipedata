@@ -10,12 +10,23 @@ ASME B16 and B36 standards. Imperial primary, metric alongside.
 | Standard | What | Pages |
 | --- | --- | --- |
 | ASME B36.10M | Pipe dimensions, NPS 1/8 – NPS 36, 14 schedules | 30 size + 14 schedule |
+| ASME B36.19M | Stainless S-schedules — 5S, 10S, 40S, 80S | 4 + reference |
 | ASME B16.5 | Flanges, 6 types × 7 classes, NPS 1/2 – NPS 24 | 6 type + 42 class |
 | ASME B16.47 | Large flanges, Series A and B, NPS 26 – NPS 60 | 4 |
 | ASME B16.9 | Buttweld fittings — elbows, tee, reducers, cap | 7 + index |
 | Reference | NPS/DN, schedules, P-T ratings, materials, bolting, faces | 11 + index |
 
-122 pages total.
+127 pages total.
+
+### Generated claims, not asserted ones
+
+`s_schedule_comparison()` computes where each B36.19M S-schedule agrees and
+disagrees with its B36.10M counterpart by walking both data files, and the
+stainless pages render that result as prose. An earlier hand-written version of
+that claim was wrong (it said 5S and 10S are thinner than anything in B36.10M —
+they are not; they match Schedule 5 and Schedule 10 in every published size).
+Prefer computing this kind of cross-table claim over writing it out, so a data
+edit cannot leave stale prose behind.
 
 ### Data accuracy
 

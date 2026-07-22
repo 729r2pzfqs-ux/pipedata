@@ -234,12 +234,54 @@ def load():
     pt = load_yaml("pt_ratings.yaml")
     mats = load_yaml("materials.yaml")["categories"]
 
+    ss = load_yaml("pipe_sizes_b3619.yaml")
+    ss["schedules"] = [str(x) for x in ss["schedules"]]
+    ss["sizes"] = {str(k): {str(kk): float(vv) for kk, vv in v.items()}
+                   for k, v in ss["sizes"].items()}
+    ss["counterparts"] = {str(k): str(v) for k, v in ss["counterparts"].items()}
+
     errors = []
     for s in pipes["sizes"]:
         for k, t in s["walls"].items():
             if t * 2 >= s["od"]:
                 errors.append(f"NPS {s['nps']} sch {k}: wall {t} closes the bore")
-    return pipes, b165, ftypes, b1647, fittings, pt, mats, errors
+    # Every B36.19M size must exist in B36.10M, since the OD comes from there.
+    known = {s["nps"] for s in pipes["sizes"]}
+    for nps in ss["sizes"]:
+        if nps not in known:
+            errors.append(f"B36.19 lists NPS {nps}, which B36.10 does not")
+    return pipes, b165, ftypes, b1647, fittings, pt, mats, ss, errors
+
+
+def s_schedule_comparison(ss, pipes):
+    """Compare each S-schedule against its B36.10M counterpart, from the data.
+
+    Returns {S-schedule: {"same": [...], "differs": [(nps, s_wall, b_wall)],
+                          "only_s": [...], "counterpart": "40"}}.
+
+    Computed rather than asserted: the divergences between B36.10M and B36.19M
+    are the single most useful thing on the page and also the easiest thing to
+    get wrong in prose, so the prose is generated from the numbers.
+    """
+    by_nps = {s["nps"]: s for s in pipes["sizes"]}
+    out = {}
+    for sch in ss["schedules"]:
+        cp = ss["counterparts"][sch]
+        same, differs, only_s = [], [], []
+        for nps, walls in ss["sizes"].items():
+            if sch not in walls:
+                continue
+            s_wall = walls[sch]
+            b_wall = by_nps[nps]["walls"].get(cp)
+            if b_wall is None:
+                only_s.append(nps)
+            elif abs(b_wall - s_wall) < 1e-9:
+                same.append(nps)
+            else:
+                differs.append((nps, s_wall, b_wall))
+        out[sch] = {"counterpart": cp, "same": same, "differs": differs,
+                    "only_s": only_s}
+    return out
 
 
 # --------------------------------------------------------------------------
@@ -1550,11 +1592,14 @@ def ref_schedule_chart(pipes):
             "double the XS wall despite the name.</li></ul>"
             "<h2>The S schedules</h2>"
             "<p>Schedules written with an S suffix — 5S, 10S, 40S, 80S — belong "
-            "to ASME B36.19M, the stainless steel pipe standard, not to B36.10M. "
-            "In the smaller sizes 40S and 80S match schedule 40 and 80 exactly, "
-            "but 5S and 10S are thinner than anything in B36.10M and the two "
-            "standards diverge in the larger sizes. A drawing calling for "
-            "&ldquo;10S&rdquo; is asking for stainless pipe.</p>"
+            "to ASME B36.19M, the stainless steel pipe standard, not to "
+            "B36.10M. The S does not mean a thinner wall: in most sizes an "
+            "S-schedule carries exactly the same wall as the numbered schedule "
+            "it shares a number with. What differs is the size range B36.19M "
+            "publishes, and two specific wall thicknesses — 40S at NPS 12, and "
+            "80S at NPS 10 and 12. "
+            '<a class="more" href="/reference/stainless-pipe-schedules/">'
+            "Full comparison →</a></p>"
             f'<h2>Every schedule</h2><div class="grid">{sched_cards}</div>')
 
     q = [
@@ -1569,8 +1614,10 @@ def ref_schedule_chart(pipes):
         ("What is the difference between schedule 40 and 40S?",
          "<p>Schedule 40 is carbon steel pipe from ASME B36.10M; 40S is "
          "stainless pipe from ASME B36.19M. In the smaller sizes the wall "
-         "thicknesses are identical, but the standards diverge in larger sizes "
-         "and the S designation always signals stainless.</p>"),
+         "thicknesses are identical — they part company only at NPS 12, where "
+         "40S is 0.375 in and Schedule 40 is 0.406 in — but the S designation "
+         "always signals stainless, and B36.19M stops publishing 40S above "
+         "NPS 12.</p>"),
         ("Does a higher schedule number mean a smaller bore?",
          "<p>Yes. Outside diameter is fixed for a given NPS, so a thicker wall "
          "can only grow inward. Schedule 160 NPS 4 pipe has a bore of 3.438 in "
@@ -1943,6 +1990,234 @@ def ref_weight_chart(pipes):
         "seven most-used schedules, in pounds per foot and kilograms per metre, "
         "plus the formula behind it.",
         body, faq_pairs=q, card_meta="lb/ft and kg/m · all sizes")
+
+
+def s_schedule_page(sch, ss, pipes, cmp_):
+    """A /pipes/schedule-10s/ style page for one B36.19M stainless schedule."""
+    by_nps = {s["nps"]: s for s in pipes["sizes"]}
+    npss = sorted([k for k, v in ss["sizes"].items() if sch in v], key=nps_value)
+    info = cmp_[sch]
+    cp = info["counterpart"]
+
+    rows = []
+    for nps in npss:
+        s = by_nps[nps]
+        t = ss["sizes"][nps][sch]
+        idd = inside_dia(s["od"], t)
+        b_wall = s["walls"].get(cp)
+        if b_wall is None:
+            note = f'<span class="na">no Sch {cp}</span>'
+        elif abs(b_wall - t) < 1e-9:
+            note = f"same as Sch {cp}"
+        else:
+            note = f'<span class="yes">Sch {cp} is {n(b_wall, 3)}</span>'
+        rows.append([
+            f'<a href="{s["url"]}"><strong>NPS {esc(nps)}</strong></a>',
+            f'DN {s["dn"]}', dual(s["od"]), dual(t), dual(idd),
+            dual_w(weight_lbft(s["od"], t) * 1.015), note])
+
+    thin = min(npss, key=lambda k: ss["sizes"][k][sch])
+    thick = max(npss, key=lambda k: ss["sizes"][k][sch])
+
+    if info["differs"]:
+        diff_txt = comma_list(
+            [f"NPS {d[0]} ({n(d[1], 3)} in against {n(d[2], 3)} in)"
+             for d in info["differs"]])
+        diverge = (f"<p><strong>{sch} is not the same as Schedule {cp} "
+                   f"everywhere.</strong> The two agree in "
+                   f"{len(info['same'])} of the {len(npss)} sizes published, and "
+                   f"disagree at {diff_txt}. Substituting one for the other in "
+                   f"those sizes puts the wrong wall in the line.</p>")
+    else:
+        diverge = (f"<p>Across every size B36.19M publishes in {sch}, the wall "
+                   f"thickness is identical to B36.10M Schedule {cp}. The "
+                   f"difference between them is the material, the permitted "
+                   f"tolerances and the size range — not the wall.</p>")
+
+    fact_rows = [
+        ("Schedule", sch), ("Standard", "ASME B36.19M"),
+        ("Material", "Stainless steel"),
+        ("Sizes published", f"{len(npss)} (NPS {npss[0]} to NPS {npss[-1]})"),
+        ("Thinnest wall", f"{inch_mm(ss['sizes'][thin][sch])} at NPS {thin}"),
+        ("Thickest wall", f"{inch_mm(ss['sizes'][thick][sch])} at NPS {thick}"),
+    ]
+
+    q = [
+        (f"Is {sch} the same as Schedule {cp}?",
+         f"<p>{'Not in every size. ' if info['differs'] else 'In wall thickness, yes. '}"
+         + (f"They agree in {len(info['same'])} sizes and disagree at "
+            f"{comma_list(['NPS ' + d[0] for d in info['differs']])}."
+            if info["differs"] else
+            f"Every size B36.19M publishes in {sch} carries the same wall as "
+            f"Schedule {cp}.")
+         + f" The S suffix always signals stainless pipe to ASME B36.19M, "
+           f"which also stops at NPS {npss[-1]} in this schedule where "
+           f"B36.10M continues.</p>"),
+        (f"What sizes does {sch} come in?",
+         f"<p>NPS {npss[0]} through NPS {npss[-1]} — {len(npss)} sizes. "
+         f"B36.19M is a shorter standard than B36.10M: it publishes 40S and 80S "
+         f"only through NPS 12, and 5S and 10S only through NPS 30. Beyond "
+         f"that, stainless pipe is ordered to a B36.10M schedule.</p>"),
+        (f"Why is {sch} pipe used?",
+         "<p>Stainless costs several times what carbon steel does, so stainless "
+         "lines are run as thin as the pressure allows. The S-schedules exist to "
+         "give that thin end of the range a designation — 10S in particular is "
+         "the workhorse wall for low-pressure stainless process and sanitary "
+         "piping.</p>"),
+    ]
+    faq_html, faq_ld = faq(q)
+    crumb_html, crumb_ld = crumbs([("Home", "/"), ("Pipe", "/pipes/"),
+                                   (f"Schedule {sch}", None)])
+
+    others = "".join(
+        f'<a class="chip-link" href="/pipes/schedule-{o.lower()}/">Sch {o}</a>'
+        for o in ss["schedules"] if o != sch)
+
+    title = fit_title(f"Schedule {sch} Stainless Pipe Dimensions", " | PipeData")
+    desc = fit_desc(
+        f"Schedule {sch} stainless pipe wall runs "
+        f"{n(ss['sizes'][thin][sch], 3)}–{n(ss['sizes'][thick][sch], 3)} in "
+        f"across {len(npss)} sizes. ",
+        [f"ASME B36.19M OD, bore and weight, with how {sch} differs from "
+         f"Schedule {cp}.",
+         f"ASME B36.19M OD, bore and weight, compared against Schedule {cp}.",
+         "ASME B36.19M outside diameter, bore and weight for every size."])
+
+    body = (crumb_html + '<div class="wrap">'
+            f'<div class="page-head"><h1>Schedule {sch} Pipe Dimensions</h1>'
+            f'<p class="lede">ASME B36.19M stainless steel pipe in {sch}, '
+            f'NPS {esc(npss[0])} through NPS {esc(npss[-1])} — with the '
+            f'B36.10M Schedule {cp} wall alongside, because the two are '
+            f'routinely swapped by mistake.</p></div>'
+            + facts(fact_rows) + UNITS_NOTE
+            + table(["Size", "DN", "Outside diameter", f"{sch} wall",
+                     "Inside diameter", "Weight, empty",
+                     f"vs Schedule {cp}"], rows,
+                    caption=f"ASME B36.19M schedule {sch} stainless pipe "
+                            f"dimensions, with the B36.10M Schedule {cp} "
+                            f"comparison.",
+                    note="Weight is plain-end austenitic stainless, taken as "
+                         "1.5% heavier than the carbon steel formula "
+                         "w = 10.6802 × t × (OD − t) lb/ft.")
+            + diverge + faq_html
+            + f'<h2>Other stainless schedules</h2>'
+            f'<div class="chip-links">{others}</div>'
+            + '<p><a class="more" href="/reference/stainless-pipe-schedules/">'
+            'How B36.19M compares with B36.10M →</a></p></div>')
+
+    url = f"/pipes/schedule-{sch.lower()}/"
+    page(url, title, desc, body, ld=[crumb_ld, faq_ld])
+    index_entry(f"Schedule {sch} stainless pipe", url,
+                f"ASME B36.19M · {len(npss)} sizes")
+
+
+def ref_stainless(ss, pipes, cmp_):
+    by_nps = {s["nps"]: s for s in pipes["sizes"]}
+    npss = sorted(ss["sizes"], key=nps_value)
+    headers = ["Size", "OD"] + [f"Sch {s}" for s in ss["schedules"]]
+    rows = []
+    for nps in npss:
+        s = by_nps[nps]
+        cells = [f'<strong>NPS {esc(nps)}</strong>', dual(s["od"])]
+        for sch in ss["schedules"]:
+            t = ss["sizes"][nps].get(sch)
+            cells.append(dual(t) if t else '<span class="na">—</span>')
+        rows.append(cells)
+
+    # Divergence table, computed — never asserted.
+    div_rows = []
+    for sch in ss["schedules"]:
+        info = cmp_[sch]
+        cp = info["counterpart"]
+        if info["differs"]:
+            where = comma_list([f"NPS {d[0]}" for d in info["differs"]])
+            detail = comma_list(
+                [f"{n(d[1], 3)} in against Schedule {cp}'s {n(d[2], 3)} in"
+                 for d in info["differs"]])
+            verdict = f'<span class="yes">Differs at {where}</span>'
+        else:
+            detail = f"identical wall in all {len(info['same'])} sizes"
+            verdict = f"Matches Schedule {cp}"
+        div_rows.append([f"<strong>Sch {sch}</strong>", f"Schedule {cp}",
+                         verdict, detail])
+
+    cards = "".join(
+        f'<a class="card" href="/pipes/schedule-{s.lower()}/">'
+        f'<span class="card-title">Schedule {s}</span>'
+        f'<span class="card-meta">'
+        f'{len([k for k, v in ss["sizes"].items() if s in v])} sizes</span></a>'
+        for s in ss["schedules"])
+
+    body = (facts([("Standard", "ASME B36.19M"),
+                   ("Schedules", comma_list(ss["schedules"])),
+                   ("40S and 80S published to", "NPS 12"),
+                   ("5S and 10S published to", "NPS 30")])
+            + "<h2>The S means stainless, not thinner</h2>"
+            "<p>The most common belief about the S-schedules — that they are a "
+            "thin-wall series with no carbon steel equivalent — is wrong. In "
+            "most sizes an S-schedule carries exactly the same wall as the "
+            "B36.10M schedule of the same number. What the S actually "
+            "designates is the standard the pipe is made to: ASME B36.19M, the "
+            "stainless steel pipe standard, with its own material scope, its own "
+            "tolerances and a shorter size range.</p>"
+            "<h2>Where the two standards actually disagree</h2>"
+            "<p>Computed from the two tables rather than asserted — these are "
+            "the only wall thickness disagreements between the S-schedules and "
+            "their B36.10M counterparts:</p>"
+            + table(["Stainless", "Carbon steel counterpart", "Verdict",
+                     "Detail"], div_rows,
+                    caption="B36.19M S-schedules against their B36.10M "
+                            "counterparts, over every size both standards "
+                            "publish.",
+                    note="Where a schedule &ldquo;matches&rdquo;, it matches "
+                         "only across the sizes B36.19M publishes — which is a "
+                         "far shorter list than B36.10M's.",
+                    cls="specs wide")
+            + "<h2>The size range is the bigger difference</h2>"
+            "<p>B36.19M publishes 40S and 80S only through NPS 12, and 5S and "
+            "10S only through NPS 30. B36.10M runs to NPS 36 and beyond in the "
+            "numbered schedules. A drawing calling for &ldquo;NPS 16, 40S&rdquo; "
+            "is asking for something the standard does not define — the "
+            "intention is almost always NPS 16 Schedule 40 in a stainless "
+            "grade, ordered to B36.10M dimensions.</p>"
+            "<h2>Stainless S-schedule dimensions</h2>"
+            + UNITS_NOTE
+            + table(headers, rows,
+                    caption="ASME B36.19M wall thickness by size and "
+                            "S-schedule. A dash means the standard does not "
+                            "publish that combination.")
+            + f'<h2>Each schedule in full</h2><div class="grid">{cards}</div>')
+
+    q = [
+        ("Is 10S the same as Schedule 10?",
+         "<p>In wall thickness, yes, in every size B36.19M publishes. The "
+         "difference is the standard: 10S is stainless pipe to ASME B36.19M, "
+         "which stops at NPS 30, while Schedule 10 is B36.10M and continues "
+         "further.</p>"),
+        ("Is 40S the same as Schedule 40?",
+         "<p>Up to NPS 10, yes. At NPS 12 they part company — 40S is 0.375 in "
+         "while Schedule 40 is 0.406 in — and B36.19M does not publish 40S above "
+         "NPS 12 at all.</p>"),
+        ("Is 80S the same as Schedule 80?",
+         "<p>Up to NPS 8, yes. At NPS 10 and NPS 12, 80S holds at 0.500 in while "
+         "Schedule 80 climbs to 0.594 in and 0.688 in. Above NPS 12 there is no "
+         "80S.</p>"),
+        ("Can I order stainless pipe in a plain numbered schedule?",
+         "<p>Yes, and above the S-schedule size limits you have to. Stainless "
+         "pipe to ASTM A312 is routinely supplied to B36.10M schedules; the S "
+         "designation is a convenience for the thin end of the range, not a "
+         "requirement for stainless.</p>"),
+    ]
+    ref("stainless-pipe-schedules",
+        "Stainless Pipe Schedules — 5S, 10S, 40S, 80S | PipeData",
+        "ASME B36.19M stainless pipe schedules 5S, 10S, 40S and 80S, with wall "
+        "thickness for every size and exactly where each stops matching its "
+        "B36.10M counterpart.",
+        "Stainless Pipe Schedules",
+        "What the S in 10S actually means, wall thickness for every B36.19M "
+        "size, and the two places where an S-schedule stops matching the "
+        "carbon steel schedule of the same number.",
+        body, faq_pairs=q, card_meta="B36.19M · 5S, 10S, 40S, 80S")
 
 
 def ref_face_types():
@@ -2487,8 +2762,9 @@ PT_GROUPS = []
 
 def main():
     global PT_GROUPS
-    pipes, b165, ftypes, b1647, fittings, pt, mats, errors = load()
+    pipes, b165, ftypes, b1647, fittings, pt, mats, ss, errors = load()
     PT_GROUPS = pt["groups"]
+    ss_cmp = s_schedule_comparison(ss, pipes)
 
     if errors:
         print("Data problems found:", file=sys.stderr)
@@ -2507,6 +2783,8 @@ def main():
         pipe_page(s, pipes, sizes_by_slug)
     for k in pipes["schedule_order"]:
         schedule_page(k, pipes)
+    for sch in ss["schedules"]:
+        s_schedule_page(sch, ss, pipes, ss_cmp)
     pipes_index(pipes)
 
     # ---- flanges ----
@@ -2525,6 +2803,7 @@ def main():
     # ---- reference (order here is the order on the index) ----
     ref_nps_dn(pipes)
     ref_schedule_chart(pipes)
+    ref_stainless(ss, pipes, ss_cmp)
     ref_pt_ratings(pt)
     ref_bolt_chart(b165, ftypes)
     ref_materials(mats)
@@ -2552,6 +2831,7 @@ def main():
             ("/about/", "0.4"), ("/privacy/", "0.2")]
     urls += [(s["url"], "0.8") for s in pipes["sizes"]]
     urls += [(f"/pipes/{sched_slug(k)}/", "0.7") for k in pipes["schedule_order"]]
+    urls += [(f"/pipes/schedule-{s.lower()}/", "0.7") for s in ss["schedules"]]
     for ft in ftypes:
         urls.append((f"/flanges/{ft['slug']}/", "0.8"))
         urls += [(f"/flanges/{ft['slug']}/class-{c}/", "0.7")
