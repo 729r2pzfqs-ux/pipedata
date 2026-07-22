@@ -1,0 +1,109 @@
+# The six flange types dimensioned by ASME B16.5.
+# `classes` lists the pressure classes each type is published in.
+
+types:
+  - slug: weld-neck
+    name: "Weld Neck Flange"
+    short: "weld neck"
+    abbrev: "WN"
+    classes: ["150", "300", "400", "600", "900", "1500", "2500"]
+    blurb: >-
+      A long tapered hub butt-welded to the pipe, so the flange bore matches the
+      pipe bore exactly. The taper moves the stress concentration away from the
+      flange face, which is why weld neck flanges are the standard choice for
+      high-pressure, cyclic and high-temperature service.
+    pros:
+      - "Bore matches the pipe, so no turbulence or crevice at the joint"
+      - "Full-penetration butt weld is radiographable"
+      - "Best fatigue and thermal-shock performance of any B16.5 flange"
+    cons:
+      - "Must be ordered to a specific schedule — the bore is machined to it"
+      - "Most expensive type, and the longest"
+    use: "High pressure, high temperature, cyclic loading, hydrogen and lethal service."
+
+  - slug: slip-on
+    name: "Slip-On Flange"
+    short: "slip-on"
+    abbrev: "SO"
+    classes: ["150", "300", "400", "600", "900", "1500", "2500"]
+    blurb: >-
+      Slides over the outside of the pipe and is fillet-welded both inside and
+      outside. The bore is sized to the pipe OD rather than to a schedule, so a
+      single slip-on fits any wall thickness in that NPS.
+    pros:
+      - "Cheaper than weld neck and tolerant of small alignment errors"
+      - "One bore fits every schedule in the size"
+      - "Shorter than a weld neck, useful in tight spaces"
+    cons:
+      - "Two fillet welds instead of one butt weld; harder to inspect"
+      - "Roughly a third of the fatigue life of a weld neck"
+    use: "Low-pressure, non-cyclic utility and water service."
+
+  - slug: socket-weld
+    name: "Socket Weld Flange"
+    short: "socket weld"
+    abbrev: "SW"
+    classes: ["150", "300", "400", "600", "900", "1500", "2500"]
+    blurb: >-
+      The pipe drops into a counterbored socket and is fillet-welded on the
+      outside only. Published in NPS 1/2 through NPS 3 for the lower classes;
+      the small-bore equivalent of a slip-on.
+    pros:
+      - "Good static strength in small bore, and easy to fit up"
+      - "No weld metal can protrude into the bore"
+    cons:
+      - "Needs a 1/16 in expansion gap at the socket bottom to avoid weld cracking"
+      - "The gap is a crevice — poor choice for corrosive or sanitary service"
+    use: "Small-bore high-pressure lines: instrument, hydraulic and steam trace piping."
+
+  - slug: lap-joint
+    name: "Lap Joint Flange"
+    short: "lap joint"
+    abbrev: "LJ"
+    classes: ["150", "300", "400", "600", "900", "1500", "2500"]
+    blurb: >-
+      A loose backing flange used with a stub end. The flange never contacts the
+      fluid — it only carries bolt load — so it can be carbon steel behind a
+      stainless or alloy stub end, and it swivels freely for bolt-hole alignment.
+    pros:
+      - "Spins freely, so bolt holes always line up — ideal for large or awkward spools"
+      - "Cheap carbon steel flange behind an expensive alloy stub end"
+      - "Easy to dismantle for cleaning or inspection"
+    cons:
+      - "Weakest of the six in fatigue"
+      - "Requires a matching stub end, adding a component"
+    use: "Systems dismantled often, or alloy lines where flange cost matters."
+
+  - slug: threaded
+    name: "Threaded Flange"
+    short: "threaded"
+    abbrev: "THD"
+    classes: ["150", "300", "400", "600", "900", "1500", "2500"]
+    blurb: >-
+      Tapped with an ASME B1.20.1 NPT taper thread and screwed onto matching
+      pipe, with no welding at all. That makes it the flange for places where a
+      hot work permit is impossible.
+    pros:
+      - "No welding, so usable in flammable or explosive areas"
+      - "Fast field installation with hand tools"
+    cons:
+      - "Not for cyclic, high-temperature or vibrating service — the thread loosens"
+      - "Thread root reduces the effective wall; needs thick-wall pipe"
+    use: "Low-pressure utility piping and hazardous areas where welding is banned."
+
+  - slug: blind
+    name: "Blind Flange"
+    short: "blind"
+    abbrev: "BL"
+    classes: ["150", "300", "400", "600", "900", "1500", "2500"]
+    blurb: >-
+      A solid disc with no bore, bolted on to close off a flanged opening. Blind
+      flanges carry the highest stress of any flange type at a given class,
+      because the full pressure acts across the whole unsupported disc.
+    pros:
+      - "Closes a line while leaving it easy to reopen for inspection or tie-in"
+      - "Can be drilled and tapped later for a future branch"
+    cons:
+      - "Highest bending stress of the six types at the same class"
+      - "Heavy in large sizes — a NPS 24 Class 600 blind is a lift"
+    use: "Vessel and line closures, future tie-in points, pressure-test blanks."

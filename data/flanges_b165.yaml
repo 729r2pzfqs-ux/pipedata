@@ -1,0 +1,209 @@
+# ASME B16.5 — Pipe Flanges and Flanged Fittings, NPS 1/2 through NPS 24
+#
+# All dimensions in inches.
+#   o        flange outside diameter
+#   tf       minimum flange thickness (raised face NOT included)
+#   bc       bolt circle diameter
+#   bolts    number of bolt holes
+#   bolt     bolt diameter (nominal)
+#   y_wn     length through hub, welding neck
+#   y_so     length through hub, slip-on / threaded / socket weld
+#
+# y_wn / y_so are carried for Classes 150 and 300 only; for the higher classes
+# the hub geometry varies by bore and the generator renders those cells as "—".
+
+# Raised-face outside diameter (gasket contact OD). Common to Classes 150-600.
+# Classes 900, 1500 and 2500 use different gasket surfaces in several sizes —
+# see ASME B16.5 Table 9 before ordering a gasket for those classes.
+raised_face:
+  "1/2": 1.38
+  "3/4": 1.69
+  "1": 2.00
+  "1 1/4": 2.50
+  "1 1/2": 2.88
+  "2": 3.62
+  "2 1/2": 4.12
+  "3": 5.00
+  "3 1/2": 5.50
+  "4": 6.19
+  "5": 7.31
+  "6": 8.50
+  "8": 10.62
+  "10": 12.75
+  "12": 15.00
+  "14": 16.25
+  "16": 18.50
+  "18": 21.00
+  "20": 23.00
+  "24": 27.25
+
+classes:
+  "150":
+    rf_height: 0.06
+    rows:
+      - {nps: "1/2",     o: 3.50,  tf: 0.44, bc: 2.38,  bolts: 4,  bolt: "1/2",   y_wn: 1.88, y_so: 0.62}
+      - {nps: "3/4",     o: 3.88,  tf: 0.50, bc: 2.75,  bolts: 4,  bolt: "1/2",   y_wn: 2.06, y_so: 0.62}
+      - {nps: "1",       o: 4.25,  tf: 0.56, bc: 3.12,  bolts: 4,  bolt: "1/2",   y_wn: 2.19, y_so: 0.69}
+      - {nps: "1 1/4",   o: 4.62,  tf: 0.62, bc: 3.50,  bolts: 4,  bolt: "1/2",   y_wn: 2.25, y_so: 0.81}
+      - {nps: "1 1/2",   o: 5.00,  tf: 0.69, bc: 3.88,  bolts: 4,  bolt: "1/2",   y_wn: 2.44, y_so: 0.88}
+      - {nps: "2",       o: 6.00,  tf: 0.75, bc: 4.75,  bolts: 4,  bolt: "5/8",   y_wn: 2.50, y_so: 1.00}
+      - {nps: "2 1/2",   o: 7.00,  tf: 0.88, bc: 5.50,  bolts: 4,  bolt: "5/8",   y_wn: 2.75, y_so: 1.12}
+      - {nps: "3",       o: 7.50,  tf: 0.94, bc: 6.00,  bolts: 4,  bolt: "5/8",   y_wn: 2.75, y_so: 1.19}
+      - {nps: "3 1/2",   o: 8.50,  tf: 0.94, bc: 7.00,  bolts: 8,  bolt: "5/8",   y_wn: 2.81, y_so: 1.25}
+      - {nps: "4",       o: 9.00,  tf: 0.94, bc: 7.50,  bolts: 8,  bolt: "5/8",   y_wn: 3.00, y_so: 1.31}
+      - {nps: "5",       o: 10.00, tf: 0.94, bc: 8.50,  bolts: 8,  bolt: "3/4",   y_wn: 3.50, y_so: 1.44}
+      - {nps: "6",       o: 11.00, tf: 1.00, bc: 9.50,  bolts: 8,  bolt: "3/4",   y_wn: 3.50, y_so: 1.56}
+      - {nps: "8",       o: 13.50, tf: 1.12, bc: 11.75, bolts: 8,  bolt: "3/4",   y_wn: 4.00, y_so: 1.75}
+      - {nps: "10",      o: 16.00, tf: 1.19, bc: 14.25, bolts: 12, bolt: "7/8",   y_wn: 4.00, y_so: 1.94}
+      - {nps: "12",      o: 19.00, tf: 1.25, bc: 17.00, bolts: 12, bolt: "7/8",   y_wn: 4.50, y_so: 2.19}
+      - {nps: "14",      o: 21.00, tf: 1.38, bc: 18.75, bolts: 12, bolt: "1",     y_wn: 5.00, y_so: 3.12}
+      - {nps: "16",      o: 23.50, tf: 1.44, bc: 21.25, bolts: 16, bolt: "1",     y_wn: 5.00, y_so: 3.44}
+      - {nps: "18",      o: 25.00, tf: 1.56, bc: 22.75, bolts: 16, bolt: "1 1/8", y_wn: 5.50, y_so: 3.81}
+      - {nps: "20",      o: 27.50, tf: 1.69, bc: 25.00, bolts: 20, bolt: "1 1/8", y_wn: 5.69, y_so: 4.06}
+      - {nps: "24",      o: 32.00, tf: 1.88, bc: 29.50, bolts: 20, bolt: "1 1/4", y_wn: 6.00, y_so: 4.38}
+
+  "300":
+    rf_height: 0.06
+    rows:
+      - {nps: "1/2",     o: 3.75,  tf: 0.56, bc: 2.62,  bolts: 4,  bolt: "1/2",   y_wn: 2.06, y_so: 0.88}
+      - {nps: "3/4",     o: 4.62,  tf: 0.62, bc: 3.25,  bolts: 4,  bolt: "5/8",   y_wn: 2.25, y_so: 1.00}
+      - {nps: "1",       o: 4.88,  tf: 0.69, bc: 3.50,  bolts: 4,  bolt: "5/8",   y_wn: 2.44, y_so: 1.06}
+      - {nps: "1 1/4",   o: 5.25,  tf: 0.75, bc: 3.88,  bolts: 4,  bolt: "5/8",   y_wn: 2.56, y_so: 1.06}
+      - {nps: "1 1/2",   o: 6.12,  tf: 0.81, bc: 4.50,  bolts: 4,  bolt: "3/4",   y_wn: 2.69, y_so: 1.19}
+      - {nps: "2",       o: 6.50,  tf: 0.88, bc: 5.00,  bolts: 8,  bolt: "5/8",   y_wn: 2.75, y_so: 1.31}
+      - {nps: "2 1/2",   o: 7.50,  tf: 1.00, bc: 5.88,  bolts: 8,  bolt: "3/4",   y_wn: 3.00, y_so: 1.50}
+      - {nps: "3",       o: 8.25,  tf: 1.12, bc: 6.62,  bolts: 8,  bolt: "3/4",   y_wn: 3.12, y_so: 1.69}
+      - {nps: "3 1/2",   o: 9.00,  tf: 1.19, bc: 7.25,  bolts: 8,  bolt: "3/4",   y_wn: 3.19, y_so: 1.75}
+      - {nps: "4",       o: 10.00, tf: 1.25, bc: 7.88,  bolts: 8,  bolt: "3/4",   y_wn: 3.38, y_so: 1.88}
+      - {nps: "5",       o: 11.00, tf: 1.38, bc: 9.25,  bolts: 8,  bolt: "3/4",   y_wn: 3.88, y_so: 2.00}
+      - {nps: "6",       o: 12.50, tf: 1.44, bc: 10.62, bolts: 12, bolt: "3/4",   y_wn: 3.88, y_so: 2.06}
+      - {nps: "8",       o: 15.00, tf: 1.62, bc: 13.00, bolts: 12, bolt: "7/8",   y_wn: 4.38, y_so: 2.44}
+      - {nps: "10",      o: 17.50, tf: 1.88, bc: 15.25, bolts: 16, bolt: "1",     y_wn: 4.62, y_so: 2.62}
+      - {nps: "12",      o: 20.50, tf: 2.00, bc: 17.75, bolts: 16, bolt: "1 1/8", y_wn: 5.12, y_so: 2.88}
+      - {nps: "14",      o: 23.00, tf: 2.12, bc: 20.25, bolts: 20, bolt: "1 1/8", y_wn: 5.62, y_so: 3.00}
+      - {nps: "16",      o: 25.50, tf: 2.25, bc: 22.50, bolts: 20, bolt: "1 1/4", y_wn: 5.75, y_so: 3.25}
+      - {nps: "18",      o: 28.00, tf: 2.38, bc: 24.75, bolts: 24, bolt: "1 1/4", y_wn: 6.25, y_so: 3.50}
+      - {nps: "20",      o: 30.50, tf: 2.50, bc: 27.00, bolts: 24, bolt: "1 1/4", y_wn: 6.38, y_so: 3.75}
+      - {nps: "24",      o: 36.00, tf: 2.75, bc: 32.00, bolts: 24, bolt: "1 1/2", y_wn: 6.62, y_so: 4.19}
+
+  "400":
+    rf_height: 0.25
+    note: >-
+      In NPS 1/2 through NPS 3 1/2 the Class 400 flange is dimensionally
+      identical to the Class 600 flange; ASME B16.5 does not publish a separate
+      Class 400 table for those sizes.
+    rows:
+      - {nps: "1/2",     o: 3.75,  tf: 0.56, bc: 2.62,  bolts: 4,  bolt: "1/2"}
+      - {nps: "3/4",     o: 4.62,  tf: 0.62, bc: 3.25,  bolts: 4,  bolt: "5/8"}
+      - {nps: "1",       o: 4.88,  tf: 0.69, bc: 3.50,  bolts: 4,  bolt: "5/8"}
+      - {nps: "1 1/4",   o: 5.25,  tf: 0.81, bc: 3.88,  bolts: 4,  bolt: "5/8"}
+      - {nps: "1 1/2",   o: 6.12,  tf: 0.88, bc: 4.50,  bolts: 4,  bolt: "3/4"}
+      - {nps: "2",       o: 6.50,  tf: 1.00, bc: 5.00,  bolts: 8,  bolt: "5/8"}
+      - {nps: "2 1/2",   o: 7.50,  tf: 1.12, bc: 5.88,  bolts: 8,  bolt: "3/4"}
+      - {nps: "3",       o: 8.25,  tf: 1.25, bc: 6.62,  bolts: 8,  bolt: "3/4"}
+      - {nps: "3 1/2",   o: 9.00,  tf: 1.38, bc: 7.25,  bolts: 8,  bolt: "7/8"}
+      - {nps: "4",       o: 10.00, tf: 1.38, bc: 7.88,  bolts: 8,  bolt: "7/8"}
+      - {nps: "5",       o: 11.00, tf: 1.50, bc: 9.25,  bolts: 8,  bolt: "7/8"}
+      - {nps: "6",       o: 12.50, tf: 1.62, bc: 10.62, bolts: 12, bolt: "7/8"}
+      - {nps: "8",       o: 15.00, tf: 1.88, bc: 13.00, bolts: 12, bolt: "1"}
+      - {nps: "10",      o: 17.50, tf: 2.12, bc: 15.25, bolts: 16, bolt: "1 1/8"}
+      - {nps: "12",      o: 20.50, tf: 2.25, bc: 17.75, bolts: 16, bolt: "1 1/4"}
+      - {nps: "14",      o: 23.00, tf: 2.38, bc: 20.25, bolts: 20, bolt: "1 1/4"}
+      - {nps: "16",      o: 25.50, tf: 2.50, bc: 22.50, bolts: 20, bolt: "1 3/8"}
+      - {nps: "18",      o: 28.00, tf: 2.62, bc: 24.75, bolts: 24, bolt: "1 3/8"}
+      - {nps: "20",      o: 30.50, tf: 2.75, bc: 27.00, bolts: 24, bolt: "1 1/2"}
+      - {nps: "24",      o: 36.00, tf: 3.00, bc: 32.00, bolts: 24, bolt: "1 3/4"}
+
+  "600":
+    rf_height: 0.25
+    rows:
+      - {nps: "1/2",     o: 3.75,  tf: 0.56, bc: 2.62,  bolts: 4,  bolt: "1/2"}
+      - {nps: "3/4",     o: 4.62,  tf: 0.62, bc: 3.25,  bolts: 4,  bolt: "5/8"}
+      - {nps: "1",       o: 4.88,  tf: 0.69, bc: 3.50,  bolts: 4,  bolt: "5/8"}
+      - {nps: "1 1/4",   o: 5.25,  tf: 0.81, bc: 3.88,  bolts: 4,  bolt: "5/8"}
+      - {nps: "1 1/2",   o: 6.12,  tf: 0.88, bc: 4.50,  bolts: 4,  bolt: "3/4"}
+      - {nps: "2",       o: 6.50,  tf: 1.00, bc: 5.00,  bolts: 8,  bolt: "5/8"}
+      - {nps: "2 1/2",   o: 7.50,  tf: 1.12, bc: 5.88,  bolts: 8,  bolt: "3/4"}
+      - {nps: "3",       o: 8.25,  tf: 1.25, bc: 6.62,  bolts: 8,  bolt: "3/4"}
+      - {nps: "3 1/2",   o: 9.00,  tf: 1.38, bc: 7.25,  bolts: 8,  bolt: "7/8"}
+      - {nps: "4",       o: 10.75, tf: 1.50, bc: 8.50,  bolts: 8,  bolt: "7/8"}
+      - {nps: "5",       o: 13.00, tf: 1.75, bc: 10.50, bolts: 8,  bolt: "1"}
+      - {nps: "6",       o: 14.00, tf: 1.88, bc: 11.50, bolts: 12, bolt: "1"}
+      - {nps: "8",       o: 16.50, tf: 2.19, bc: 13.75, bolts: 12, bolt: "1 1/8"}
+      - {nps: "10",      o: 20.00, tf: 2.50, bc: 17.00, bolts: 16, bolt: "1 1/4"}
+      - {nps: "12",      o: 22.00, tf: 2.62, bc: 19.25, bolts: 20, bolt: "1 1/4"}
+      - {nps: "14",      o: 23.75, tf: 2.75, bc: 20.75, bolts: 20, bolt: "1 3/8"}
+      - {nps: "16",      o: 27.00, tf: 3.00, bc: 23.75, bolts: 20, bolt: "1 1/2"}
+      - {nps: "18",      o: 29.25, tf: 3.25, bc: 25.75, bolts: 20, bolt: "1 5/8"}
+      - {nps: "20",      o: 32.00, tf: 3.50, bc: 28.50, bolts: 24, bolt: "1 5/8"}
+      - {nps: "24",      o: 37.00, tf: 4.00, bc: 33.00, bolts: 24, bolt: "1 7/8"}
+
+  "900":
+    rf_height: 0.25
+    note: >-
+      In NPS 1/2 through NPS 2 1/2 the Class 900 flange is dimensionally
+      identical to the Class 1500 flange.
+    rows:
+      - {nps: "1/2",     o: 4.75,  tf: 0.88, bc: 3.25,  bolts: 4,  bolt: "3/4"}
+      - {nps: "3/4",     o: 5.12,  tf: 1.00, bc: 3.50,  bolts: 4,  bolt: "3/4"}
+      - {nps: "1",       o: 5.88,  tf: 1.12, bc: 4.00,  bolts: 4,  bolt: "7/8"}
+      - {nps: "1 1/4",   o: 6.25,  tf: 1.12, bc: 4.38,  bolts: 4,  bolt: "7/8"}
+      - {nps: "1 1/2",   o: 7.00,  tf: 1.25, bc: 4.88,  bolts: 4,  bolt: "1"}
+      - {nps: "2",       o: 8.50,  tf: 1.50, bc: 6.50,  bolts: 8,  bolt: "7/8"}
+      - {nps: "2 1/2",   o: 9.62,  tf: 1.62, bc: 7.50,  bolts: 8,  bolt: "1"}
+      - {nps: "3",       o: 9.50,  tf: 1.50, bc: 7.50,  bolts: 8,  bolt: "7/8"}
+      - {nps: "4",       o: 11.50, tf: 1.75, bc: 9.25,  bolts: 8,  bolt: "1 1/8"}
+      - {nps: "5",       o: 13.75, tf: 2.00, bc: 11.00, bolts: 8,  bolt: "1 1/4"}
+      - {nps: "6",       o: 15.00, tf: 2.19, bc: 12.50, bolts: 12, bolt: "1 1/8"}
+      - {nps: "8",       o: 18.50, tf: 2.50, bc: 15.50, bolts: 12, bolt: "1 3/8"}
+      - {nps: "10",      o: 21.50, tf: 2.75, bc: 18.50, bolts: 16, bolt: "1 3/8"}
+      - {nps: "12",      o: 24.00, tf: 3.12, bc: 21.00, bolts: 20, bolt: "1 3/8"}
+      - {nps: "14",      o: 25.25, tf: 3.38, bc: 22.00, bolts: 20, bolt: "1 1/2"}
+      - {nps: "16",      o: 27.75, tf: 3.50, bc: 24.25, bolts: 20, bolt: "1 5/8"}
+      - {nps: "18",      o: 31.00, tf: 4.00, bc: 27.00, bolts: 20, bolt: "1 7/8"}
+      - {nps: "20",      o: 33.75, tf: 4.25, bc: 29.50, bolts: 20, bolt: "2"}
+      - {nps: "24",      o: 41.00, tf: 5.50, bc: 35.50, bolts: 20, bolt: "2 1/2"}
+
+  "1500":
+    rf_height: 0.25
+    rows:
+      - {nps: "1/2",     o: 4.75,  tf: 0.88, bc: 3.25,  bolts: 4,  bolt: "3/4"}
+      - {nps: "3/4",     o: 5.12,  tf: 1.00, bc: 3.50,  bolts: 4,  bolt: "3/4"}
+      - {nps: "1",       o: 5.88,  tf: 1.12, bc: 4.00,  bolts: 4,  bolt: "7/8"}
+      - {nps: "1 1/4",   o: 6.25,  tf: 1.12, bc: 4.38,  bolts: 4,  bolt: "7/8"}
+      - {nps: "1 1/2",   o: 7.00,  tf: 1.25, bc: 4.88,  bolts: 4,  bolt: "1"}
+      - {nps: "2",       o: 8.50,  tf: 1.50, bc: 6.50,  bolts: 8,  bolt: "7/8"}
+      - {nps: "2 1/2",   o: 9.62,  tf: 1.62, bc: 7.50,  bolts: 8,  bolt: "1"}
+      - {nps: "3",       o: 10.50, tf: 1.88, bc: 8.00,  bolts: 8,  bolt: "1 1/8"}
+      - {nps: "4",       o: 12.25, tf: 2.12, bc: 9.50,  bolts: 8,  bolt: "1 1/4"}
+      - {nps: "5",       o: 14.75, tf: 2.88, bc: 11.50, bolts: 8,  bolt: "1 1/2"}
+      - {nps: "6",       o: 15.50, tf: 3.25, bc: 12.50, bolts: 12, bolt: "1 3/8"}
+      - {nps: "8",       o: 19.00, tf: 3.62, bc: 15.50, bolts: 12, bolt: "1 5/8"}
+      - {nps: "10",      o: 23.00, tf: 4.25, bc: 19.00, bolts: 12, bolt: "1 7/8"}
+      - {nps: "12",      o: 26.50, tf: 4.88, bc: 22.50, bolts: 16, bolt: "2"}
+      - {nps: "14",      o: 29.50, tf: 5.25, bc: 25.00, bolts: 16, bolt: "2 1/4"}
+      - {nps: "16",      o: 32.50, tf: 5.75, bc: 27.75, bolts: 16, bolt: "2 1/2"}
+      - {nps: "18",      o: 36.00, tf: 6.38, bc: 30.50, bolts: 16, bolt: "2 3/4"}
+      - {nps: "20",      o: 38.75, tf: 7.00, bc: 32.75, bolts: 16, bolt: "3"}
+      - {nps: "24",      o: 46.00, tf: 8.00, bc: 39.00, bolts: 16, bolt: "3 1/2"}
+
+  "2500":
+    rf_height: 0.25
+    note: >-
+      ASME B16.5 publishes Class 2500 flanges in NPS 1/2 through NPS 12 only.
+      Above NPS 12 there is no Class 2500 flange in the standard.
+    rows:
+      - {nps: "1/2",     o: 5.25,  tf: 1.19, bc: 3.50,  bolts: 4,  bolt: "3/4"}
+      - {nps: "3/4",     o: 5.50,  tf: 1.25, bc: 3.75,  bolts: 4,  bolt: "3/4"}
+      - {nps: "1",       o: 6.25,  tf: 1.38, bc: 4.25,  bolts: 4,  bolt: "7/8"}
+      - {nps: "1 1/4",   o: 7.25,  tf: 1.50, bc: 5.12,  bolts: 4,  bolt: "1"}
+      - {nps: "1 1/2",   o: 8.00,  tf: 1.75, bc: 5.75,  bolts: 4,  bolt: "1 1/8"}
+      - {nps: "2",       o: 9.25,  tf: 2.00, bc: 6.75,  bolts: 8,  bolt: "1"}
+      - {nps: "2 1/2",   o: 10.50, tf: 2.25, bc: 7.75,  bolts: 8,  bolt: "1 1/8"}
+      - {nps: "3",       o: 12.00, tf: 2.62, bc: 9.00,  bolts: 8,  bolt: "1 1/4"}
+      - {nps: "4",       o: 14.00, tf: 3.00, bc: 10.75, bolts: 8,  bolt: "1 1/2"}
+      - {nps: "5",       o: 16.50, tf: 3.62, bc: 12.75, bolts: 8,  bolt: "1 3/4"}
+      - {nps: "6",       o: 19.00, tf: 4.25, bc: 14.50, bolts: 8,  bolt: "2"}
+      - {nps: "8",       o: 21.75, tf: 5.00, bc: 17.25, bolts: 12, bolt: "2"}
+      - {nps: "10",      o: 26.50, tf: 6.50, bc: 21.25, bolts: 12, bolt: "2 1/2"}
+      - {nps: "12",      o: 30.00, tf: 7.25, bc: 24.38, bolts: 12, bolt: "2 3/4"}

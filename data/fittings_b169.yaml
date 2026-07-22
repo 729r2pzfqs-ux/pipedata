@@ -1,0 +1,230 @@
+# ASME B16.9 — Factory-Made Wrought Buttwelding Fittings
+#
+# All dimensions in inches, measured from the centre of the fitting to the
+# welding end ("centre-to-end") unless the fitting note says otherwise.
+# B16.9 dimensions are a function of NPS only — they do not change with wall
+# thickness or schedule, so one table covers every schedule in that size.
+
+fittings:
+  - slug: 90-degree-elbow
+    name: "90° Long Radius Elbow"
+    short: "90° LR elbow"
+    dim_label: "Centre-to-end A"
+    formula: "A = 1.5 × NPS"
+    blurb: >-
+      The default elbow in process piping. Its centreline radius is 1.5 times
+      the nominal pipe size, which keeps pressure drop low and leaves room for
+      a weld on both ends.
+    rows:
+      "1/2": 1.50
+      "3/4": 1.12
+      "1": 1.50
+      "1 1/4": 1.88
+      "1 1/2": 2.25
+      "2": 3.00
+      "2 1/2": 3.75
+      "3": 4.50
+      "3 1/2": 5.25
+      "4": 6.00
+      "5": 7.50
+      "6": 9.00
+      "8": 12.00
+      "10": 15.00
+      "12": 18.00
+      "14": 21.00
+      "16": 24.00
+      "18": 27.00
+      "20": 30.00
+      "22": 33.00
+      "24": 36.00
+
+  - slug: 90-degree-elbow-short-radius
+    name: "90° Short Radius Elbow"
+    short: "90° SR elbow"
+    dim_label: "Centre-to-end A"
+    formula: "A = 1.0 × NPS"
+    blurb: >-
+      A tighter 90° turn with a centreline radius equal to the nominal pipe
+      size. Used where space will not allow a long radius elbow; it costs more
+      pressure drop and more erosion at the extrados.
+    rows:
+      "1": 1.00
+      "1 1/4": 1.25
+      "1 1/2": 1.50
+      "2": 2.00
+      "2 1/2": 2.50
+      "3": 3.00
+      "3 1/2": 3.50
+      "4": 4.00
+      "5": 5.00
+      "6": 6.00
+      "8": 8.00
+      "10": 10.00
+      "12": 12.00
+      "14": 14.00
+      "16": 16.00
+      "18": 18.00
+      "20": 20.00
+      "22": 22.00
+      "24": 24.00
+
+  - slug: 45-degree-elbow
+    name: "45° Long Radius Elbow"
+    short: "45° elbow"
+    dim_label: "Centre-to-end B"
+    formula: "B = 1.5 × NPS × tan 22.5°"
+    blurb: >-
+      A half-turn on the same 1.5 NPS centreline radius as the long radius 90°.
+      Two of them make a rolling offset without the pressure drop of a pair of
+      90s.
+    rows:
+      "1/2": 0.62
+      "3/4": 0.44
+      "1": 0.88
+      "1 1/4": 1.00
+      "1 1/2": 1.12
+      "2": 1.38
+      "2 1/2": 1.75
+      "3": 2.00
+      "3 1/2": 2.25
+      "4": 2.50
+      "5": 3.12
+      "6": 3.75
+      "8": 5.00
+      "10": 6.25
+      "12": 7.50
+      "14": 8.75
+      "16": 10.00
+      "18": 11.25
+      "20": 12.50
+      "22": 13.75
+      "24": 15.00
+
+  - slug: straight-tee
+    name: "Straight Tee"
+    short: "equal tee"
+    dim_label: "Centre-to-end C and M"
+    formula: null
+    blurb: >-
+      An equal (straight) tee, where the branch is the same size as the run.
+      The run dimension C and the branch dimension M are equal in a straight
+      tee, so one column covers both.
+    rows:
+      "1/2": 1.00
+      "3/4": 1.12
+      "1": 1.50
+      "1 1/4": 1.88
+      "1 1/2": 2.25
+      "2": 2.50
+      "2 1/2": 3.00
+      "3": 3.38
+      "3 1/2": 3.75
+      "4": 4.12
+      "5": 4.88
+      "6": 5.62
+      "8": 7.00
+      "10": 8.50
+      "12": 10.00
+      "14": 11.00
+      "16": 12.00
+      "18": 13.50
+      "20": 15.00
+      "22": 16.50
+      "24": 17.00
+
+  - slug: concentric-reducer
+    name: "Concentric Reducer"
+    short: "concentric reducer"
+    dim_label: "End-to-end H"
+    formula: null
+    blurb: >-
+      A reducer whose two ends share a common centreline. Used on vertical runs
+      and anywhere the pipe centreline must stay put through the size change.
+      The length H is set by the LARGER of the two ends.
+    rows:
+      "1/2": 1.50
+      "3/4": 1.50
+      "1": 2.00
+      "1 1/4": 2.00
+      "1 1/2": 2.50
+      "2": 3.00
+      "2 1/2": 3.50
+      "3": 3.50
+      "3 1/2": 4.00
+      "4": 4.00
+      "5": 5.00
+      "6": 5.50
+      "8": 6.00
+      "10": 7.00
+      "12": 8.00
+      "14": 13.00
+      "16": 14.00
+      "18": 15.00
+      "20": 20.00
+      "22": 20.00
+      "24": 20.00
+
+  - slug: eccentric-reducer
+    name: "Eccentric Reducer"
+    short: "eccentric reducer"
+    dim_label: "End-to-end H"
+    formula: null
+    blurb: >-
+      Same end-to-end length as the concentric reducer, but the two ends share
+      a common tangent rather than a common centreline. Installed flat-side-up
+      on pump suction to avoid trapping vapour, and flat-side-down on horizontal
+      runs to avoid trapping liquid.
+    rows:
+      "1/2": 1.50
+      "3/4": 1.50
+      "1": 2.00
+      "1 1/4": 2.00
+      "1 1/2": 2.50
+      "2": 3.00
+      "2 1/2": 3.50
+      "3": 3.50
+      "3 1/2": 4.00
+      "4": 4.00
+      "5": 5.00
+      "6": 5.50
+      "8": 6.00
+      "10": 7.00
+      "12": 8.00
+      "14": 13.00
+      "16": 14.00
+      "18": 15.00
+      "20": 20.00
+      "22": 20.00
+      "24": 20.00
+
+  - slug: cap
+    name: "Cap"
+    short: "buttweld cap"
+    dim_label: "Length E"
+    formula: null
+    blurb: >-
+      A domed end closure welded onto the end of a run. E is measured from the
+      welding end to the outside of the crown, so it is the length the cap adds
+      to the pipe.
+    rows:
+      "1/2": 1.00
+      "3/4": 1.00
+      "1": 1.50
+      "1 1/4": 1.50
+      "1 1/2": 1.50
+      "2": 1.50
+      "2 1/2": 1.50
+      "3": 2.00
+      "3 1/2": 2.50
+      "4": 2.50
+      "5": 3.00
+      "6": 3.50
+      "8": 4.00
+      "10": 5.00
+      "12": 6.00
+      "14": 6.50
+      "16": 7.00
+      "18": 8.00
+      "20": 9.00
+      "22": 10.00
+      "24": 10.50

@@ -1,0 +1,81 @@
+# Common ASTM/ASME material specifications for pipe, flanges and fittings.
+# Strengths in ksi (1 ksi = 1000 psi = 6.895 MPa).
+
+categories:
+  - name: "Carbon steel pipe"
+    grades:
+      - {spec: "ASTM A53 Gr B", form: "Pipe", tensile: 60, yield: 35,
+         temp: "-20 to 750 °F", note: "Seamless or ERW. Ordinary utility service — air, water, steam, gas. Not impact-tested."}
+      - {spec: "ASTM A106 Gr A", form: "Pipe", tensile: 48, yield: 30,
+         temp: "-20 to 800 °F", note: "Seamless. Softer than Gr B; used where cold bending is needed."}
+      - {spec: "ASTM A106 Gr B", form: "Pipe", tensile: 60, yield: 35,
+         temp: "-20 to 800 °F", note: "The workhorse seamless carbon steel pipe for high-temperature process service."}
+      - {spec: "ASTM A106 Gr C", form: "Pipe", tensile: 70, yield: 40,
+         temp: "-20 to 800 °F", note: "Higher carbon than Gr B; more strength, harder to weld."}
+      - {spec: "API 5L Gr B", form: "Pipe", tensile: 60, yield: 35,
+         temp: "-20 to 400 °F", note: "Line pipe for oil and gas transmission. Cross-certified with A53 Gr B in many mills."}
+      - {spec: "API 5L X42-X70", form: "Pipe", tensile: "60-82", yield: "42-70",
+         temp: "-20 to 250 °F", note: "High-strength transmission line pipe; the number is the yield in ksi."}
+      - {spec: "ASTM A333 Gr 6", form: "Pipe", tensile: 60, yield: 35,
+         temp: "-50 to 650 °F", note: "Impact-tested carbon steel for low-temperature service. The standard cryo-adjacent carbon pipe."}
+
+  - name: "Alloy steel pipe"
+    grades:
+      - {spec: "ASTM A335 P11", form: "Pipe", tensile: 60, yield: 30,
+         temp: "up to 1100 °F", note: "1¼Cr-½Mo. Steam and hydrocarbon service in the creep range."}
+      - {spec: "ASTM A335 P22", form: "Pipe", tensile: 60, yield: 30,
+         temp: "up to 1100 °F", note: "2¼Cr-1Mo. Refinery heater and high-temperature hydrogen service."}
+      - {spec: "ASTM A335 P5", form: "Pipe", tensile: 60, yield: 30,
+         temp: "up to 1200 °F", note: "5Cr-½Mo. Sulphidation resistance in crude and vacuum units."}
+      - {spec: "ASTM A335 P91", form: "Pipe", tensile: 85, yield: 60,
+         temp: "up to 1200 °F", note: "9Cr-1Mo-V. Modern high-energy steam. Requires strict PWHT control."}
+
+  - name: "Stainless steel pipe"
+    grades:
+      - {spec: "ASTM A312 TP304", form: "Pipe", tensile: 75, yield: 30,
+         temp: "-425 to 1500 °F", note: "General-purpose austenitic stainless. Sensitises if welded and held at 800-1500 °F."}
+      - {spec: "ASTM A312 TP304L", form: "Pipe", tensile: 70, yield: 25,
+         temp: "-425 to 800 °F", note: "Low-carbon 304 for welded assemblies; resists weld decay."}
+      - {spec: "ASTM A312 TP316", form: "Pipe", tensile: 75, yield: 30,
+         temp: "-425 to 1500 °F", note: "Adds 2-3% molybdenum for chloride pitting resistance."}
+      - {spec: "ASTM A312 TP316L", form: "Pipe", tensile: 70, yield: 25,
+         temp: "-425 to 850 °F", note: "Low-carbon 316. The default stainless for welded chemical process piping."}
+      - {spec: "ASTM A790 S31803", form: "Pipe", tensile: 90, yield: 65,
+         temp: "-60 to 600 °F", note: "2205 duplex. Roughly twice the yield of 316L with far better chloride SCC resistance."}
+
+  - name: "Flange forgings"
+    grades:
+      - {spec: "ASTM A105", form: "Flange", tensile: 70, yield: 36,
+         temp: "-20 to 800 °F", note: "The default carbon steel flange forging. B16.5 material Group 1.1."}
+      - {spec: "ASTM A350 LF2", form: "Flange", tensile: 70, yield: 36,
+         temp: "-50 to 650 °F", note: "Impact-tested A105 equivalent for low-temperature service. Group 1.2."}
+      - {spec: "ASTM A182 F304/F316", form: "Flange", tensile: 75, yield: 30,
+         temp: "-425 to 1500 °F", note: "Austenitic stainless flange forgings. B16.5 Group 2.1."}
+      - {spec: "ASTM A182 F304L/F316L", form: "Flange", tensile: 70, yield: 25,
+         temp: "-425 to 850 °F", note: "Low-carbon stainless flange forgings. B16.5 Group 2.2."}
+      - {spec: "ASTM A182 F11/F22/F91", form: "Flange", tensile: "70-85", yield: "40-60",
+         temp: "up to 1200 °F", note: "Chrome-moly flange forgings matched to A335 P11/P22/P91 pipe."}
+
+  - name: "Buttweld fittings"
+    grades:
+      - {spec: "ASTM A234 WPB", form: "Fitting", tensile: 60, yield: 35,
+         temp: "-20 to 800 °F", note: "Carbon steel buttweld fittings matched to A106 Gr B pipe."}
+      - {spec: "ASTM A420 WPL6", form: "Fitting", tensile: 60, yield: 35,
+         temp: "-50 to 650 °F", note: "Impact-tested fittings matched to A333 Gr 6 pipe."}
+      - {spec: "ASTM A403 WP304/WP316", form: "Fitting", tensile: 75, yield: 30,
+         temp: "-425 to 1500 °F", note: "Austenitic stainless buttweld fittings matched to A312 pipe."}
+      - {spec: "ASTM A234 WP11/WP22/WP91", form: "Fitting", tensile: "60-85", yield: "30-60",
+         temp: "up to 1200 °F", note: "Chrome-moly buttweld fittings matched to A335 pipe."}
+
+  - name: "Bolting"
+    grades:
+      - {spec: "ASTM A193 B7", form: "Stud bolt", tensile: 125, yield: 105,
+         temp: "-50 to 1000 °F", note: "The standard flange stud. Paired with A194 2H heavy hex nuts."}
+      - {spec: "ASTM A193 B7M", form: "Stud bolt", tensile: 100, yield: 80,
+         temp: "-50 to 1000 °F", note: "Hardness-controlled B7 for sour service per NACE MR0175."}
+      - {spec: "ASTM A193 B8 Cl 2", form: "Stud bolt", tensile: 125, yield: 100,
+         temp: "-325 to 1000 °F", note: "Strain-hardened 304 stainless studs for corrosive or cryogenic duty."}
+      - {spec: "ASTM A320 L7", form: "Stud bolt", tensile: 125, yield: 105,
+         temp: "-150 to 800 °F", note: "Impact-tested B7 equivalent for low-temperature service."}
+      - {spec: "ASTM A194 Gr 2H", form: "Nut", tensile: null, yield: null,
+         temp: "-50 to 1000 °F", note: "Quenched and tempered heavy hex nut — the standard mate to A193 B7."}
