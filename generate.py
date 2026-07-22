@@ -36,7 +36,7 @@ TODAY = date.today().isoformat()
 # Set to a real "G-..." measurement ID to switch analytics on. Left empty the
 # snippet is omitted entirely rather than shipped dead: a placeholder ID still
 # costs every visitor a googletagmanager request and collects nothing.
-GA_ID = ""
+GA_ID = "G-YQ4MS7NNDS"
 GA_ENABLED = bool(GA_ID) and GA_ID != "G-XXXXXXXXXX"
 
 DESC_MIN = 120
@@ -498,7 +498,8 @@ def pipe_page(s, pipes, sizes_by_slug):
         idd = inside_dia(od, t)
         w = weight_lbft(od, t)
         rows.append([
-            f'<strong>{sched_label(k)}</strong>',
+            f'<a href="/pipes/nps-{s["slug"]}/{sched_slug(k)}/">'
+            f'<strong>{sched_label(k)}</strong></a>',
             dual(t),
             dual(idd),
             dual_w(w),
@@ -565,6 +566,10 @@ def pipe_page(s, pipes, sizes_by_slug):
     sched_links = "".join(
         f'<a class="chip-link" href="/pipes/{sched_slug(k)}/">{sched_label(k)}</a>'
         for k in order)
+    combo_links = "".join(
+        f'<a class="chip-link" href="/pipes/nps-{s["slug"]}/{sched_slug(k)}/">'
+        f'NPS {esc(s["nps"])} {sched_label(k)}</a>'
+        for k in order)
 
     q = [
         (f"What is the outside diameter of NPS {s['nps']} pipe?",
@@ -606,8 +611,15 @@ def pipe_page(s, pipes, sizes_by_slug):
             f'plain-end weight and flow area for each.</p></div>'
             + facts(fact_rows)
             + "".join(body_rows)
+            + f'<h2>This size, schedule by schedule</h2>'
+            f'<p>A page for each combination, with bore, weight, water '
+            f'capacity and the matching flange and fitting data.</p>'
+            f'<div class="chip-links">{combo_links}</div>'
             + f'<h2>This size in a schedule chart</h2>'
             f'<div class="chip-links">{sched_links}</div>'
+            + (f'<p><a class="more" href="/flanges/nps-{s["slug"]}/">'
+               f'NPS {esc(s["nps"])} flange dimensions →</a></p>'
+               if s["nps"] in FLANGE_SIZES else "")
             + faq_html
             + (f'<h2>Adjacent sizes</h2><div class="grid">{"".join(nav)}</div>'
                if nav else "")
@@ -708,6 +720,7 @@ def schedule_page(k, pipes):
             dual(idd),
             dual_w(weight_lbft(s["od"], t)),
             n(gal_per_ft(idd), 3),
+            f'<a href="/pipes/nps-{s["slug"]}/{sched_slug(k)}/">detail →</a>',
         ])
 
     thin = min(sizes, key=lambda s: s["walls"][k])
@@ -772,7 +785,8 @@ def schedule_page(k, pipes):
             f'</p></div>'
             + facts(fact_rows) + UNITS_NOTE
             + table(["Size", "DN", "Outside diameter", "Wall thickness",
-                     "Inside diameter", "Weight, empty", "Water (US gal/ft)"],
+                     "Inside diameter", "Weight, empty", "Water (US gal/ft)",
+                     "This size"],
                     rows,
                     caption=f"ASME B36.10M {label.lower()} dimensions.",
                     note="Weight is plain-end carbon steel, "
@@ -784,6 +798,181 @@ def schedule_page(k, pipes):
     page(f"/pipes/{sched_slug(k)}/", title, desc, body, ld=[crumb_ld, faq_ld])
     index_entry(f"{label} pipe", f"/pipes/{sched_slug(k)}/",
                 f"{len(sizes)} sizes · ASME B36.10")
+
+
+WATER_LB_GAL = 8.3454   # US gallon of fresh water at 60 °F
+SQIN_TO_SQMM = 645.16
+
+
+def combo_page(s, k, pipes, b165, fittings):
+    """One NPS x schedule combination — the "4 inch schedule 40 pipe" page.
+
+    This is the shape most lookups actually take: nobody searches for a
+    schedule in the abstract, they search for a size in a schedule. Everything
+    on the page is derived from the two numbers B36.10M publishes for the
+    combination (OD and wall), so there is nothing to keep in sync by hand.
+    """
+    od, t = s["od"], s["walls"][k]
+    idd = inside_dia(od, t)
+    w = weight_lbft(od, t)
+    gal = gal_per_ft(idd)
+    water = gal * WATER_LB_GAL
+    area = area_sqin(idd)
+    order = [x for x in pipes["schedule_order"] if x in s["walls"]]
+    twins = [x for x in order if x != k and abs(s["walls"][x] - t) < 1e-9]
+    long_ = sched_long(k)
+    url = f"/pipes/nps-{s['slug']}/{sched_slug(k)}/"
+
+    fact_rows = [
+        ("Nominal size", f"NPS {esc(s['nps'])} (DN {s['dn']})"),
+        ("Schedule", esc(long_)),
+        ("Outside diameter", inch_mm(od)),
+        ("Wall thickness", inch_mm(t)),
+        ("Inside diameter", inch_mm(idd)),
+        ("Weight, empty", f"{n(w, 2)} lb/ft ({n(w * LBFT_TO_KGM, 2)} kg/m)"),
+        ("Weight, water filled",
+         f"{n(w + water, 2)} lb/ft ({n((w + water) * LBFT_TO_KGM, 2)} kg/m)"),
+        ("Flow area", f"{n(area, 3)} in² ({n(area * SQIN_TO_SQMM, 0)} mm²)"),
+    ]
+
+    # The alias question ("is STD the same as sch 40 here?") is size-specific
+    # and is the single most common way this combination gets mis-ordered.
+    if twins:
+        eq = (f"<p>In NPS {esc(s['nps'])} this wall thickness is also designated "
+              f"{comma_list([sched_long(x) for x in twins])}. That is the same "
+              f"pipe under another name, not a different product — but the "
+              f"coincidence is specific to this size and does not hold across "
+              f"the range.</p>")
+    else:
+        eq = (f"<p>No other designation in NPS {esc(s['nps'])} shares this wall "
+              f"thickness, so {esc(long_)} is unambiguous in this size.</p>")
+
+    ctx = []
+    for x in order:
+        tx = s["walls"][x]
+        ix = inside_dia(od, tx)
+        here = x == k
+        cell = (f'<strong>{sched_label(x)}</strong>' if here else
+                f'<a href="/pipes/nps-{s["slug"]}/{sched_slug(x)}/">'
+                f'{sched_label(x)}</a>')
+        ctx.append([
+            cell + (' <span class="mm">this page</span>' if here else ""),
+            dual(tx), dual(ix), dual_w(weight_lbft(od, tx)),
+            n(gal_per_ft(ix), 3),
+        ])
+
+    fl_rows = []
+    for c in ("150", "300", "400", "600", "900", "1500", "2500"):
+        blk = b165["classes"].get(c)
+        r = next((x for x in blk["rows"] if x["nps"] == s["nps"]), None) if blk else None
+        if not r:
+            continue
+        fl_rows.append([
+            f'<a href="/flanges/weld-neck/class-{c}/nps-{s["slug"]}/">'
+            f'Class {c}</a>',
+            dual(r["o"], 2), dual(r["tf"], 2), dual(r["bc"], 2),
+            f'{r["bolts"]} × {esc(r["bolt"])} in',
+        ])
+    flange_block = ""
+    if fl_rows:
+        flange_block = (
+            f'<h2>Flanges for NPS {esc(s["nps"])} pipe</h2>'
+            f'<p>Flange dimensions are set by NPS and pressure class, not by '
+            f'schedule, so every flange below fits this pipe. The exception is '
+            f'the weld neck: its bore is machined to the pipe it is welded to, '
+            f'which for {esc(long_)} means {inch_mm(idd)}. Order the flange to '
+            f'the schedule or the bores will not line up at the weld.</p>'
+            + table(["Class", "Flange OD", "Thickness", "Bolt circle", "Bolting"],
+                    fl_rows,
+                    caption=f"ASME B16.5 flange dimensions in NPS "
+                            f"{esc(s['nps'])}, all published classes.")
+            + f'<p><a class="more" href="/flanges/nps-{s["slug"]}/">'
+              f'All NPS {esc(s["nps"])} flange data →</a></p>')
+
+    fit_rows = []
+    for f in fittings:
+        v = f["rows"].get(s["nps"])
+        if v is None:
+            continue
+        fit_rows.append([
+            f'<a href="/fittings/{f["slug"]}/">{esc(f["name"])}</a>',
+            esc(f["dim_label"]), dual(v, 2),
+        ])
+    fit_block = ""
+    if fit_rows:
+        fit_block = (
+            f'<h2>Fittings for NPS {esc(s["nps"])} pipe</h2>'
+            f'<p>ASME B16.9 dimensions come from NPS alone, so these figures '
+            f'hold for {esc(long_)} exactly as they do for every other schedule '
+            f'in the size. Only the wall thickness has to be ordered to match.</p>'
+            + table(["Fitting", "Dimension", "NPS " + esc(s["nps"])], fit_rows,
+                    caption=f"ASME B16.9 buttweld fitting dimensions in NPS "
+                            f"{esc(s['nps'])}."))
+
+    tons = 2000.0 / w
+    q = [
+        (f"What is the inside diameter of NPS {s['nps']} {long_.lower()} pipe?",
+         f"<p>{inch_mm(idd)}. The outside diameter is fixed at {inch_mm(od)} by "
+         f"ASME B36.10M, and the {inch_mm(t)} wall takes {n(2 * t, 3)} in off "
+         f"it — {n(t, 3)} in from each side — leaving that bore.</p>"),
+        (f"How much does NPS {s['nps']} {long_.lower()} pipe weigh?",
+         f"<p>{n(w, 2)} lb/ft ({n(w * LBFT_TO_KGM, 2)} kg/m) empty, as plain-end "
+         f"carbon steel. Full of water it comes to {n(w + water, 2)} lb/ft "
+         f"({n((w + water) * LBFT_TO_KGM, 2)} kg/m), because the bore holds "
+         f"{n(gal, 3)} US gallons per foot. One short ton of this pipe is about "
+         f"{n(tons, 0)} ft.</p>"),
+        (f"Does NPS {s['nps']} {long_.lower()} pipe use special flanges or "
+         f"fittings?",
+         f"<p>No. Flanges and buttweld fittings are dimensioned from NPS, so "
+         f"NPS {esc(s['nps'])} hardware fits this pipe in any schedule. The one "
+         f"thing that does follow the schedule is the bore of a weld neck "
+         f"flange or a fitting end prep, which has to be {inch_mm(idd)} to "
+         f"match.</p>"),
+    ]
+    faq_html, faq_ld = faq(q)
+
+    crumb_html, crumb_ld = crumbs([
+        ("Home", "/"), ("Pipe", "/pipes/"),
+        (f"NPS {s['nps']}", s["url"]), (sched_label(k), None)])
+
+    title = fit_title(f"NPS {s['nps']} {long_} Pipe Dimensions", " | PipeData")
+    desc = fit_desc(
+        f"NPS {s['nps']} {long_.lower()} pipe: {n(od, 3)} in OD, {n(t, 3)} in "
+        f"wall, {n(idd, 3)} in bore, {n(w, 2)} lb/ft. ",
+        ["Flow area, water capacity and every schedule in this size.",
+         "Flow area, water capacity and matching flange data.",
+         "Flow area and water capacity per ASME B36.10.",
+         "Full ASME B36.10 dimensions."])
+
+    body = (crumb_html + '<div class="wrap">'
+            f'<div class="page-head">'
+            f'<h1>NPS {esc(s["nps"])} {esc(long_)} Pipe</h1>'
+            f'<p class="lede">{inch_mm(od)} outside diameter on a '
+            f'{inch_mm(t)} wall, giving a {inch_mm(idd)} bore and '
+            f'{n(w, 2)} lb/ft ({n(w * LBFT_TO_KGM, 2)} kg/m) empty. '
+            f'ASME B36.10M.</p></div>'
+            + facts(fact_rows) + eq
+            + f'<h2>Every schedule in NPS {esc(s["nps"])}</h2>' + UNITS_NOTE
+            + table(["Schedule", "Wall thickness", "Inside diameter",
+                     "Weight, empty", "Water (US gal/ft)"], ctx,
+                    caption=f"ASME B36.10M schedules published in NPS "
+                            f"{esc(s['nps'])}, outside diameter {inch_mm(od)}.",
+                    note="Weight is plain-end carbon steel, "
+                         "w = 10.6802 × t × (OD − t) lb/ft.")
+            + flange_block + fit_block + faq_html
+            + '<h2>Related</h2><div class="chip-links">'
+            f'<a class="chip-link" href="{s["url"]}">All NPS {esc(s["nps"])} '
+            f'schedules</a>'
+            f'<a class="chip-link" href="/pipes/{sched_slug(k)}/">'
+            f'{esc(long_)} in every size</a>'
+            f'<a class="chip-link" href="/reference/pipe-weight-chart/">'
+            f'Weight chart</a>'
+            f'<a class="chip-link" href="/reference/schedule-chart/">'
+            f'Schedule chart</a></div></div>')
+
+    page(url, title, desc, body, ld=[crumb_ld, faq_ld])
+    index_entry(f"NPS {s['nps']} {long_.lower()}", url,
+                f"{n(t, 3)} in wall · {n(idd, 3)} in bore · {n(w, 2)} lb/ft")
 
 
 # --------------------------------------------------------------------------
@@ -801,9 +990,14 @@ def flange_class_page(ft, cls, blk, b165, ftypes):
     if show_hub:
         headers.append("Length thru hub")
 
+    has_detail = ft["slug"] in ("weld-neck", "blind")
     for r in blk["rows"]:
+        size_cell = f'<strong>NPS {esc(r["nps"])}</strong>'
+        if has_detail:
+            size_cell = (f'<a href="/flanges/{ft["slug"]}/class-{cls}/'
+                         f'nps-{nps_slug(r["nps"])}/">{size_cell}</a>')
         cells = [
-            f'<strong>NPS {esc(r["nps"])}</strong>',
+            size_cell,
             dual(r["o"], 2),
             dual(r["tf"], 2),
             dual(r["bc"], 2),
@@ -910,11 +1104,25 @@ def flange_class_page(ft, cls, blk, b165, ftypes):
                     note="Flange thickness excludes the raised face. Bolt "
                          "diameter is nominal; stud bolts are normally ASTM "
                          "A193 B7 with A194 2H nuts.")
-            + blind_note + faq_html
+            + blind_note
+            + (f'<p>Each size above links to its own page, with '
+               + ("the flange bore for every schedule of pipe it can be "
+                  "welded to."
+                  if ft["slug"] == "weld-neck" else
+                  "an approximate weight and the end thrust at the rated "
+                  "pressure.")
+               + "</p>" if has_detail else "")
+            + faq_html
             + f'<h2>Same flange, other classes</h2>'
             f'<div class="chip-links">{other_classes}</div>'
             + f'<h2>Same class, other flange types</h2>'
-            f'<div class="chip-links">{other_types}</div></div>')
+            f'<div class="chip-links">{other_types}</div>'
+            + '<h2>Every class in one size</h2>'
+            '<div class="chip-links">'
+            + "".join(f'<a class="chip-link" href="/flanges/nps-'
+                      f'{nps_slug(r["nps"])}/">NPS {esc(r["nps"])}</a>'
+                      for r in blk["rows"])
+            + "</div></div>")
 
     url = f"/flanges/{ft['slug']}/class-{cls}/"
     page(url, title, desc, body, ld=[crumb_ld, faq_ld])
@@ -1002,6 +1210,330 @@ def flange_type_page(ft, b165, ftypes):
     index_entry(ft["name"], url, f"ASME B16.5 · {ft['abbrev']}")
 
 
+CLASS_ORDER = ["150", "300", "400", "600", "900", "1500", "2500"]
+STEEL_LB_IN3 = 0.2836   # carbon steel density, for the blind-flange estimate
+
+
+def class_rating(cls):
+    """Class rating at 100 °F for A105 carbon steel (material group 1.1)."""
+    for g in PT_GROUPS:
+        if g["slug"] == "1-1" and cls in g["ratings"]:
+            return g["ratings"][cls][0]
+    return None
+
+
+def rows_for_nps(b165, nps):
+    """[(class, row, block)] for every B16.5 class that publishes this size."""
+    out = []
+    for c in CLASS_ORDER:
+        blk = b165["classes"].get(c)
+        if not blk:
+            continue
+        r = next((x for x in blk["rows"] if x["nps"] == nps), None)
+        if r:
+            out.append((c, r, blk))
+    return out
+
+
+def flange_nps_page(nps, b165, ftypes, sizes_by_nps):
+    """Every B16.5 class for one pipe size, on one page."""
+    slug = nps_slug(nps)
+    rf = b165["raised_face"]
+    found = rows_for_nps(b165, nps)
+    c150 = found[0][1]
+
+    rows = []
+    for c, r, blk in found:
+        rating = class_rating(c)
+        rows.append([
+            f'<a href="/flanges/weld-neck/class-{c}/nps-{slug}/">'
+            f'<strong>Class {c}</strong></a>',
+            dual(r["o"], 2), dual(r["tf"], 2), dual(r["bc"], 2),
+            f'{r["bolts"]} × {esc(r["bolt"])} in',
+            dual(rf[nps], 2) if nps in rf else '<span class="na">—</span>',
+            f"{rating} psig" if rating else '<span class="na">—</span>',
+        ])
+
+    hub_rows = []
+    for c, r, blk in found:
+        if not (r.get("y_wn") or r.get("y_so")):
+            continue
+        hub_rows.append([
+            f"<strong>Class {c}</strong>",
+            dual(r["y_wn"], 2) if r.get("y_wn") else '<span class="na">—</span>',
+            dual(r["y_so"], 2) if r.get("y_so") else '<span class="na">—</span>',
+            inch_mm(blk["rf_height"], 2),
+        ])
+    hub_block = ""
+    if hub_rows:
+        hub_block = (
+            "<h2>Length through hub</h2>"
+            "<p>How far the flange stands off the joint, which is what a spool "
+            "drawing needs. B16.5 carries hub length for Classes 150 and 300 "
+            "only; above that the hub follows the bore and varies with the "
+            "schedule the flange is ordered to.</p>"
+            + table(["Class", "Weld neck", "Slip-on / threaded",
+                     "Raised face height"], hub_rows,
+                    caption=f"ASME B16.5 length-through-hub, NPS {esc(nps)}."))
+
+    pipe = sizes_by_nps.get(nps)
+    pipe_block = ""
+    if pipe:
+        std = pipe["walls"]["STD"]
+        pipe_block = (
+            f'<h2>The pipe these flanges bolt to</h2>'
+            f'<p>NPS {esc(nps)} pipe is {inch_mm(pipe["od"])} outside diameter '
+            f'in every schedule, which is why one flange OD serves the whole '
+            f'range. Standard weight is a {inch_mm(std)} wall, giving a '
+            f'{inch_mm(inside_dia(pipe["od"], std))} bore — the figure a weld '
+            f'neck flange in this size is normally bored to.</p>'
+            f'<p><a class="more" href="{pipe["url"]}">NPS {esc(nps)} pipe '
+            f'dimensions in every schedule →</a></p>')
+
+    type_chips = "".join(
+        f'<a class="chip-link" href="/flanges/{t["slug"]}/">{esc(t["name"])}</a>'
+        for t in ftypes)
+
+    biggest = found[-1]
+    q = [
+        (f"What is the bolt circle of an NPS {nps} flange?",
+         "<p>" + "; ".join(f"Class {c} is {n(r['bc'], 2)} in with {r['bolts']} × "
+                           f"{esc(r['bolt'])} in bolts" for c, r, _ in found[:4])
+         + f". The bolt circle grows with the class, which is why an NPS "
+           f"{esc(nps)} flange of one class will not bolt to another.</p>"),
+        (f"Do all six flange types share these NPS {nps} dimensions?",
+         "<p>Yes. Flange outside diameter, thickness, bolt circle, bolt count "
+         "and bolt size are set by NPS and class alone — a weld neck, slip-on, "
+         "threaded, lap joint, socket weld and blind of the same size and class "
+         "are dimensionally interchangeable at the bolted joint. What differs "
+         "is how each attaches to the pipe.</p>"),
+        (f"How much bigger is a Class {biggest[0]} flange than a Class 150 in "
+         f"NPS {nps}?",
+         f"<p>{n(biggest[1]['o'], 2)} in outside diameter against "
+         f"{n(c150['o'], 2)} in, and {n(biggest[1]['tf'], 2)} in thick against "
+         f"{n(c150['tf'], 2)} in — {n(biggest[1]['tf'] / c150['tf'], 1)}× the "
+         f"metal in the flange ring, plus heavier bolting on a wider bolt "
+         f"circle.</p>"),
+    ]
+    faq_html, faq_ld = faq(q)
+    crumb_html, crumb_ld = crumbs([("Home", "/"), ("Flanges", "/flanges/"),
+                                   (f"NPS {nps}", None)])
+
+    title = fit_title(f"NPS {nps} Flange Dimensions — ASME B16.5", " | PipeData")
+    desc = fit_desc(
+        f"NPS {nps} flange dimensions for all {len(found)} ASME B16.5 pressure "
+        f"classes. Class 150: {n(c150['o'], 2)} in OD, {n(c150['tf'], 2)} in "
+        f"thick, {c150['bolts']} × {c150['bolt']} in bolts. ",
+        ["Bolt circle, raised face and hub data.",
+         "Bolt circle and raised face OD.",
+         "With bolt circle data."])
+
+    body = (crumb_html + '<div class="wrap">'
+            f'<div class="page-head"><h1>NPS {esc(nps)} Flange Dimensions</h1>'
+            f'<p class="lede">Outside diameter, thickness, bolt circle and '
+            f'bolting for every ASME B16.5 pressure class published in NPS '
+            f'{esc(nps)} — Class {found[0][0]} through Class {found[-1][0]}.'
+            f'</p></div>'
+            + facts([("Standard", "ASME B16.5"),
+                     ("Nominal size", f"NPS {esc(nps)}"),
+                     ("Classes published", str(len(found))),
+                     ("Class 150 flange OD", inch_mm(c150["o"], 2)),
+                     ("Class 150 bolting",
+                      f"{c150['bolts']} × {esc(c150['bolt'])} in")])
+            + UNITS_NOTE
+            + table(["Class", "Flange OD", "Thickness", "Bolt circle",
+                     "Bolting", "Raised face OD", "Rating @ 100 °F"], rows,
+                    caption=f"ASME B16.5 flange dimensions in NPS {esc(nps)}, "
+                            f"all published pressure classes.",
+                    note="Ratings are for A105 carbon steel at 100 °F and fall "
+                         "with temperature. Thickness excludes the raised face.")
+            + hub_block + pipe_block
+            + '<h2>Flange types in this size</h2>'
+            f'<div class="chip-links">{type_chips}</div>'
+            + faq_html + "</div>")
+
+    url = f"/flanges/nps-{slug}/"
+    page(url, title, desc, body, ld=[crumb_ld, faq_ld])
+    index_entry(f"NPS {nps} flanges", url,
+                f"ASME B16.5 · {len(found)} classes · Class 150 OD "
+                f"{n(c150['o'], 2)} in")
+
+
+def flange_detail_page(ft, cls, r, blk, b165, sizes_by_nps, ftypes):
+    """One flange type x class x size. Only for types where the size-level
+    detail is genuinely different: weld neck (bore follows the schedule) and
+    blind (no bore, so weight and end thrust are the questions asked)."""
+    nps = r["nps"]
+    slug = nps_slug(nps)
+    rf = b165["raised_face"].get(nps)
+    rating = class_rating(cls)
+    short_t = ft["short"].title()
+
+    spacing = math.pi * r["bc"] / r["bolts"]
+    bolt_dia = nps_value(r["bolt"])
+
+    dim_rows = [
+        ["Flange outside diameter", dual(r["o"], 2)],
+        ["Flange thickness (min)", dual(r["tf"], 2)],
+        ["Bolt circle diameter", dual(r["bc"], 2)],
+        ["Number of bolts", str(r["bolts"])],
+        ["Bolt diameter (nominal)", esc(r["bolt"]) + " in"],
+        ["Bolt hole diameter", dual(bolt_dia + 0.125, 3)],
+        ["Bolt hole spacing on the circle", dual(spacing, 2)],
+        ["Raised face outside diameter",
+         dual(rf, 2) if rf else '<span class="na">—</span>'],
+        ["Raised face height", dual(blk["rf_height"], 2)],
+    ]
+    if r.get("y_wn") and ft["slug"] == "weld-neck":
+        dim_rows.append(["Length through hub", dual(r["y_wn"], 2)])
+
+    # ---- the type-specific block, which is why these pages exist ----
+    extra = ""
+    pipe = sizes_by_nps.get(nps)
+    if ft["slug"] == "weld-neck" and pipe:
+        order = [x for x in SCHEDULE_ORDER if x in pipe["walls"]]
+        bore_rows = []
+        for x in order:
+            tx = pipe["walls"][x]
+            bore_rows.append([
+                f'<a href="/pipes/nps-{slug}/{sched_slug(x)}/">'
+                f'<strong>{sched_label(x)}</strong></a>',
+                dual(tx), dual(inside_dia(pipe["od"], tx)),
+                dual_w(weight_lbft(pipe["od"], tx)),
+            ])
+        extra = (
+            "<h2>Bore: order the flange to the schedule</h2>"
+            f"<p>A weld neck flange is bored to match the pipe it is butt-welded "
+            f"to, so NPS {esc(nps)} Class {cls} is not one part number but "
+            f"{len(order)} — one for each schedule B36.10M publishes in this "
+            f"size. Everything in the table above is common to all of them; the "
+            f"bore below is not. Specifying &ldquo;NPS {esc(nps)} Class {cls} "
+            f"weld neck&rdquo; without the schedule is an incomplete "
+            f"requisition.</p>"
+            + table(["Schedule", "Pipe wall", "Flange bore = pipe ID",
+                     "Pipe weight"], bore_rows,
+                    caption=f"Weld neck flange bore by schedule, NPS "
+                            f"{esc(nps)}, from the matching ASME B36.10M pipe.",
+                    note="A bore mismatch at a butt weld leaves a step in the "
+                         "flow path and a stress raiser at the root — the "
+                         "defect the weld neck exists to avoid.")
+        )
+    elif ft["slug"] == "blind":
+        vol = math.pi / 4 * r["o"] ** 2 * r["tf"]
+        wt = vol * STEEL_LB_IN3
+        thrust = None
+        if rating and rf:
+            thrust = rating * math.pi / 4 * rf ** 2
+        rows2 = [["Approximate weight",
+                  f"{n(wt, 1)} lb ({n(wt * 0.453592, 1)} kg)"]]
+        if thrust:
+            rows2.append(["End thrust at rated pressure",
+                          f"{n(thrust, 0)} lbf ({n(thrust * 0.004448, 1)} kN)"])
+            rows2.append(["Load per bolt",
+                          f"{n(thrust / r['bolts'], 0)} lbf"])
+        extra = (
+            "<h2>Weight and end load</h2>"
+            f"<p>A blind flange has no bore, so its outside diameter and "
+            f"thickness are the whole of its dimensional definition — and its "
+            f"weight and the load it carries are the two things people actually "
+            f"need. Both are calculated here from the B16.5 figures above.</p>"
+            + table(["Quantity", "NPS " + esc(nps) + " Class " + cls], rows2,
+                    caption=f"Derived figures for the NPS {esc(nps)} Class "
+                            f"{cls} blind flange.",
+                    note="Weight is a solid-disc estimate from the outside "
+                         "diameter and the minimum thickness at "
+                         "0.2836 lb/in³, and ignores the raised face, so it "
+                         "runs slightly light against a real forging. End "
+                         "thrust is the rated pressure acting on the raised "
+                         "face area; it is not a bolt-load calculation, which "
+                         "must also cover gasket seating.")
+        )
+
+    other_classes = "".join(
+        f'<a class="chip-link" href="/flanges/{ft["slug"]}/class-{c}/nps-{slug}/">'
+        f'Class {c}</a>'
+        for c, _, _ in rows_for_nps(b165, nps) if c != cls)
+    sibling = "blind" if ft["slug"] == "weld-neck" else "weld-neck"
+    sibling_name = next(t["name"] for t in ftypes if t["slug"] == sibling)
+
+    q = [
+        (f"What are the bolt holes on an NPS {nps} Class {cls} flange?",
+         f"<p>{r['bolts']} holes of {n(bolt_dia + 0.125, 3)} in diameter on a "
+         f"{n(r['bc'], 2)} in bolt circle, taking {esc(r['bolt'])} in bolts. "
+         f"B16.5 holes are 1/8 in larger than the nominal bolt. They straddle "
+         f"the vertical and horizontal centrelines rather than sitting on them, "
+         f"so hole spacing round the circle is {n(spacing, 2)} in.</p>"),
+        (f"What pressure is an NPS {nps} Class {cls} flange good for?",
+         (f"<p>{psi_bar(rating)} at 100 °F in A105 carbon steel, falling as "
+          f"metal temperature rises. Class {cls} is a designation, not a "
+          f"pressure — see the <a href='/reference/"
+          f"pressure-temperature-ratings/'>P-T tables</a> for your material and "
+          f"temperature.</p>") if rating else
+         "<p>Class is a designation, not a pressure. See the P-T rating tables "
+         "for the allowable pressure at your material and temperature.</p>"),
+        (f"Is a Class {cls} {ft['short']} flange interchangeable with another "
+         f"type?",
+         f"<p>At the bolted joint, yes: every B16.5 type in NPS {esc(nps)} "
+         f"Class {cls} shares the {n(r['o'], 2)} in outside diameter, "
+         f"{n(r['bc'], 2)} in bolt circle and {r['bolts']} × "
+         f"{esc(r['bolt'])} in bolting, so any two will mate. What is not "
+         f"interchangeable is how they join the pipe, and therefore what "
+         f"service they suit.</p>"),
+    ]
+    faq_html, faq_ld = faq(q)
+
+    crumb_html, crumb_ld = crumbs([
+        ("Home", "/"), ("Flanges", "/flanges/"),
+        (ft["name"], f"/flanges/{ft['slug']}/"),
+        (f"Class {cls}", f"/flanges/{ft['slug']}/class-{cls}/"),
+        (f"NPS {nps}", None)])
+
+    title = fit_title(f"NPS {nps} Class {cls} {short_t} Flange Dimensions",
+                      " | PipeData")
+    tail = ("Bore by schedule, bolting and gasket data."
+            if ft["slug"] == "weld-neck" else
+            "Approximate weight, end thrust and bolting.")
+    desc = fit_desc(
+        f"NPS {nps} Class {cls} {ft['short']} flange: {n(r['o'], 2)} in OD, "
+        f"{n(r['tf'], 2)} in thick, {n(r['bc'], 2)} in bolt circle, "
+        f"{r['bolts']} × {r['bolt']} in bolts. ",
+        [tail, "Bolting and gasket dimensions.", "Full ASME B16.5 data."])
+
+    body = (crumb_html + '<div class="wrap">'
+            f'<div class="page-head">'
+            f'<h1>NPS {esc(nps)} Class {cls} {esc(ft["name"])}</h1>'
+            f'<p class="lede">ASME B16.5 dimensions for one size and class: '
+            f'{inch_mm(r["o"], 2)} outside diameter, {inch_mm(r["tf"], 2)} '
+            f'thick, on a {inch_mm(r["bc"], 2)} bolt circle with {r["bolts"]} × '
+            f'{esc(r["bolt"])} in bolts.</p></div>'
+            + UNITS_NOTE
+            + table(["Dimension", f"NPS {esc(nps)} Class {cls}"], dim_rows,
+                    caption=f"ASME B16.5 dimensions, NPS {esc(nps)} Class "
+                            f"{cls} {ft['short']} flange.",
+                    note="Thickness excludes the raised face. Bolt hole "
+                         "diameter and spacing are derived from the B16.5 bolt "
+                         "size and bolt circle.")
+            + extra + faq_html
+            + f'<h2>Same size, other classes</h2>'
+            f'<div class="chip-links">{other_classes}</div>'
+            + '<h2>Related</h2><div class="chip-links">'
+            f'<a class="chip-link" href="/flanges/nps-{slug}/">All NPS '
+            f'{esc(nps)} flanges</a>'
+            f'<a class="chip-link" href="/flanges/{ft["slug"]}/class-{cls}/">'
+            f'Class {cls} {esc(ft["short"])} in every size</a>'
+            f'<a class="chip-link" href="/flanges/{sibling}/class-{cls}/'
+            f'nps-{slug}/">{esc(sibling_name)}</a>'
+            + (f'<a class="chip-link" href="/pipes/nps-{slug}/">NPS {esc(nps)} '
+               f'pipe</a>' if pipe else "")
+            + '<a class="chip-link" href="/reference/flange-bolt-chart/">'
+            'Bolt chart</a></div></div>')
+
+    url = f"/flanges/{ft['slug']}/class-{cls}/nps-{slug}/"
+    page(url, title, desc, body, ld=[crumb_ld, faq_ld])
+    index_entry(f"NPS {nps} Class {cls} {ft['short']}", url,
+                f"OD {n(r['o'], 2)} in · {r['bolts']} × {esc(r['bolt'])} in bolts")
+
+
 def flanges_index(ftypes, b165):
     cards = "".join(
         f'<a class="card" href="/flanges/{t["slug"]}/">'
@@ -1022,6 +1554,14 @@ def flanges_index(ftypes, b165):
             f'<strong>Class {c}</strong>', dual(r["o"], 2), dual(r["tf"], 2),
             dual(r["bc"], 2), f'{r["bolts"]} × {esc(r["bolt"])} in',
             f'{rating} psig'])
+
+    all_sizes = sorted({r["nps"] for blk in b165["classes"].values()
+                        for r in blk["rows"]}, key=nps_value)
+    size_cards = "".join(
+        f'<a class="card" href="/flanges/nps-{nps_slug(x)}/">'
+        f'<span class="card-title">NPS {esc(x)}</span>'
+        f'<span class="card-meta">{len(rows_for_nps(b165, x))} classes</span>'
+        f'</a>' for x in all_sizes)
 
     q = [
         ("What does the class number on a flange mean?",
@@ -1058,6 +1598,11 @@ def flanges_index(ftypes, b165):
                      "Bolting", "Rating @ 100 °F"], comp_rows,
                     caption="NPS 6 flange dimensions by pressure class, "
                             "ASME B16.5.")
+            + '<h2>Browse by size</h2>'
+            '<p>Every pressure class published in one nominal size, on one '
+            'page — the quickest route if you already know the size and need '
+            'to compare classes.</p>'
+            f'<div class="grid tight">{size_cards}</div>'
             + '<h2>Larger than NPS 24</h2>'
             '<p>Flanges from NPS 26 to NPS 60 fall under ASME B16.47, in two '
             'series that will not bolt to each other. '
@@ -1364,6 +1909,8 @@ def fitting_page(f, fittings, pipes):
             'be dimensioned before the schedule is fixed. The wall thickness '
             'still has to be ordered to match the pipe, or the weld prep will '
             'not line up.</p></div>'
+            + (f'<div class="callout"><p><strong>Not tabulated here.</strong> '
+               f'{esc(f["extra"])}</p></div>' if f.get("extra") else "")
             + faq_html
             + f'<h2>Other buttweld fittings</h2>'
             f'<div class="chip-links">{others}</div></div>')
@@ -1526,7 +2073,8 @@ def ref_nps_dn(pipes):
         "Every nominal pipe size from NPS 1/8 to NPS 36 with its metric DN "
         "designator and its true outside diameter — because neither designator "
         "is a measurement of anything.",
-        body, faq_pairs=q, card_meta="30 sizes · NPS 1/8 to NPS 36")
+        body, faq_pairs=q,
+        card_meta=f"{len(pipes['sizes'])} sizes · NPS 1/8 to NPS 36")
 
 
 def ref_schedule_chart(pipes):
@@ -2301,6 +2849,167 @@ def ref_face_types():
         body, faq_pairs=q, card_meta="RF · FF · RTJ · T&G · M&F")
 
 
+A13_SCHEME = [
+    ("Flammable and oxidizing fluids", "#000000", "#FFD100", "Black", "Yellow"),
+    ("Combustible fluids", "#FFFFFF", "#6B4226", "White", "Brown"),
+    ("Toxic and corrosive fluids", "#000000", "#F07300", "Black", "Orange"),
+    ("Fire-quenching fluids", "#FFFFFF", "#C8102E", "White", "Red"),
+    ("Water — potable, cooling, boiler feed and other", "#FFFFFF", "#00843D",
+     "White", "Green"),
+    ("Compressed air", "#FFFFFF", "#0057B8", "White", "Blue"),
+]
+
+A13_USER = [
+    ("User defined", "#FFFFFF", "#5B2D8E", "White", "Purple"),
+    ("User defined", "#FFFFFF", "#000000", "White", "Black"),
+    ("User defined", "#000000", "#FFFFFF", "Black", "White"),
+    ("User defined", "#000000", "#9AA0A6", "Black", "Gray"),
+]
+
+# ASME A13.1 Table 1. Stated by the standard against the outside diameter of
+# the pipe *or its covering*; applied here by NPS, which is how it is used in
+# the field. A lagged line moves up a band — see the note on the page.
+A13_SIZES = [
+    (0.75, 1.25, 8, 0.5),
+    (1.5, 2.0, 8, 0.75),
+    (2.5, 6.0, 12, 1.25),
+    (8.0, 10.0, 24, 2.5),
+    (10.0, None, 32, 3.5),
+]
+
+
+def a13_band(nps):
+    v = nps_value(nps)
+    for lo, hi, length, letter in A13_SIZES:
+        if hi is None:
+            if v > lo:
+                return length, letter
+        elif lo <= v <= hi:
+            return length, letter
+    # Below NPS 3/4 the standard gives no field size; A13.1 directs the user to
+    # a permanently attached tag instead of a wrapped marker.
+    return None, None
+
+
+def ref_color_coding(pipes):
+    def swatch(fg, bg, fg_name, bg_name):
+        return (f'<span style="display:inline-block;padding:.25em .7em;'
+                f'border-radius:3px;border:1px solid rgba(0,0,0,.25);'
+                f'background:{bg};color:{fg};font-weight:600;font-size:.9em">'
+                f'{esc(bg_name)}</span> <span class="mm">{esc(fg_name)} legend'
+                f'</span>')
+
+    scheme_rows = [[esc(what), swatch(fg, bg, fgn, bgn), esc(fgn), esc(bgn)]
+                   for what, fg, bg, fgn, bgn in A13_SCHEME]
+    user_rows = [[esc(what), swatch(fg, bg, fgn, bgn), esc(fgn), esc(bgn)]
+                 for what, fg, bg, fgn, bgn in A13_USER]
+
+    band_rows = []
+    for lo, hi, length, letter in A13_SIZES:
+        rng = (f"Over {n(lo, 0)} in" if hi is None else
+               f"{n(lo, 2).rstrip('0').rstrip('.')} – "
+               f"{n(hi, 2).rstrip('0').rstrip('.')} in")
+        band_rows.append([rng, f"{length} in", f"{n(letter, 2)} in"])
+
+    size_rows = []
+    for s in pipes["sizes"]:
+        length, letter = a13_band(s["nps"])
+        size_rows.append([
+            f'<a href="{s["url"]}"><strong>NPS {esc(s["nps"])}</strong></a>',
+            dual(s["od"], 3),
+            f"{length} in" if length else '<span class="na">tag instead</span>',
+            f"{n(letter, 2)} in" if letter else '<span class="na">—</span>',
+        ])
+
+    q = [
+        ("What do the ASME A13.1 pipe colours mean?",
+         "<p>Six colour combinations are fixed by hazard, not by contents. "
+         "Yellow with black lettering is flammable or oxidizing; brown with "
+         "white is combustible; orange with black is toxic or corrosive; red "
+         "with white is fire-quenching; green with white is water; blue with "
+         "white is compressed air. Four further combinations — purple, black, "
+         "white and gray fields — are left for the user to define.</p>"),
+        ("Is the colour enough on its own?",
+         "<p>No. A13.1 requires the legend — the name of the contents in "
+         "words — plus an arrow showing flow direction. The colour field is "
+         "there to make the hazard class readable from a distance; the words "
+         "are what identify the line. A pipe marked only by colour does not "
+         "comply.</p>"),
+        ("How often do markers have to be repeated?",
+         "<p>A13.1 asks for markers wherever the line is read: at valves and "
+         "flanges, at changes of direction, on both sides of a wall, floor or "
+         "ceiling penetration, at entry and exit points, and at intervals on "
+         "long straight runs — commonly taken as every 25 to 50 ft. Place them "
+         "so a marker is visible from the normal approach to the pipe.</p>"),
+        ("Does A13.1 apply outside the United States?",
+         "<p>No. A13.1 is a US voluntary standard, adopted by reference in many "
+         "specifications and by OSHA in practice rather than by rule. The UK "
+         "and much of Europe use BS 1710 and its EN companions, which have a "
+         "different and incompatible colour scheme — green for water there too, "
+         "but the rest does not map across. Marine and shipbuilding practice "
+         "differs again.</p>"),
+    ]
+
+    body = (
+        "<h2>The six fixed colour combinations</h2>"
+        "<p>ASME A13.1 classifies by <em>hazard</em>, not by fluid. What "
+        "determines the colour is what the contents would do if they escaped, "
+        "which is why steam, hot oil and natural gas do not each get a colour "
+        "of their own.</p>"
+        + table(["Contents", "Marker", "Legend colour", "Field colour"],
+                scheme_rows,
+                caption="ASME A13.1 pipe marker colour scheme.",
+                note="Colours shown are indicative on screen only. Specify "
+                     "marker stock against the standard, not against this "
+                     "page.")
+        + "<h2>The four user-defined combinations</h2>"
+        "<p>These carry no assigned meaning. If a site uses them it must "
+        "document what they mean and post the key where the pipes are — an "
+        "undocumented purple line tells a stranger nothing.</p>"
+        + table(["Contents", "Marker", "Legend colour", "Field colour"],
+                user_rows, caption="ASME A13.1 user-defined combinations.")
+        + "<h2>Marker size</h2>"
+        "<p>The size of the colour field and the letter height both follow the "
+        "pipe diameter, so a marker legible on a 2 in line is not compliant on "
+        "a 12 in header.</p>"
+        + table(["Pipe outside diameter", "Length of colour field",
+                 "Letter height"], band_rows,
+                caption="ASME A13.1 Table 1 — marker and legend size.",
+                note="The standard states these against the outside diameter "
+                     "of the pipe <em>or its covering</em>. An insulated line "
+                     "is sized on the lagging, not the pipe, so it often moves "
+                     "up a band.")
+        + "<h2>Marker size by pipe size</h2>"
+        "<p>The same table applied to every ASME B36.10M size, with the "
+        "outside diameter alongside so an insulated line can be checked "
+        "against the band above.</p>"
+        + UNITS_NOTE
+        + table(["Size", "Outside diameter", "Colour field length",
+                 "Letter height"], size_rows,
+                caption="ASME A13.1 marker size for each B36.10M pipe size, "
+                        "bare pipe.",
+                note="Below NPS 3/4 A13.1 gives no field size: the standard "
+                     "calls for a permanently attached tag rather than a "
+                     "wrapped marker.")
+        + '<div class="callout"><p><strong>Colour is not the '
+        "identification.</strong> Every A13.1 marker needs the legend in words "
+        "and an arrow for flow direction. Colour classifies the hazard; the "
+        "words identify the line. Bidirectional lines get arrows both ways."
+        "</p></div>"
+    )
+
+    ref("pipe-color-coding",
+        "Pipe Color Coding Chart — ASME A13.1 | PipeData",
+        "ASME A13.1 pipe marker colours: black on yellow for flammable, black "
+        "on orange for toxic, white on green for water. Marker and letter size "
+        "for every pipe size.",
+        "Pipe Color Coding — ASME A13.1",
+        "The six fixed colour combinations, the four user-defined ones, and "
+        "the legend and letter size required at every pipe diameter.",
+        body, faq_pairs=q,
+        card_meta="ASME A13.1 · 10 colour combinations")
+
+
 def reference_index():
     cards = "".join(
         f'<a class="card" href="{url}"><span class="card-title">{esc(name)}</span>'
@@ -2758,12 +3467,20 @@ def audit_titles():
 # --------------------------------------------------------------------------
 
 PT_GROUPS = []
+SCHEDULE_ORDER = []
+# NPS labels B16.5 publishes a flange in, so pages for sizes outside that set
+# (NPS 4 1/2, 7, 9, 11, and everything above 24) do not link to a flange page
+# that was never generated.
+FLANGE_SIZES = set()
 
 
 def main():
-    global PT_GROUPS
+    global PT_GROUPS, SCHEDULE_ORDER, FLANGE_SIZES
     pipes, b165, ftypes, b1647, fittings, pt, mats, ss, errors = load()
     PT_GROUPS = pt["groups"]
+    SCHEDULE_ORDER = pipes["schedule_order"]
+    FLANGE_SIZES = {r["nps"] for blk in b165["classes"].values()
+                    for r in blk["rows"]}
     ss_cmp = s_schedule_comparison(ss, pipes)
 
     if errors:
@@ -2777,10 +3494,14 @@ def main():
     os.makedirs(OUT)
 
     sizes_by_slug = {s["slug"]: s for s in pipes["sizes"]}
+    sizes_by_nps = {s["nps"]: s for s in pipes["sizes"]}
 
     # ---- pipe ----
     for s in pipes["sizes"]:
         pipe_page(s, pipes, sizes_by_slug)
+        for k in pipes["schedule_order"]:
+            if k in s["walls"]:
+                combo_page(s, k, pipes, b165, fittings)
     for k in pipes["schedule_order"]:
         schedule_page(k, pipes)
     for sch in ss["schedules"]:
@@ -2788,10 +3509,26 @@ def main():
     pipes_index(pipes)
 
     # ---- flanges ----
+    # Size-level detail pages are emitted for weld neck and blind only. Those
+    # are the two types where the size adds something the class table does not
+    # already say: the weld neck bore follows the schedule, and a blind's
+    # weight and end load follow its diameter. The other four types would be
+    # the same seven numbers under a different heading.
+    detail_types = [t for t in ftypes if t["slug"] in ("weld-neck", "blind")]
     for ft in ftypes:
         for cls in ft["classes"]:
-            flange_class_page(ft, cls, b165["classes"][cls], b165, ftypes)
+            blk = b165["classes"][cls]
+            flange_class_page(ft, cls, blk, b165, ftypes)
+            if ft in detail_types:
+                for r in blk["rows"]:
+                    flange_detail_page(ft, cls, r, blk, b165, sizes_by_nps,
+                                       ftypes)
         flange_type_page(ft, b165, ftypes)
+    flange_nps_list = sorted(
+        {r["nps"] for blk in b165["classes"].values() for r in blk["rows"]},
+        key=nps_value)
+    for nps in flange_nps_list:
+        flange_nps_page(nps, b165, ftypes, sizes_by_nps)
     flanges_index(ftypes, b165)
     large_flange_pages(b1647)
 
@@ -2809,6 +3546,7 @@ def main():
     ref_materials(mats)
     ref_weight_chart(pipes)
     ref_face_types()
+    ref_color_coding(pipes)
     reference_index()
 
     # ---- top level ----
@@ -2830,12 +3568,23 @@ def main():
             ("/flanges/large/", "0.7"),
             ("/about/", "0.4"), ("/privacy/", "0.2")]
     urls += [(s["url"], "0.8") for s in pipes["sizes"]]
+    urls += [(f"/pipes/nps-{s['slug']}/{sched_slug(k)}/", "0.7")
+             for s in pipes["sizes"] for k in pipes["schedule_order"]
+             if k in s["walls"]]
     urls += [(f"/pipes/{sched_slug(k)}/", "0.7") for k in pipes["schedule_order"]]
     urls += [(f"/pipes/schedule-{s.lower()}/", "0.7") for s in ss["schedules"]]
     for ft in ftypes:
         urls.append((f"/flanges/{ft['slug']}/", "0.8"))
         urls += [(f"/flanges/{ft['slug']}/class-{c}/", "0.7")
                  for c in ft["classes"]]
+        if ft["slug"] in ("weld-neck", "blind"):
+            urls += [(f"/flanges/{ft['slug']}/class-{c}/nps-{nps_slug(r['nps'])}/",
+                      "0.6")
+                     for c in ft["classes"]
+                     for r in b165["classes"][c]["rows"]]
+    urls += [(f"/flanges/nps-{nps_slug(nps)}/", "0.7")
+             for nps in sorted({r["nps"] for blk in b165["classes"].values()
+                                for r in blk["rows"]}, key=nps_value)]
     for key in b1647["series"]:
         urls.append((f"/flanges/large/series-{key}/", "0.6"))
     urls += [(f"/flanges/large/series-{c['series']}-class-{c['class']}/", "0.6")

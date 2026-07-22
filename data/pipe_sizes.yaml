@@ -70,6 +70,14 @@ sizes:
     od: 4.500
     walls: {5: 0.083, 10: 0.120, 40: 0.237, 80: 0.337, 120: 0.438, 160: 0.531,
             STD: 0.237, XS: 0.337, XXS: 0.674}
+  # NPS 4 1/2, 7, 9 and 11 are published by B36.10M but are effectively
+  # obsolete: they are stocked rarely, and B16.5 publishes no flange and B16.9
+  # no fitting in these sizes. Only the walls the standard actually lists are
+  # carried — these sizes have no 5/10/120/160 entries.
+  - nps: "4 1/2"
+    dn: 115
+    od: 5.000
+    walls: {40: 0.247, 80: 0.355, STD: 0.247, XS: 0.355, XXS: 0.710}
   - nps: "5"
     dn: 125
     od: 5.563
@@ -80,18 +88,30 @@ sizes:
     od: 6.625
     walls: {5: 0.109, 10: 0.134, 40: 0.280, 80: 0.432, 120: 0.562, 160: 0.719,
             STD: 0.280, XS: 0.432, XXS: 0.864}
+  - nps: "7"
+    dn: 175
+    od: 7.625
+    walls: {40: 0.301, 80: 0.500, STD: 0.301, XS: 0.500, XXS: 0.875}
   - nps: "8"
     dn: 200
     od: 8.625
     walls: {5: 0.109, 10: 0.148, 20: 0.250, 30: 0.277, 40: 0.322, 60: 0.406,
             80: 0.500, 100: 0.594, 120: 0.719, 140: 0.812, 160: 0.906,
             STD: 0.322, XS: 0.500, XXS: 0.875}
+  - nps: "9"
+    dn: 225
+    od: 9.625
+    walls: {40: 0.342, 80: 0.500, STD: 0.342, XS: 0.500}
   - nps: "10"
     dn: 250
     od: 10.750
     walls: {5: 0.134, 10: 0.165, 20: 0.250, 30: 0.307, 40: 0.365, 60: 0.500,
             80: 0.594, 100: 0.719, 120: 0.844, 140: 1.000, 160: 1.125,
             STD: 0.365, XS: 0.500, XXS: 1.000}
+  - nps: "11"
+    dn: 275
+    od: 11.750
+    walls: {40: 0.375, 80: 0.500, STD: 0.375, XS: 0.500}
   - nps: "12"
     dn: 300
     od: 12.750

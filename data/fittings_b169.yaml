@@ -132,6 +132,45 @@ fittings:
       "22": 16.50
       "24": 17.00
 
+  - slug: reducing-tee
+    name: "Reducing Tee"
+    short: "reducing tee"
+    dim_label: "Run centre-to-end C"
+    formula: null
+    blurb: >-
+      A tee whose branch is smaller than the run. ASME B16.9 sets the run
+      dimension C from the RUN size alone, so it is identical to the straight
+      tee of that size — an 8 x 6 and an 8 x 4 tee are both 7.00 in
+      centre-to-end on the run.
+    extra: >-
+      The branch dimension M is not reproduced here. Unlike C, it depends on
+      the size PAIR, and B16.9 tabulates it combination by combination in
+      Table 8 rather than deriving it from a rule. Read M for your exact run x
+      branch from a current copy of the standard or the manufacturer's
+      catalogue; do not assume it equals the straight tee value for either
+      size.
+    rows:
+      "3/4": 1.12
+      "1": 1.50
+      "1 1/4": 1.88
+      "1 1/2": 2.25
+      "2": 2.50
+      "2 1/2": 3.00
+      "3": 3.38
+      "3 1/2": 3.75
+      "4": 4.12
+      "5": 4.88
+      "6": 5.62
+      "8": 7.00
+      "10": 8.50
+      "12": 10.00
+      "14": 11.00
+      "16": 12.00
+      "18": 13.50
+      "20": 15.00
+      "22": 16.50
+      "24": 17.00
+
   - slug: concentric-reducer
     name: "Concentric Reducer"
     short: "concentric reducer"

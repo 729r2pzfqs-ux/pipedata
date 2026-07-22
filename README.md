@@ -9,14 +9,34 @@ ASME B16 and B36 standards. Imperial primary, metric alongside.
 
 | Standard | What | Pages |
 | --- | --- | --- |
-| ASME B36.10M | Pipe dimensions, NPS 1/8 – NPS 36, 14 schedules | 30 size + 14 schedule |
+| ASME B36.10M | Pipe dimensions, NPS 1/8 – NPS 36, 14 schedules | 34 size + 14 schedule + 286 size×schedule |
 | ASME B36.19M | Stainless S-schedules — 5S, 10S, 40S, 80S | 4 + reference |
-| ASME B16.5 | Flanges, 6 types × 7 classes, NPS 1/2 – NPS 24 | 6 type + 42 class |
+| ASME B16.5 | Flanges, 6 types × 7 classes, NPS 1/2 – NPS 24 | 6 type + 42 class + 20 size + 264 detail |
 | ASME B16.47 | Large flanges, Series A and B, NPS 26 – NPS 60 | 4 |
-| ASME B16.9 | Buttweld fittings — elbows, tee, reducers, cap | 7 + index |
-| Reference | NPS/DN, schedules, P-T ratings, materials, bolting, faces | 11 + index |
+| ASME B16.9 | Buttweld fittings — elbows, tees, reducers, cap | 8 + index |
+| ASME A13.1 | Pipe marker colour scheme and legend sizing | 1 |
+| Reference | NPS/DN, schedules, P-T ratings, materials, bolting, faces | 12 + index |
 
-127 pages total.
+702 pages total.
+
+### Page granularity
+
+Three page types exist because that is the grain lookups actually arrive at:
+
+- **`/pipes/nps-4/schedule-40/`** — one NPS × schedule combination. Nobody
+  searches for a schedule in the abstract; they search for a size in one. Every
+  figure is derived from the two numbers B36.10M publishes for the pair.
+- **`/flanges/nps-6/`** — every pressure class in one size, for when the size is
+  known and the class is the open question.
+- **`/flanges/weld-neck/class-300/nps-6/`** — emitted for weld neck and blind
+  only. Those are the two types where the size adds something the class table
+  does not already say: a weld neck bore follows the schedule, and a blind's
+  weight and end load follow its diameter. The other four types would be the
+  same seven numbers under a different heading, so they get no size pages.
+
+NPS 4 1/2, 7, 9 and 11 are carried even though they are effectively obsolete —
+B36.10M publishes them, and B16.5 and B16.9 do not, so their pages omit the
+flange and fitting cross-references rather than inventing them.
 
 ### Generated claims, not asserted ones
 
@@ -78,10 +98,11 @@ automatically without being registered anywhere.
 
 ## Analytics
 
-`GA_ID` in `generate.py` is empty, so no analytics snippet is emitted at all. Set
-it to a real `G-…` measurement ID to switch it on; the privacy page text changes
-with it automatically. A placeholder ID is deliberately not shipped — it would
-cost every visitor a request and collect nothing.
+`GA_ID` in `generate.py` is set to `G-YQ4MS7NNDS`, so the GA4 snippet ships on
+every page and the privacy page states that analytics is active — both follow
+`GA_ENABLED`, so clearing `GA_ID` removes the snippet and reverts the privacy
+text in one edit. A placeholder ID is deliberately not shipped: it would cost
+every visitor a request and collect nothing.
 
 ## Conventions
 
