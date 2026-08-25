@@ -39,6 +39,10 @@ TODAY = date.today().isoformat()
 GA_ID = "G-YQ4MS7NNDS"
 GA_ENABLED = bool(GA_ID) and GA_ID != "G-XXXXXXXXXX"
 
+# Ahrefs Web Analytics. Same rule as GA_ID: blank the key and the tag is
+# dropped rather than shipped with a dead data-key.
+AHREFS_KEY = "VClhZ0gJ5Zmb8aN8g5YR1Q"
+
 DESC_MIN = 120
 DESC_MAX = 160
 TITLE_MAX = 60
@@ -308,6 +312,11 @@ def head(title, desc, path, ld=None, og_type="website", noindex=False):
         "function gtag(){dataLayer.push(arguments);}"
         f"gtag('js',new Date());gtag('config','{GA_ID}');</script>"
     ) if GA_ENABLED else ""
+    if AHREFS_KEY:
+        analytics += (
+            '\n<script src="https://analytics.ahrefs.com/analytics.js" '
+            f'data-key="{AHREFS_KEY}" async></script>'
+        )
     robots = '<meta name="robots" content="noindex,follow">' if noindex else ""
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -7605,23 +7614,37 @@ def privacy_page():
         "pages get used. It sets cookies and sends your IP address to Google, "
         "who process it as our data processor. We do not use it to build "
         "profiles or to advertise to you.</p>"
-        if GA_ENABLED else
-        "<p>This site runs no analytics, no advertising and no third-party "
-        "tracking scripts. Nothing on these pages sets a cookie, and no "
-        "profile of you is built or bought.</p>")
+        if GA_ENABLED else "")
 
+    ahrefs_para = (
+        "<p>It also uses Ahrefs Web Analytics for the same purpose. That "
+        "script is loaded from <code>analytics.ahrefs.com</code>, so your "
+        "browser sends your IP address and user agent to Ahrefs when a page "
+        "loads. It sets no cookies and is not used to build a profile of "
+        "you.</p>" if AHREFS_KEY else "")
+
+    if not (ga_para or ahrefs_para):
+        ga_para = ("<p>This site runs no analytics, no advertising and no "
+                   "third-party tracking scripts. Nothing on these pages sets "
+                   "a cookie, and no profile of you is built or bought.</p>")
+
+    # Google Fonts stopped being the only third-party request the moment a
+    # second script went in the head; don't let the old absolute claim stand.
+    others = bool(GA_ENABLED or AHREFS_KEY)
     fonts = ("<p>Typefaces are loaded from Google Fonts, which means your "
              "browser makes a request to <code>fonts.googleapis.com</code> and "
              "<code>fonts.gstatic.com</code> when a page loads. That request "
-             "carries your IP address and user agent to Google. It is the only "
-             "third-party request the site makes.</p>")
+             "carries your IP address and user agent to Google."
+             + (" Apart from the analytics scripts above, it is the only "
+                "third-party request the site makes.</p>" if others else
+                " It is the only third-party request the site makes.</p>"))
 
     body = (crumbs([("Home", "/"), ("Privacy", None)])[0]
             + '<div class="wrap narrow">'
             '<div class="page-head"><h1>Privacy</h1>'
             '<p class="lede">What this site does and does not collect, stated '
             'in full.</p></div>'
-            "<h2>Analytics</h2>" + ga_para
+            "<h2>Analytics</h2>" + ga_para + ahrefs_para
             + "<h2>Fonts</h2>" + fonts
             + "<h2>What we never collect</h2>"
             "<p>There are no accounts, no logins and no forms on this site. We "
@@ -7635,7 +7658,10 @@ def privacy_page():
             "own server logs, which we do not have access to. Their practices "
             "are covered by the GitHub Privacy Statement.</p>"
             "<h2>Cookies</h2>"
-            + ("<p>Google Analytics sets its own cookies. The site itself sets "
+            + ("<p>Google Analytics sets its own cookies. Ahrefs Web "
+               "Analytics and the site itself set none.</p>"
+               if GA_ENABLED and AHREFS_KEY else
+               "<p>Google Analytics sets its own cookies. The site itself sets "
                "none.</p>" if GA_ENABLED else
                "<p>This site sets no cookies at all.</p>")
             + "<h2>Changes</h2>"
