@@ -1981,10 +1981,10 @@ def fittings_index(fittings):
 
     body = (crumb_html + '<div class="wrap">'
             '<div class="page-head"><h1>Buttweld Fitting Dimensions — B16.9</h1>'
-            '<p class="lede">Centre-to-end dimensions for elbows, tees, reducers '
-            'and caps, NPS 1/2 through NPS 24. Because ASME B16.9 dimensions '
-            'depend on nominal size alone, one table covers every schedule.'
-            '</p></div>'
+            '<p class="lede">Centre-to-end dimensions for elbows, returns, tees, '
+            'crosses, reducers and caps, NPS 1/2 through NPS 24. Because ASME '
+            'B16.9 dimensions depend on nominal size alone, one table covers '
+            'every schedule.</p></div>'
             f'<div class="grid">{cards}</div>'
             + '<h2>Fittings side by side</h2>'
             '<p>The governing dimension of each fitting at four common sizes.</p>'
@@ -1992,14 +1992,14 @@ def fittings_index(fittings):
             + table(["Fitting", "NPS 2", "NPS 6", "NPS 12", "NPS 24"], rows,
                     caption="Governing ASME B16.9 dimension by fitting type. "
                             "Each column is the fitting's own dimension — "
-                            "centre-to-end for elbows and tees, end-to-end for "
+                            "centre-to-end for elbows, tees and crosses, "
+                            "centre-to-centre for 180° returns, end-to-end for "
                             "reducers, length for caps.")
             + faq_html + "</div>")
 
     title = "Buttweld Fitting Dimensions — ASME B16.9 | PipeData"
-    desc = ("ASME B16.9 buttweld fitting dimensions for elbows, tees, reducers "
-            "and caps, NPS 1/2 to 24. Centre-to-end dimensions that hold for "
-            "every schedule.")
+    desc = ("ASME B16.9 buttweld fitting dimensions for elbows, returns, tees, "
+            "crosses, reducers and caps, NPS 1/2 to 24, for every schedule.")
     page("/fittings/", title, desc, body,
          ld=[crumb_ld, faq_ld,
              item_list([(f["name"], f"/fittings/{f['slug']}/") for f in fittings],
@@ -2269,25 +2269,29 @@ def ref_pt_ratings(pt):
          "the higher of the two — leaving the flange as the limiting "
          "component.</p>"),
     ]
+    n_groups = len(pt["groups"])
     ref("pressure-temperature-ratings",
         "ASME B16.5 Pressure-Temperature Rating Chart | PipeData",
-        "ASME B16.5 pressure-temperature ratings in psig for all seven flange "
-        "classes across four material groups, -20 °F to 1000 °F. A Class 150 "
-        "flange is not 150 psi.",
+        f"ASME B16.5 pressure-temperature ratings in psig for all seven flange "
+        f"classes across {n_groups} material groups, -20 °F to 1000 °F. A Class "
+        f"150 flange is not 150 psi.",
         "Pressure-Temperature Ratings",
         "What a flange class is actually rated for, at your material and your "
-        "metal temperature. Four ASME B16.5 material groups, seven pressure "
-        "classes, -20 °F to 1000 °F.",
-        body, faq_pairs=q, card_meta="4 groups · 7 classes · psig")
+        f"metal temperature. {n_groups} ASME B16.5 material groups, seven "
+        "pressure classes, -20 °F to 1000 °F.",
+        body, faq_pairs=q, card_meta=f"{n_groups} groups · 7 classes · psig")
 
     # per-group pages
     for g in pt["groups"]:
-        headers = ["Class"] + [f"{t} °F" for t in temps]
+        r150 = g["ratings"]["150"]
+        n_temps = len(r150)
+        g_temps = temps[:n_temps]
+        max_t = g_temps[-1]
+        headers = ["Class"] + [f"{t} °F" for t in g_temps]
         rows = [[f"<strong>Class {c}</strong>"]
                 + [str(v) for v in g["ratings"][c]]
                 for c in ["150", "300", "400", "600", "900", "1500", "2500"]
                 if c in g["ratings"]]
-        r150 = g["ratings"]["150"]
         others = "".join(
             f'<a class="chip-link" href="/reference/pressure-temperature-ratings/'
             f'group-{o["slug"]}/">{esc(o["name"])}</a>'
@@ -2318,7 +2322,10 @@ def ref_pt_ratings(pt):
                      caption=f"ASME B16.5 pressure-temperature ratings for "
                              f"{g['name']} materials, in psig.",
                      note="Interpolation between listed temperatures is "
-                          "permitted; extrapolation is not.")
+                          "permitted; extrapolation is not."
+                          + ("" if max_t >= 1000 else
+                             f" ASME B16.5 does not publish a rating for this "
+                             f"group above {max_t} °F."))
              + fh
              + f'<h2>Other material groups</h2>'
                f'<div class="chip-links">{others}</div></div>')
@@ -2327,7 +2334,7 @@ def ref_pt_ratings(pt):
         d = fit_desc(
             f"ASME B16.5 {g['name']} pressure-temperature ratings: Class 150 is "
             f"{r150[0]} psig at 100 °F and {r150[5]} psig at 600 °F. ",
-            ["Full psig table for all seven classes, -20 to 1000 °F.",
+            [f"Full psig table for all seven classes, -20 to {max_t} °F.",
              "Full table for all seven pressure classes.",
              "Ratings for all seven classes."])
         url = f"/reference/pressure-temperature-ratings/group-{g['slug']}/"
@@ -5253,11 +5260,11 @@ def cmp_a106_a53(mats, pipes):
 
 
 def cmp_304_316(mats, pt):
-    temps = pt["temperatures"]
     g21 = rating_row(pt, "300", "2-1")
-    g22 = rating_row(pt, "300", "2-2")
-    rows = [[f"<strong>{t} °F</strong>", f"{g21[i]} psig", f"{g22[i]} psig",
-             pct(g22[i], g21[i])] for i, t in enumerate(temps)]
+    g23 = rating_row(pt, "300", "2-3")
+    temps = pt["temperatures"][:len(g23)]
+    rows = [[f"<strong>{t} °F</strong>", f"{g21[i]} psig", f"{g23[i]} psig",
+             pct(g23[i], g21[i])] for i, t in enumerate(temps)]
 
     body = (facts([("Key difference", "316 adds 2–3% molybdenum"),
                    ("Chloride pitting", "316 markedly better"),
@@ -5301,13 +5308,14 @@ def cmp_304_316(mats, pt):
             "<p>For welded piping the practical default is 316L, which is why "
             "it is the most commonly stocked stainless pipe grade. The cost of "
             "the L grade is a slightly lower allowable stress — B16.5 puts the "
-            "L grades in Group 2.2 rather than 2.1:</p>"
+            "L grades in Group 2.3 rather than 2.1:</p>"
             + table(["Temperature", "Class 300 Group 2.1 (304/316)",
-                     "Class 300 Group 2.2 (304L/316L)", "Difference"], rows,
+                     "Class 300 Group 2.3 (304L/316L)", "Difference"], rows,
                     caption="ASME B16.5 Class 300 ratings, standard-carbon "
                             "against low-carbon austenitic stainless.",
                     note="Group 2.1 covers F304/F316 and A312 TP304/TP316; "
-                         "Group 2.2 covers the L grades.")
+                         "Group 2.3 covers the L grades, with no B16.5 rating "
+                         "published above 850 °F.")
             + vs_columns(
                 "Choose 304 / 304L when",
                 ["The service is clean water, steam condensate, food or "
@@ -5353,7 +5361,7 @@ def cmp_304_316(mats, pt):
          "<p>316L for anything welded, which is nearly all piping. The low "
          "carbon prevents sensitisation at the weld. The cost is a slightly "
          "lower allowable stress, since B16.5 puts the L grades in Group "
-         "2.2.</p>"),
+         "2.3.</p>"),
         ("Will 316 stainless resist seawater?",
          "<p>Better than 304, but not indefinitely. In stagnant or crevice "
          "conditions 316 still pits in seawater. Continuous seawater service "
@@ -6811,7 +6819,7 @@ def guide_pt_derating(pt):
             "<ol>"
             "<li><strong>Find the material group.</strong> A105 carbon steel is "
             "Group 1.1; F304/F316 stainless is Group 2.1; the L grades are "
-            "Group 2.2. The group, not the class, determines the shape of the "
+            "Group 2.3. The group, not the class, determines the shape of the "
             "curve.</li>"
             "<li><strong>Use the metal temperature.</strong> B16.5 rates on the "
             "temperature of the flange metal. For uninsulated flanges that is "
@@ -7781,6 +7789,45 @@ def audit_descriptions():
           f"{DESC_MIN}-{DESC_MAX} chars)")
 
 
+def audit_links():
+    """Fail the build if any internal href="/..." points at a file that
+    was never written.
+
+    Runs over the rendered docs/ tree rather than the template source, so it
+    catches a stale link regardless of which page generator produced it.
+    """
+    href_re = re.compile(r'href="(/[^"#?]*)')
+    broken = defaultdict(list)
+    checked = 0
+
+    for dirpath, _, files in os.walk(OUT):
+        for fname in files:
+            if not fname.endswith(".html"):
+                continue
+            src = os.path.join(dirpath, fname)
+            page_path = "/" + os.path.relpath(src, OUT).replace(os.sep, "/")
+            with open(src, encoding="utf-8") as f:
+                for href in href_re.findall(f.read()):
+                    checked += 1
+                    target = (os.path.join(OUT, href.strip("/"), "index.html")
+                              if href.endswith("/") or href == ""
+                              else os.path.join(OUT, href.lstrip("/")))
+                    if not os.path.isfile(target):
+                        broken[href].append(page_path)
+
+    print(f"  internal links: {checked} hrefs checked, {len(broken)} broken")
+    if broken:
+        print("  BROKEN internal links:", file=sys.stderr)
+        for href, pages in broken.items():
+            print(f"    {href!r} — linked from {len(pages)} page(s):",
+                  file=sys.stderr)
+            for p in pages[:5]:
+                print(f"        {p}", file=sys.stderr)
+        print("\nLink audit failed.", file=sys.stderr)
+        sys.exit(1)
+    print("  link audit passed (every internal href resolves)")
+
+
 def audit_titles():
     """Fail the build on a duplicate or over-long <title>."""
     indexed = {p: v["title"] for p, v in DESC_REGISTRY.items() if not v["noindex"]}
@@ -7993,6 +8040,8 @@ def main():
             seen.add(u)
             deduped.append((u, p))
     sitemap(deduped)
+
+    audit_links()
 
     print(f"Built {len(DESC_REGISTRY)} pages, {len(deduped)} sitemap URLs, "
           f"{len(SEARCH)} search entries → {OUT}")
