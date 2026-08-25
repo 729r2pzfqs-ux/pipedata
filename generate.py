@@ -31,6 +31,14 @@ OUT = os.path.join(ROOT, "docs")
 SITE = "https://pipedata.org"
 SITE_NAME = "PipeData"
 EMAIL = "info@pipedata.org"
+# Cloudflare rewrites any literal address it finds into a
+# /cdn-cgi/l/email-protection link, which 404s for crawlers that do not run
+# JavaScript — every page then reads as "links to a broken page". Entity-
+# encoding the @ and the . hides the address from that scanner; browsers
+# decode the entities in both text and the mailto href, so the link still
+# works. The email_off comments around each link are Cloudflare's own
+# documented opt-out and are inert HTML comments everywhere else.
+EMAIL_HTML = "info&#64;pipedata&#46;org"
 TODAY = date.today().isoformat()
 
 # Set to a real "G-..." measurement ID to switch analytics on. Left empty the
@@ -422,7 +430,7 @@ def foot():
           <li><a href="/about/">About</a></li>
           <li><a href="/privacy/">Privacy</a></li>
           <li><a href="/sitemap.xml">Sitemap</a></li>
-          <li><a href="mailto:{EMAIL}">Contact</a></li>
+          <li><!--email_off--><a href="mailto:{EMAIL_HTML}">Contact</a><!--/email_off--></li>
         </ul>
       </div>
     </div>
@@ -433,7 +441,7 @@ def foot():
       the governing ASME, ASTM or API document before fabrication, procurement or
       design. PipeData is an independent project and is not affiliated with ASME,
       ASTM, API or MSS.</p>
-      <p>© {date.today().year} PipeData.org · <a href="mailto:{EMAIL}">{EMAIL}</a></p>
+      <p>© {date.today().year} PipeData.org · <!--email_off--><a href="mailto:{EMAIL_HTML}">{EMAIL_HTML}</a><!--/email_off--></p>
     </div>
   </div>
 </footer>
@@ -7593,7 +7601,8 @@ def about_page(pipes, ftypes, fittings):
             "<h2>Corrections</h2>"
             "<p>If a figure here disagrees with your copy of the standard, the "
             "standard is right and we want to know. Email "
-            f'<a href="mailto:{EMAIL}">{EMAIL}</a> with the page and the '
+            f'<!--email_off--><a href="mailto:{EMAIL_HTML}">{EMAIL_HTML}</a>'
+            '<!--/email_off--> with the page and the '
             "clause.</p>"
             "<h2>Independence</h2>"
             "<p>PipeData is an independent reference project. It is not "
@@ -7669,7 +7678,8 @@ def privacy_page():
             "service introduced — this page will be updated to say so before or "
             "at the same time as the change goes live.</p>"
             "<h2>Contact</h2>"
-            f'<p>Questions about any of this: <a href="mailto:{EMAIL}">{EMAIL}</a>.'
+            f'<p>Questions about any of this: <!--email_off-->'
+            f'<a href="mailto:{EMAIL_HTML}">{EMAIL_HTML}</a><!--/email_off-->.'
             f'</p><p class="muted">Last updated {TODAY}.</p></div>')
     page("/privacy/", "Privacy Policy | PipeData",
          "PipeData collects no personal data, has no accounts and no forms. "
