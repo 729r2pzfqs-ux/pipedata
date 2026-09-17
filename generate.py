@@ -51,6 +51,11 @@ GA_ENABLED = bool(GA_ID) and GA_ID != "G-XXXXXXXXXX"
 # dropped rather than shipped with a dead data-key.
 AHREFS_KEY = "VClhZ0gJ5Zmb8aN8g5YR1Q"
 
+# Google AdSense publisher ID. Placement is left to Auto ads, so the head tag
+# is the only markup; ads.txt is written from the same ID. Blank it to drop
+# both.
+ADSENSE_CLIENT = "ca-pub-5861928596436289"
+
 DESC_MIN = 120
 DESC_MAX = 160
 TITLE_MAX = 60
@@ -324,6 +329,12 @@ def head(title, desc, path, ld=None, og_type="website", noindex=False):
         analytics += (
             '\n<script src="https://analytics.ahrefs.com/analytics.js" '
             f'data-key="{AHREFS_KEY}" async></script>'
+        )
+    if ADSENSE_CLIENT:
+        analytics += (
+            '\n<script async src="https://pagead2.googlesyndication.com/'
+            f'pagead/js/adsbygoogle.js?client={ADSENSE_CLIENT}" '
+            'crossorigin="anonymous"></script>'
         )
     robots = '<meta name="robots" content="noindex,follow">' if noindex else ""
     return f"""<!DOCTYPE html>
@@ -7622,7 +7633,7 @@ def privacy_page():
         "<p>This site uses Google Analytics 4 to count visits and see which "
         "pages get used. It sets cookies and sends your IP address to Google, "
         "who process it as our data processor. We do not use it to build "
-        "profiles or to advertise to you.</p>"
+        "profiles or to target ads.</p>"
         if GA_ENABLED else "")
 
     ahrefs_para = (
@@ -7632,21 +7643,46 @@ def privacy_page():
         "loads. It sets no cookies and is not used to build a profile of "
         "you.</p>" if AHREFS_KEY else "")
 
-    if not (ga_para or ahrefs_para):
+    ads_para = (
+        "<p>Pages carry advertising served by Google AdSense. Google and its "
+        "partners use cookies to serve ads based on your prior visits to this "
+        "and other websites. You can opt out of personalised advertising in "
+        '<a href="https://adssettings.google.com/" rel="nofollow">Google Ads '
+        "Settings</a>, or opt out of some third-party vendors' use of cookies "
+        'at <a href="https://www.aboutads.info/choices/" rel="nofollow">'
+        "aboutads.info</a>. How Google uses this data is described at "
+        '<a href="https://policies.google.com/technologies/partner-sites" '
+        'rel="nofollow">policies.google.com/technologies/partner-sites</a>.'
+        "</p>" if ADSENSE_CLIENT else "")
+
+    if not (ga_para or ahrefs_para or ads_para):
         ga_para = ("<p>This site runs no analytics, no advertising and no "
                    "third-party tracking scripts. Nothing on these pages sets "
                    "a cookie, and no profile of you is built or bought.</p>")
 
     # Google Fonts stopped being the only third-party request the moment a
     # second script went in the head; don't let the old absolute claim stand.
-    others = bool(GA_ENABLED or AHREFS_KEY)
+    others = bool(GA_ENABLED or AHREFS_KEY or ADSENSE_CLIENT)
     fonts = ("<p>Typefaces are loaded from Google Fonts, which means your "
              "browser makes a request to <code>fonts.googleapis.com</code> and "
              "<code>fonts.gstatic.com</code> when a page loads. That request "
              "carries your IP address and user agent to Google."
-             + (" Apart from the analytics scripts above, it is the only "
-                "third-party request the site makes.</p>" if others else
+             + (" Apart from the analytics and advertising scripts above, it "
+                "is the only third-party request the site makes.</p>"
+                if others else
                 " It is the only third-party request the site makes.</p>"))
+
+    cookie_setters = ([n for n, on in (("Google Analytics", GA_ENABLED),
+                                       ("Google AdSense", ADSENSE_CLIENT))
+                       if on])
+    if cookie_setters:
+        cookies = ("<p>" + " and ".join(cookie_setters)
+                   + (" set their own cookies." if len(cookie_setters) > 1
+                      else " sets its own cookies.")
+                   + (" Ahrefs Web Analytics and the site itself set none.</p>"
+                      if AHREFS_KEY else " The site itself sets none.</p>"))
+    else:
+        cookies = "<p>This site sets no cookies at all.</p>"
 
     body = (crumbs([("Home", "/"), ("Privacy", None)])[0]
             + '<div class="wrap narrow">'
@@ -7654,6 +7690,7 @@ def privacy_page():
             '<p class="lede">What this site does and does not collect, stated '
             'in full.</p></div>'
             "<h2>Analytics</h2>" + ga_para + ahrefs_para
+            + ("<h2>Advertising</h2>" + ads_para if ads_para else "")
             + "<h2>Fonts</h2>" + fonts
             + "<h2>What we never collect</h2>"
             "<p>There are no accounts, no logins and no forms on this site. We "
@@ -7667,12 +7704,7 @@ def privacy_page():
             "own server logs, which we do not have access to. Their practices "
             "are covered by the GitHub Privacy Statement.</p>"
             "<h2>Cookies</h2>"
-            + ("<p>Google Analytics sets its own cookies. Ahrefs Web "
-               "Analytics and the site itself set none.</p>"
-               if GA_ENABLED and AHREFS_KEY else
-               "<p>Google Analytics sets its own cookies. The site itself sets "
-               "none.</p>" if GA_ENABLED else
-               "<p>This site sets no cookies at all.</p>")
+            + cookies
             + "<h2>Changes</h2>"
             "<p>If this ever changes — if analytics is added, or a third-party "
             "service introduced — this page will be updated to say so before or "
@@ -7771,6 +7803,10 @@ def copy_static():
             shutil.copy2(src, dst)
     write(".nojekyll", "")
     write("CNAME", "pipedata.org\n")
+    if ADSENSE_CLIENT:
+        write("ads.txt", "google.com, "
+              + ADSENSE_CLIENT.removeprefix("ca-")
+              + ", DIRECT, f08c47fec0942fa0\n")
 
 
 # --------------------------------------------------------------------------
