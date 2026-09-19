@@ -192,6 +192,17 @@ main { padding: .5rem 0 4rem; }
 .search-results .sr-meta { display: block; font-size: .78rem; color: var(--text-muted); }
 .search-results .sr-none { padding: .7rem .85rem; font-size: .9rem; color: var(--text-muted); }
 
+/* ---------- keep Auto ads out of the spec tables ---------- */
+
+/* AdSense Auto ads insert either a .google-auto-placed wrapper or a bare
+   ins.adsbygoogle wherever they find room. Inside a table zone that pushes
+   columns around or splits a row set, so they are hidden there — ads still
+   serve everywhere else on the page. */
+#data-table-zone .google-auto-placed,
+#data-table-zone ins.adsbygoogle,
+.data-table-zone .google-auto-placed,
+.data-table-zone ins.adsbygoogle { display: none !important; }
+
 /* ---------- tables ---------- */
 
 .table-scroll {

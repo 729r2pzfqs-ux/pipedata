@@ -464,7 +464,22 @@ def foot():
 
 def page(path, title, desc, body, ld=None, og_type="website", noindex=False):
     out = os.path.join(path.strip("/"), "index.html") if path != "/" else "index.html"
-    write(out, head(title, desc, path, ld, og_type, noindex) + body + foot())
+    write(out, ad_free_tables(head(title, desc, path, ld, og_type, noindex)
+                              + body + foot()))
+
+
+# Google Auto ads pick their own insertion points, and a spec table is the one
+# place on this site where an injected block breaks the thing the visitor came
+# for. Every table ships inside .data-table-zone and the stylesheet hides ad
+# containers within it; the first zone on a page also carries the id, since the
+# id form is what AdSense's own documentation matches on. Applied to the
+# finished page so the id lands once per document rather than once per table.
+ZONE_DIV = '<div class="table-scroll data-table-zone">'
+
+
+def ad_free_tables(html):
+    return html.replace(
+        ZONE_DIV, '<div id="data-table-zone" class="table-scroll data-table-zone">', 1)
 
 
 def crumbs(items):
@@ -522,7 +537,7 @@ def table(headers, rows, caption=None, note=None, cls="specs"):
     thead = "".join(f"<th scope=\"col\">{h}</th>" for h in headers)
     body = "".join("<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>" for r in rows)
     cap = f"<caption>{caption}</caption>" if caption else ""
-    out = (f'<div class="table-scroll"><table class="{cls}">{cap}'
+    out = (f'{ZONE_DIV}<table class="{cls}">{cap}'
            f"<thead><tr>{thead}</tr></thead><tbody>{body}</tbody></table></div>")
     if note:
         out += f'<p class="table-note">{note}</p>'
