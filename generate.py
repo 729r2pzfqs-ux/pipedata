@@ -59,11 +59,11 @@ ADSENSE_CLIENT = "ca-pub-5861928596436289"
 # Regions that get denied-by-default Consent Mode storage: the EEA (EU 27 plus
 # Iceland, Liechtenstein, Norway), the UK and Switzerland. Everywhere else
 # falls through to the granted default. Consent Mode matches these against
-# ISO 3166-1 alpha-2, so Greece has to be GR — EL is the Eurostat spelling and
-# matches nothing, which would have quietly handed Greek visitors the granted
-# fallback. EL is kept alongside it because an unmatched code is inert.
+# ISO 3166-1 alpha-2, so Greece is GR. Do not write EL here: that is the
+# Eurostat spelling, it matches no country, and Greek visitors would silently
+# fall through to the granted fallback.
 CONSENT_DENIED_REGIONS = [
-    "BE", "BG", "CZ", "DK", "DE", "EE", "IE", "GR", "EL", "ES", "FR", "HR",
+    "BE", "BG", "CZ", "DK", "DE", "EE", "IE", "GR", "ES", "FR", "HR",
     "IT", "CY", "LV", "LT", "LU", "HU", "MT", "NL", "AT", "PL", "PT", "RO",
     "SI", "SK", "FI", "SE", "GB", "CH", "IS", "LI", "NO",
 ]
