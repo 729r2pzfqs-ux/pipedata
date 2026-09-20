@@ -56,6 +56,18 @@ AHREFS_KEY = "VClhZ0gJ5Zmb8aN8g5YR1Q"
 # both.
 ADSENSE_CLIENT = "ca-pub-5861928596436289"
 
+# Regions that get denied-by-default Consent Mode storage: the EEA (EU 27 plus
+# Iceland, Liechtenstein, Norway), the UK and Switzerland. Everywhere else
+# falls through to the granted default. Consent Mode matches these against
+# ISO 3166-1 alpha-2, so Greece has to be GR — EL is the Eurostat spelling and
+# matches nothing, which would have quietly handed Greek visitors the granted
+# fallback. EL is kept alongside it because an unmatched code is inert.
+CONSENT_DENIED_REGIONS = [
+    "BE", "BG", "CZ", "DK", "DE", "EE", "IE", "GR", "EL", "ES", "FR", "HR",
+    "IT", "CY", "LV", "LT", "LU", "HU", "MT", "NL", "AT", "PL", "PT", "RO",
+    "SI", "SK", "FI", "SE", "GB", "CH", "IS", "LI", "NO",
+]
+
 DESC_MIN = 120
 DESC_MAX = 160
 TITLE_MAX = 60
@@ -320,10 +332,14 @@ def head(title, desc, path, ld=None, og_type="website", noindex=False):
     DESC_REGISTRY[path] = {"desc": desc, "title": title, "noindex": noindex}
     ldblocks = "".join(ldjson(o) for o in (ld or []))
     # Head order is load-bearing for GDPR, so it is assembled in one place.
-    # 1. Consent Mode defaults, denied, before anything that reads them. The
-    #    dataLayer and gtag() shim live here and nowhere else, because a second
-    #    declaration further down would replace the queue this block filled.
-    #    wait_for_update gives the CMP 500 ms to answer before tags give up.
+    # 1. Consent Mode defaults, before anything that reads them, in two calls:
+    #    denied for the EEA/UK/CH, then a granted fallback for the rest of the
+    #    world. Region-scoped defaults win over the unscoped one wherever they
+    #    match, so the second call cannot loosen the first. The dataLayer and
+    #    gtag() shim live here and nowhere else, because a second declaration
+    #    further down would replace the queue this block filled.
+    #    wait_for_update gives the CMP 500 ms to answer before tags give up;
+    #    the granted fallback has nothing to wait for and so omits it.
     # 2. AdSense, which is what actually delivers the consent dialog at
     #    runtime, so it has to be the first network script on the page.
     # 3. The gtag loader and config, which now start out denied and upgrade
@@ -331,6 +347,7 @@ def head(title, desc, path, ld=None, og_type="website", noindex=False):
     # 4. Ahrefs last: it sets no cookies and has nothing to wait for.
     parts = []
     if GA_ENABLED or ADSENSE_CLIENT:
+        regions = ",".join("'%s'" % r for r in CONSENT_DENIED_REGIONS)
         parts.append(
             "<script>window.dataLayer=window.dataLayer||[];"
             "function gtag(){dataLayer.push(arguments);}"
@@ -339,7 +356,13 @@ def head(title, desc, path, ld=None, og_type="website", noindex=False):
             "'ad_storage':'denied',"
             "'ad_user_data':'denied',"
             "'ad_personalization':'denied',"
-            "'wait_for_update':500});</script>"
+            "'wait_for_update':500,"
+            f"'region':[{regions}]}});"
+            "gtag('consent','default',{"
+            "'analytics_storage':'granted',"
+            "'ad_storage':'granted',"
+            "'ad_user_data':'granted',"
+            "'ad_personalization':'granted'});</script>"
         )
     if ADSENSE_CLIENT:
         parts.append(
@@ -7697,12 +7720,15 @@ def privacy_page():
     # first visit, so say so rather than leaving "it sets cookies" to stand
     # unqualified.
     consent_para = (
-        "<p>Both start denied. Before any Google tag loads, the page sets "
-        "Google Consent Mode defaults that refuse analytics storage, "
-        "advertising storage, ad user data and ad personalisation. The "
-        "consent dialog Google serves on your first visit is what lifts "
-        "that; until you answer it, and for the whole visit if you decline, "
-        "the tags run without storage and set no cookies.</p>"
+        "<p>Where you are reading from decides what happens next. Before any "
+        "Google tag loads, the page sets Google Consent Mode defaults. In the "
+        "EEA, the UK and Switzerland those defaults refuse analytics storage, "
+        "advertising storage, ad user data and ad personalisation: the "
+        "consent dialog Google serves on your first visit is what lifts them, "
+        "and until you answer it — and for the whole visit if you decline — "
+        "the tags run without storage and set no cookies. Outside those "
+        "countries the defaults start granted, and the tags set cookies on "
+        "the first page view.</p>"
         if (GA_ENABLED or ADSENSE_CLIENT) else "")
 
     if not (ga_para or ahrefs_para or ads_para):
@@ -7727,10 +7753,11 @@ def privacy_page():
                        if on])
     if cookie_setters:
         cookies = ("<p>" + " and ".join(cookie_setters)
-                   + (" set their own cookies, once you have consented to "
-                      "them." if len(cookie_setters) > 1
-                      else " sets its own cookies, once you have consented to "
-                      "them.")
+                   + (" set their own cookies, in the EEA, the UK and "
+                      "Switzerland only once you have consented to them."
+                      if len(cookie_setters) > 1
+                      else " sets its own cookies, in the EEA, the UK and "
+                      "Switzerland only once you have consented to them.")
                    + (" Ahrefs Web Analytics and the site itself set none.</p>"
                       if AHREFS_KEY else " The site itself sets none.</p>"))
     else:
