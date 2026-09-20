@@ -319,23 +319,46 @@ def head(title, desc, path, ld=None, og_type="website", noindex=False):
     canon = SITE + path
     DESC_REGISTRY[path] = {"desc": desc, "title": title, "noindex": noindex}
     ldblocks = "".join(ldjson(o) for o in (ld or []))
-    analytics = (
-        f'<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>\n'
-        "<script>window.dataLayer=window.dataLayer||[];"
-        "function gtag(){dataLayer.push(arguments);}"
-        f"gtag('js',new Date());gtag('config','{GA_ID}');</script>"
-    ) if GA_ENABLED else ""
-    if AHREFS_KEY:
-        analytics += (
-            '\n<script src="https://analytics.ahrefs.com/analytics.js" '
-            f'data-key="{AHREFS_KEY}" async></script>'
+    # Head order is load-bearing for GDPR, so it is assembled in one place.
+    # 1. Consent Mode defaults, denied, before anything that reads them. The
+    #    dataLayer and gtag() shim live here and nowhere else, because a second
+    #    declaration further down would replace the queue this block filled.
+    #    wait_for_update gives the CMP 500 ms to answer before tags give up.
+    # 2. AdSense, which is what actually delivers the consent dialog at
+    #    runtime, so it has to be the first network script on the page.
+    # 3. The gtag loader and config, which now start out denied and upgrade
+    #    themselves when the CMP reports a grant.
+    # 4. Ahrefs last: it sets no cookies and has nothing to wait for.
+    parts = []
+    if GA_ENABLED or ADSENSE_CLIENT:
+        parts.append(
+            "<script>window.dataLayer=window.dataLayer||[];"
+            "function gtag(){dataLayer.push(arguments);}"
+            "gtag('consent','default',{"
+            "'analytics_storage':'denied',"
+            "'ad_storage':'denied',"
+            "'ad_user_data':'denied',"
+            "'ad_personalization':'denied',"
+            "'wait_for_update':500});</script>"
         )
     if ADSENSE_CLIENT:
-        analytics += (
-            '\n<script async src="https://pagead2.googlesyndication.com/'
+        parts.append(
+            '<script async src="https://pagead2.googlesyndication.com/'
             f'pagead/js/adsbygoogle.js?client={ADSENSE_CLIENT}" '
             'crossorigin="anonymous"></script>'
         )
+    if GA_ENABLED:
+        parts.append(
+            f'<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>\n'
+            "<script>gtag('js',new Date());"
+            f"gtag('config','{GA_ID}');</script>"
+        )
+    if AHREFS_KEY:
+        parts.append(
+            '<script src="https://analytics.ahrefs.com/analytics.js" '
+            f'data-key="{AHREFS_KEY}" async></script>'
+        )
+    analytics = "\n".join(parts)
     robots = '<meta name="robots" content="noindex,follow">' if noindex else ""
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -7670,6 +7693,18 @@ def privacy_page():
         'rel="nofollow">policies.google.com/technologies/partner-sites</a>.'
         "</p>" if ADSENSE_CLIENT else "")
 
+    # Consent Mode changes what the two paragraphs above actually do on a
+    # first visit, so say so rather than leaving "it sets cookies" to stand
+    # unqualified.
+    consent_para = (
+        "<p>Both start denied. Before any Google tag loads, the page sets "
+        "Google Consent Mode defaults that refuse analytics storage, "
+        "advertising storage, ad user data and ad personalisation. The "
+        "consent dialog Google serves on your first visit is what lifts "
+        "that; until you answer it, and for the whole visit if you decline, "
+        "the tags run without storage and set no cookies.</p>"
+        if (GA_ENABLED or ADSENSE_CLIENT) else "")
+
     if not (ga_para or ahrefs_para or ads_para):
         ga_para = ("<p>This site runs no analytics, no advertising and no "
                    "third-party tracking scripts. Nothing on these pages sets "
@@ -7692,8 +7727,10 @@ def privacy_page():
                        if on])
     if cookie_setters:
         cookies = ("<p>" + " and ".join(cookie_setters)
-                   + (" set their own cookies." if len(cookie_setters) > 1
-                      else " sets its own cookies.")
+                   + (" set their own cookies, once you have consented to "
+                      "them." if len(cookie_setters) > 1
+                      else " sets its own cookies, once you have consented to "
+                      "them.")
                    + (" Ahrefs Web Analytics and the site itself set none.</p>"
                       if AHREFS_KEY else " The site itself sets none.</p>"))
     else:
@@ -7706,6 +7743,7 @@ def privacy_page():
             'in full.</p></div>'
             "<h2>Analytics</h2>" + ga_para + ahrefs_para
             + ("<h2>Advertising</h2>" + ads_para if ads_para else "")
+            + ("<h2>Consent</h2>" + consent_para if consent_para else "")
             + "<h2>Fonts</h2>" + fonts
             + "<h2>What we never collect</h2>"
             "<p>There are no accounts, no logins and no forms on this site. We "
