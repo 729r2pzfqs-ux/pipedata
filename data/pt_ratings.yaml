@@ -6,56 +6,112 @@
 # permitted by B16.5; extrapolation is not.
 
 temperatures: [100, 200, 300, 400, 500, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
+#
+# Provenance (checked 2026-09-28). The standard itself was not consulted; the
+# values were checked against secondary reproductions of the B16.5 tables
+# (flange and valve manufacturers' rating sheets). Where two or more
+# independent sources agree the group is marked `checked: full`. Where part of
+# a table rests on one source it is marked `checked: partial` and `caveat`
+# says which part; the page prints the caveat.
+#
+# `materials` lists the forgings, castings and plate that B16.5 Table 1A puts
+# in the group. Pipe is not a Table 1A material, so the pipe normally used
+# with the group is carried separately in `pipe`.
+#
+# Corrected on 2026-09-28:
+#   - Group 1.1 Classes 300-2500 carried 1988/1996-edition values above 800 °F
+#     and in parts of the 200-400 °F and 700 °F columns.
+#   - Group 1.2 carried values that belong to no edition of Group 1.2, and a
+#     material list that was mostly Group 1.1.
+#   - Group 2.1 listed 316 materials and carried old Group 2.2 (316) values.
+#     316 is Group 2.2, which is now its own entry.
 
 groups:
   - slug: "1-1"
     name: "Group 1.1"
-    materials: "A105, A216 WCB, A515 Gr 70, A516 Gr 70, A350 LF2 (as forged)"
+    materials: "A105, A350 LF2, A350 LF6 Cl. 1, A350 LF3, A216 WCB, A515 Gr. 70, A516 Gr. 70, A537 Cl. 1"
+    pipe: "A106 Gr. B, A53 Gr. B"
+    checked: full
     blurb: >-
       The standard carbon steel group and by far the most common material in
       B16.5 flanges. A105 forged carbon steel sits here.
     ratings:
       "150":  [285, 260, 230, 200, 170, 140, 125, 110, 95, 80, 65, 50, 35, 20]
-      "300":  [740, 680, 655, 635, 605, 570, 550, 530, 505, 410, 270, 170, 105, 50]
-      "400":  [990, 900, 875, 845, 805, 755, 730, 710, 675, 550, 355, 230, 140, 70]
-      "600":  [1480, 1350, 1315, 1270, 1205, 1135, 1100, 1065, 1015, 825, 535, 345, 205, 105]
-      "900":  [2220, 2025, 1970, 1900, 1810, 1705, 1650, 1600, 1520, 1235, 805, 515, 310, 155]
-      "1500": [3705, 3375, 3280, 3170, 3015, 2840, 2745, 2665, 2535, 2055, 1340, 860, 515, 260]
-      "2500": [6170, 5625, 5470, 5280, 5025, 4730, 4575, 4440, 4230, 3430, 2230, 1430, 860, 430]
+      "300":  [740, 680, 655, 635, 605, 570, 550, 530, 505, 410, 320, 230, 135, 85]
+      "400":  [985, 905, 870, 845, 805, 755, 730, 710, 675, 550, 425, 305, 185, 115]
+      "600":  [1480, 1360, 1310, 1265, 1205, 1135, 1100, 1060, 1015, 825, 640, 460, 275, 170]
+      "900":  [2220, 2035, 1965, 1900, 1810, 1705, 1650, 1590, 1520, 1235, 955, 690, 410, 255]
+      "1500": [3705, 3395, 3270, 3170, 3015, 2840, 2745, 2655, 2535, 2055, 1595, 1150, 685, 430]
+      "2500": [6170, 5655, 5450, 5280, 5025, 4730, 4575, 4425, 4230, 3430, 2655, 1915, 1145, 715]
 
   - slug: "1-2"
     name: "Group 1.2"
-    materials: "A350 LF2 Cl 1, A203 Gr B, A516 Gr 65, A537 Cl 1"
+    materials: "A350 LF6 Cl. 2, A216 WCC, A352 LCC, A352 LC2, A352 LC3, A203 Gr. B, A203 Gr. E"
+    checked: partial
+    caveat: >-
+      The Class 400 row and the columns from 850 °F to 1000 °F rest on a
+      single secondary source. The other values agree in two independent
+      sources.
     blurb: >-
-      Carbon and carbon-manganese steels with a slightly lower allowable stress
-      than Group 1.1, including the low-temperature impact-tested grades.
+      Carbon, carbon-manganese and nickel steels, most of them cast or
+      impact-tested grades chosen for low-temperature service. The group is
+      rated slightly above Group 1.1 up to 700 °F.
     ratings:
-      "150":  [265, 250, 230, 200, 170, 140, 125, 110, 95, 80, 65, 50, 35, 20]
-      "300":  [695, 655, 640, 620, 605, 570, 550, 530, 505, 410, 270, 170, 105, 50]
-      "400":  [925, 875, 845, 825, 805, 755, 730, 710, 675, 550, 355, 230, 140, 70]
-      "600":  [1390, 1310, 1265, 1240, 1205, 1135, 1100, 1065, 1015, 825, 535, 345, 205, 105]
-      "900":  [2085, 1965, 1900, 1860, 1810, 1705, 1650, 1600, 1520, 1235, 805, 515, 310, 155]
-      "1500": [3470, 3270, 3170, 3095, 3015, 2840, 2745, 2665, 2535, 2055, 1340, 860, 515, 260]
-      "2500": [5785, 5450, 5285, 5160, 5025, 4730, 4575, 4440, 4230, 3430, 2230, 1430, 860, 430]
+      "150":  [290, 260, 230, 200, 170, 140, 125, 110, 95, 80, 65, 50, 35, 20]
+      "300":  [750, 750, 730, 705, 665, 605, 590, 555, 505, 410, 320, 225, 135, 85]
+      "400":  [1000, 1000, 970, 940, 885, 805, 785, 740, 675, 550, 425, 295, 185, 115]
+      "600":  [1500, 1500, 1455, 1405, 1330, 1210, 1175, 1110, 1015, 825, 640, 445, 275, 170]
+      "900":  [2250, 2250, 2185, 2110, 1995, 1815, 1765, 1665, 1520, 1235, 955, 670, 410, 255]
+      "1500": [3750, 3750, 3640, 3520, 3325, 3025, 2940, 2775, 2535, 2055, 1595, 1115, 685, 430]
+      "2500": [6250, 6250, 6070, 5865, 5540, 5040, 4905, 4630, 4230, 3430, 2655, 1855, 1145, 715]
 
   - slug: "2-1"
     name: "Group 2.1"
-    materials: "A182 F304, A182 F316, A312 TP304, A312 TP316, A240 304/316"
+    materials: "A182 F304, A182 F304H, A351 CF3, A351 CF8, A240 304, A240 304H"
+    pipe: "A312 TP304, A312 TP304H"
+    checked: full
     blurb: >-
-      Standard-carbon austenitic stainless steels. They start lower than carbon
-      steel at ambient but hold their rating far better above 800 °F.
+      Type 304 austenitic stainless steel. It starts lower than carbon steel
+      at ambient but holds its rating far better above 800 °F.
+    ratings:
+      "150":  [275, 230, 205, 190, 170, 140, 125, 110, 95, 80, 65, 50, 35, 20]
+      "300":  [720, 600, 540, 495, 465, 440, 430, 420, 415, 405, 395, 390, 380, 355]
+      "400":  [960, 800, 715, 660, 620, 590, 575, 565, 550, 540, 530, 520, 510, 470]
+      "600":  [1440, 1200, 1075, 995, 930, 885, 865, 845, 825, 810, 790, 780, 765, 710]
+      "900":  [2160, 1800, 1615, 1490, 1395, 1325, 1295, 1265, 1240, 1215, 1190, 1165, 1145, 1065]
+      "1500": [3600, 3000, 2690, 2485, 2330, 2210, 2160, 2110, 2065, 2030, 1980, 1945, 1910, 1770]
+      "2500": [6000, 5000, 4480, 4140, 3880, 3680, 3600, 3520, 3440, 3380, 3300, 3240, 3180, 2950]
+
+  - slug: "2-2"
+    name: "Group 2.2"
+    materials: "A182 F316, A182 F316H, A182 F317, A351 CF3M, A351 CF8M, A351 CG8M, A240 316, A240 316H, A240 317"
+    pipe: "A312 TP316, A312 TP316H"
+    checked: full
+    caveat: >-
+      One secondary source gives values that differ by 5 to 10 psig in a few
+      cells at 900 °F and above, probably from an earlier edition. The values
+      here are those on which three other sources agree.
+    blurb: >-
+      Type 316 and 317 austenitic stainless steel. The molybdenum that gives
+      these grades their corrosion resistance also gives them a slightly
+      higher rating than Type 304 at every temperature above ambient.
     ratings:
       "150":  [275, 235, 215, 195, 170, 140, 125, 110, 95, 80, 65, 50, 35, 20]
-      "300":  [720, 620, 560, 515, 480, 450, 445, 430, 425, 415, 405, 395, 385, 360]
-      "400":  [960, 825, 745, 685, 635, 600, 590, 575, 565, 555, 540, 525, 510, 480]
-      "600":  [1440, 1240, 1120, 1025, 955, 900, 885, 865, 845, 830, 810, 790, 770, 720]
-      "900":  [2160, 1860, 1680, 1540, 1430, 1350, 1330, 1295, 1270, 1245, 1215, 1180, 1155, 1080]
-      "1500": [3600, 3095, 2795, 2570, 2385, 2250, 2215, 2160, 2110, 2075, 2020, 1970, 1930, 1800]
-      "2500": [6000, 5160, 4660, 4280, 3975, 3750, 3690, 3600, 3520, 3455, 3370, 3285, 3215, 3000]
+      "300":  [720, 620, 560, 515, 480, 450, 440, 435, 425, 420, 420, 415, 385, 365]
+      "400":  [960, 825, 745, 685, 635, 600, 590, 580, 570, 565, 555, 555, 515, 485]
+      "600":  [1440, 1240, 1120, 1025, 955, 900, 885, 870, 855, 845, 835, 830, 775, 725]
+      "900":  [2160, 1860, 1680, 1540, 1435, 1355, 1325, 1305, 1280, 1265, 1255, 1245, 1160, 1090]
+      "1500": [3600, 3095, 2795, 2570, 2390, 2255, 2210, 2170, 2135, 2110, 2090, 2075, 1930, 1820]
+      "2500": [6000, 5160, 4660, 4280, 3980, 3760, 3680, 3620, 3560, 3520, 3480, 3460, 3220, 3030]
 
   - slug: "2-3"
     name: "Group 2.3"
-    materials: "A182 F304L, A182 F316L, A182 F317L, A240 304L/316L, A312 TP304L, A312 TP316L, A312 TP317L"
+    materials: "A182 F304L, A182 F316L, A182 F317L, A240 304L, A240 316L"
+    pipe: "A312 TP304L, A312 TP316L, A312 TP317L"
+    checked: full
+    caveat: >-
+      Type 304L is not to be used above 800 °F, so the 850 °F column applies
+      to 316L and 317L only.
     blurb: >-
       Low-carbon (L-grade) austenitic stainless steels, including 317L. The
       lower carbon buys weld-decay resistance at the cost of a slightly lower
@@ -72,10 +128,15 @@ groups:
 
   - slug: "1-9"
     name: "Group 1.9"
-    materials: "A182 F11 Cl. 2, A335 P11, A217 WC6, A387 Gr. 11 Cl. 2"
+    materials: "A182 F11 Cl. 2, A217 WC6, A387 Gr. 11 Cl. 2"
+    pipe: "A335 P11"
+    checked: partial
+    caveat: >-
+      The Class 400 row rests on a single secondary source. The other
+      classes agree in two independent sources.
     blurb: >-
       1.25Cr-0.5Mo alloy steel. The lightest of the common chrome-moly grades,
-      used where carbon steel's 800 °F ceiling is not enough but the service
+      used where carbon steel has lost too much of its rating but the service
       does not justify 2.25Cr-1Mo.
     ratings:
       "150":  [290, 260, 230, 200, 170, 140, 125, 110, 95, 80, 65, 50, 35, 20]
@@ -88,7 +149,12 @@ groups:
 
   - slug: "1-10"
     name: "Group 1.10"
-    materials: "A182 F22 Cl. 3, A335 P22, A217 WC9, A387 Gr. 22 Cl. 2"
+    materials: "A182 F22 Cl. 3, A217 WC9, A387 Gr. 22 Cl. 2"
+    pipe: "A335 P22"
+    checked: partial
+    caveat: >-
+      The Class 400 row rests on a single secondary source. The other
+      classes agree in two independent sources.
     blurb: >-
       2.25Cr-1Mo alloy steel. The standard refinery heater and reformer
       material, chosen over Group 1.9 for its better high-temperature creep
@@ -104,7 +170,12 @@ groups:
 
   - slug: "1-15"
     name: "Group 1.15"
-    materials: "A182 F91, A335 P91, A217 C12A, A387 Gr. 91 Cl. 2"
+    materials: "A182 F91, A217 C12A, A387 Gr. 91 Cl. 2"
+    pipe: "A335 P91"
+    checked: partial
+    caveat: >-
+      The Class 400 row rests on a single secondary source. The other
+      classes agree in two independent sources.
     blurb: >-
       9Cr-1Mo-V alloy steel. The modern high-energy steam material, with far
       better creep strength than Group 1.10 but a narrow PWHT window that

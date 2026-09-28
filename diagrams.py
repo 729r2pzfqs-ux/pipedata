@@ -361,9 +361,10 @@ def flange_section(slug, labels=True):
                       ext=(_CY - _RO, _CY - _RO))
         # length through hub below
         if hub_end:
-            body += dim_h(_XF, hub_end, 388, "Length through hub",
-                          ext=(_CY + _RRF, _CY + (68 if slug != "weld-neck"
-                                                  else _RP)), above=False)
+            # B16.5 measures Y from the flange face, without the raised face
+            body += dim_h(face, hub_end, 388, "Length through hub",
+                          ext=(_CY + _RO, _CY + (68 if slug != "weld-neck"
+                                                 else _RP)), above=False)
         else:
             body += dim_h(_XF, face, 388, "Raised face", above=False,
                           ext=(_CY + _RRF, _CY + _RO))

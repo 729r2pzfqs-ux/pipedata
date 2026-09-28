@@ -19,8 +19,9 @@ ASME B16 and B36 standards. Imperial primary, metric alongside.
 | Compare | Schedule, flange type, flange class, material and fitting pairs | 24 + index |
 | Guides | Sizing, wall thickness, test pressure, torque, material choice | 10 + index |
 
-745 pages are built. 174 are indexed and in the sitemap; the other 571 are
-single-row extracts kept live as `noindex` (see below).
+746 pages are built. 171 are indexed and in the sitemap; the rest are kept
+live as `noindex`: 570 single-row extracts (see below) and 4 notices for
+flanges B16.5 does not publish.
 
 ### Page granularity: what is indexed and what is not
 
@@ -93,6 +94,33 @@ wherever it possibly can be, and spot-checked against the built HTML when it
 cannot.
 
 ### Data accuracy
+
+**The data has been checked against secondary reproductions of the ASME
+tables, not against the standards themselves.** A check on 2026-09-28 found
+and corrected:
+
+| File | What was wrong |
+| --- | --- |
+| `pt_ratings.yaml` | Group 1.1 Classes 300 to 2500 carried 1988/1996-edition values above 800 °F. Group 1.2 had the wrong materials and a table belonging to no edition of that group. Group 2.1 listed 316 and carried old Group 2.2 values; 316 is now its own Group 2.2. |
+| `flanges_b165.yaml` | Every Class 150 and 300 `tf`, `y_wn` and `y_so` included the 1/16 in raised face, on a site that says it is excluded. Class 150 `y_so` for NPS 14 to 24 were lap joint values. |
+| `flange_types.yaml` | Slip-on and socket weld were listed in classes and sizes B16.5 does not publish. |
+
+Still unconfirmed, and marked as such in the YAML comments and on the pages:
+
+- Class 400 rows of Groups 1.2, 1.9, 1.10 and 1.15, and Group 1.2 from 850 °F
+  up (one source only).
+- Class 300 `y_wn` and `y_so` (three slip-on values confirmed; the rest follow
+  from the same 1/16 in change).
+- Size range of threaded flanges in Classes 1500 and 2500 (sources disagree).
+- Raised face diameters above NPS 3, and for Classes 900 and above.
+- Lap joint hub lengths are not in `data/` at all. The slip-on figure must not
+  be shown under a lap joint heading.
+
+`checked: full | partial` and `caveat` on each rating group drive the notice
+printed on its page. `max_nps` and `unpublished` on each flange type decide
+which rows a class page lists and which addresses carry a "not published"
+notice. When a value is confirmed against the standard itself, update the
+flag and the comment in the same commit.
 
 `data/flanges_b1647.yaml` deliberately tabulates **Series A Class 150 only**. The
 other B16.47 series/class combinations are described but not tabulated — large

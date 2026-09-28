@@ -280,6 +280,12 @@ def load():
         blk["rows"].sort(key=lambda r: r["val"])
 
     ftypes = load_yaml("flange_types.yaml")["types"]
+    for t in ftypes:
+        t["classes"] = [str(c) for c in t["classes"]]
+        t["max_nps"] = {str(k): str(v)
+                        for k, v in (t.get("max_nps") or {}).items()}
+        t["unpublished"] = [str(c) for c in t.get("unpublished") or []]
+        t["unchecked"] = [str(c) for c in t.get("unchecked") or []]
     b1647 = load_yaml("flanges_b1647.yaml")
     fittings = load_yaml("fittings_b169.yaml")["fittings"]
     for f in fittings:
@@ -1231,9 +1237,11 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
                       "Raised face height"], hub_rows,
                      caption=f"ASME B16.5 length through hub, NPS {e_nps}.",
                      note="Length through hub is how far the flange stands "
-                          "off the joint face, which is what a spool drawing "
-                          "needs. It is tabulated here for Classes 150 and "
-                          "300.")
+                          "off the joint, which is what a spool drawing "
+                          "needs. It is measured from the flange face, "
+                          "without the raised face, and is tabulated here "
+                          "for Classes 150 and 300. The Class 300 figures "
+                          "are only partly checked.")
                if hub_rows else "")
             + '<div class="chip-links">'
             + "".join(f'<a class="chip-link" href="/flanges/{slug_}/">'
@@ -1949,10 +1957,9 @@ TYPE_BAND_NOTES = {
         "and fatigue sooner than a butt weld. Check the project "
         "specification before choosing one here.",
     ("slip-on", "high"):
-        "A slip-on is an unusual choice at this class. ASME B16.5 does not "
-        "offer every flange type in every size at its highest classes, so "
-        "confirm against the standard that the size needed is published "
-        "as a slip-on before specifying one; most high-pressure "
+        "A slip-on is an unusual choice at this class. ASME B16.5 publishes "
+        "it through NPS 24 in Class 900, through NPS 2 1/2 only in Class "
+        "1500, and not at all in Class 2500. Most high-pressure "
         "specifications call for a weld neck instead.",
     ("socket-weld", "low"):
         "Socket weld flanges are a small-bore item. At this class they are "
@@ -1963,10 +1970,9 @@ TYPE_BAND_NOTES = {
         "typically found on small high-pressure lines such as hydraulic, "
         "chemical injection and steam tracing piping.",
     ("socket-weld", "high"):
-        "Socket weld flanges are a small-bore item, and ASME B16.5 does not "
-        "offer them in every size at its highest classes. Confirm the size "
-        "against the standard before specifying one; above small bore the "
-        "weld neck takes over.",
+        "Socket weld flanges are a small-bore item. In Class 1500 ASME "
+        "B16.5 publishes them through NPS 2 1/2 only, and it publishes none "
+        "in Class 2500. Above small bore the weld neck takes over.",
     ("lap-joint", "low"):
         "A lap joint flange is loose on the pipe and bears against a stub "
         "end, so it can be turned to line up the bolt holes. At this class "
@@ -2040,6 +2046,52 @@ CLASS_READING = {
 }
 
 
+def type_rows(ft, cls, blk):
+    """The rows of a class table that this flange type is published in."""
+    top = ft["max_nps"].get(cls)
+    if not top:
+        return blk["rows"]
+    return [r for r in blk["rows"] if r["val"] <= nps_value(top)]
+
+
+def flange_unpublished_page(ft, cls, ftypes):
+    """Notice kept at the address of a page for a flange ASME B16.5 does not
+    publish. The site once carried a dimension table here; taking the page
+    away would break links to it, and leaving the table would be wrong."""
+    url = f"/flanges/{ft['slug']}/class-{cls}/"
+    crumb_html, crumb_ld = crumbs([
+        ("Home", "/"), ("Flanges", "/flanges/"),
+        (ft["name"], f"/flanges/{ft['slug']}/"), (f"Class {cls}", None)])
+    others = "".join(
+        f'<a class="chip-link" href="/flanges/{t["slug"]}/class-{cls}/">'
+        f'Class {cls} {esc(t["short"])}</a>'
+        for t in ftypes if cls in t["classes"])
+    same = "".join(
+        f'<a class="chip-link" href="/flanges/{ft["slug"]}/class-{c}/">'
+        f'Class {c} {esc(ft["short"])}</a>' for c in ft["classes"])
+    body = (crumb_html + '<div class="wrap narrow">'
+            f'<div class="page-head"><h1>Class {cls} {esc(ft["name"])}</h1>'
+            f'<p class="lede">ASME B16.5 does not publish a '
+            f'{esc(ft["short"])} flange in Class {cls}.</p></div>'
+            '<div class="callout warn"><p><strong>Correction.</strong> This '
+            'page used to show a dimension table. The figures in it were '
+            f'those of other Class {cls} flange types, and they did not '
+            f'describe a {esc(ft["short"])} flange that the standard '
+            'publishes. The table has been withdrawn.</p></div>'
+            f"<p>The {esc(ft['short'])} flange is published in "
+            f"{comma_list(['Class ' + c for c in ft['classes']])}. In Class "
+            f"{cls} the flange types ASME B16.5 does publish are listed "
+            f"below.</p>"
+            f'<h2>Flange types published in Class {cls}</h2>'
+            f'<div class="chip-links">{others}</div>'
+            f'<h2>{esc(ft["name"])} in other classes</h2>'
+            f'<div class="chip-links">{same}</div></div>')
+    page(url, f"Class {cls} {ft['short'].title()} Flange — Not Published",
+         f"ASME B16.5 does not publish a {ft['short']} flange in Class {cls}. "
+         f"The classes it is published in, and the flange types available "
+         f"in Class {cls}.", body, ld=[crumb_ld], noindex=True)
+
+
 def group_rating(slug, cls, idx):
     for g in PT_GROUPS:
         if g["slug"] == slug and cls in g["ratings"]:
@@ -2049,9 +2101,14 @@ def group_rating(slug, cls, idx):
 
 
 def flange_class_page(ft, cls, blk, b165, ftypes, sizes_by_nps):
+    full_rows = blk["rows"]
+    blk = dict(blk, rows=type_rows(ft, cls, blk))
     rows = []
     rf = b165["raised_face"]
-    show_hub = any(r.get("y_wn") for r in blk["rows"]) and ft["slug"] != "blind"
+    # Lap joint hub lengths are tabulated separately in B16.5 and are not in
+    # data/, so the slip-on figure must not be shown under a lap joint heading.
+    show_hub = (any(r.get("y_wn") for r in blk["rows"])
+                and ft["slug"] not in ("blind", "lap-joint"))
     hub_key = "y_wn" if ft["slug"] == "weld-neck" else "y_so"
 
     headers = ["Size", "Flange OD", "Thickness", "Bolt circle", "Bolts",
@@ -2109,7 +2166,7 @@ def flange_class_page(ft, cls, blk, b165, ftypes, sizes_by_nps):
             f"{cs800} psig at 800 °F.")
         if ss100 and ss800:
             rating_para += (
-                f" In Group 2.1 stainless the same flange starts at {ss100} "
+                f" In Type 304 stainless, Group 2.1, it starts at {ss100} "
                 f"psig and still holds {ss800} psig at 800 °F, so the "
                 f"material and the metal temperature have to be fixed before "
                 f"the class can be.")
@@ -2148,12 +2205,33 @@ def flange_class_page(ft, cls, blk, b165, ftypes, sizes_by_nps):
                      "the whole of its dimensional definition. Thickness shown is "
                      "the minimum required by B16.5 — many mills supply "
                      "heavier.</p>")
-    if ft["slug"] == "socket-weld" and nps_value(largest["nps"]) > 3:
-        type_note += ("<p>ASME B16.5 publishes socket weld flanges through "
-                      "NPS 3 only. Rows above NPS 3 in the table are the "
-                      "corresponding slip-on dimensions, shown so the bolt "
-                      "pattern can still be looked up; a socket weld flange is "
-                      "not available in those sizes.</p>")
+    if len(blk["rows"]) < len(full_rows):
+        type_note += (f"<p>ASME B16.5 publishes the {esc(ft['short'])} flange "
+                      f"in Class {cls} up to NPS {esc(largest['nps'])} only. "
+                      f"The Class {cls} table runs on to NPS "
+                      f"{esc(full_rows[-1]['nps'])} for other flange types, "
+                      f"but there is no {esc(ft['short'])} flange in those "
+                      f"sizes, so they are not listed here.</p>")
+    if ft["slug"] == "lap-joint":
+        type_note += ("<p>Length through hub is not shown for the lap joint "
+                      "flange. ASME B16.5 tabulates it separately from the "
+                      "slip-on hub, and from NPS 14 upward the lap joint hub "
+                      "is the longer of the two. Those figures are not yet "
+                      "on this site.</p>")
+    if show_hub and cls == "300":
+        type_note += ("<p>Class 300 hub lengths on this page have been "
+                      "checked against a second source in three sizes only. "
+                      "Confirm the hub length against the standard where a "
+                      "spool dimension depends on it.</p>")
+    if cls in ft["unchecked"]:
+        type_note += ('<div class="callout warn"><p><strong>Size range not '
+                      f'confirmed.</strong> The sources we checked disagree on '
+                      f'how far up the size range ASME B16.5 publishes a '
+                      f'{esc(ft["short"])} flange in Class {cls}. The table '
+                      f'above gives the Class {cls} flange dimensions for '
+                      f'every size; confirm in the standard that the size you '
+                      f'need is published as a {esc(ft["short"])} flange '
+                      f'before specifying one.</p></div>')
     if blk.get("note"):
         type_note += f"<p>{esc(blk['note'])}</p>"
 
@@ -2247,9 +2325,12 @@ def flange_class_page(ft, cls, blk, b165, ftypes, sizes_by_nps):
                      'The <a href="/guides/flange-bolt-torque/">bolt torque '
                      "guide</a> gives the method and other nut factors."))
 
-    six_pipe = sizes_by_nps.get("6")
+    # NPS 6 where the type is published that large, else its largest size.
+    face_nps = ("6" if any(r["nps"] == "6" for r in blk["rows"])
+                else largest["nps"])
+    six_pipe = sizes_by_nps.get(face_nps)
     face_svg, fr, frf, fhole = fig_flange_face(
-        b165, cls, "6",
+        b165, cls, face_nps,
         bore=(None if ft["slug"] == "blind" or not six_pipe else
               inside_dia(six_pipe["od"], six_pipe["walls"]["STD"])
               if ft["slug"] == "weld-neck" else six_pipe["od"]))
@@ -2375,9 +2456,11 @@ def flange_type_page(ft, b165, ftypes):
     cards = "".join(
         f'<a class="card" href="/flanges/{ft["slug"]}/class-{c}/">'
         f'<span class="card-title">Class {c}</span>'
-        f'<span class="card-meta">NPS {b165["classes"][c]["rows"][0]["nps"]} – '
-        f'{b165["classes"][c]["rows"][-1]["nps"]}</span>'
-        f'<span class="card-spec">{len(b165["classes"][c]["rows"])} sizes</span></a>'
+        f'<span class="card-meta">NPS '
+        f'{type_rows(ft, c, b165["classes"][c])[0]["nps"]} – '
+        f'{type_rows(ft, c, b165["classes"][c])[-1]["nps"]}</span>'
+        f'<span class="card-spec">'
+        f'{len(type_rows(ft, c, b165["classes"][c]))} sizes</span></a>'
         for c in ft["classes"])
 
     pros = "".join(f"<li>{esc(p)}</li>" for p in ft["pros"])
@@ -2389,7 +2472,22 @@ def flange_type_page(ft, b165, ftypes):
     rows = [[f'<strong>NPS {esc(r["nps"])}</strong>', dual(r["o"], 2),
              dual(r["tf"], 2), dual(r["bc"], 2), str(r["bolts"]),
              esc(r["bolt"]) + " in", dual(rf[r["nps"]], 2)]
-            for r in c150["rows"]]
+            for r in type_rows(ft, "150", c150)]
+
+    by_limit = defaultdict(list)
+    for k, v in ft["max_nps"].items():
+        by_limit[v].append(k)
+    limits = [f"NPS {v} in "
+              + ("Class " if len(ks) == 1 else "Classes ") + comma_list(ks)
+              for v, ks in by_limit.items()]
+    range_txt = ("NPS 1/2 through NPS 24, and through NPS 12 in Class 2500"
+                 if not ft["max_nps"] and "2500" in ft["classes"] else
+                 "NPS 1/2 through " + comma_list(limits)
+                 + (", and through NPS 24 in the other classes"
+                    if len(ft["max_nps"]) < len(ft["classes"]) else ""))
+    not_pub = (f" It does not publish a {ft['short']} flange in "
+               f"Class {comma_list(ft['unpublished']).replace(' and ', ' or ')}."
+               if ft["unpublished"] else "")
 
     q = [
         (f"When should I use a {ft['short']} flange?",
@@ -2397,7 +2495,7 @@ def flange_type_page(ft, b165, ftypes):
         (f"What pressure classes does a {ft['short']} flange come in?",
          f"<p>ASME B16.5 publishes the {ft['short']} flange in "
          f"{comma_list(['Class ' + c for c in ft['classes']])}, in sizes "
-         f"NPS 1/2 through NPS 24. Above NPS 24 large-diameter flanges are "
+         f"{range_txt}.{not_pub} Above NPS 24 large-diameter flanges are "
          f"covered by <a href='/flanges/large/'>ASME B16.47</a> instead.</p>"),
         ("Does the flange face type change these dimensions?",
          "<p>The flange outside diameter, bolt circle and bolting are the same "
@@ -2426,7 +2524,11 @@ def flange_type_page(ft, b165, ftypes):
             + facts([("Standard", "ASME B16.5"),
                      ("Abbreviation", esc(ft["abbrev"])),
                      ("Pressure classes", str(len(ft["classes"]))),
-                     ("Size range", "NPS 1/2 – NPS 24"),
+                     ("Size range",
+                      "NPS 1/2 – NPS "
+                      + max((type_rows(ft, c, b165["classes"][c])[-1]
+                             for c in ft["classes"]),
+                            key=lambda r: r["val"])["nps"]),
                      ("Typical service", esc(ft["use"]))])
             + dg.figure(
                 [dg.flange_section(ft["slug"]),
@@ -3556,14 +3658,18 @@ GROUP_NOTES = {
            "not normally used for long periods above about 800 °F, where "
            "the carbide in the steel can slowly turn to graphite and the "
            "metal loses strength.",
-    "1-2": "These are carbon and carbon-manganese steels. Several of them "
-           "are chosen for their toughness at low temperature rather than "
-           "for extra strength, so the group often appears on cold service "
-           "where ordinary A105 is not permitted.",
-    "2-1": "This is the standard austenitic stainless steel group. It is "
-           "chosen for corrosion resistance, for cleanliness, for very low "
-           "temperatures, and for temperatures beyond the useful range of "
-           "carbon steel.",
+    "1-2": "These are carbon, carbon-manganese and nickel steels, most of "
+           "them castings and impact-tested grades. They are chosen mainly "
+           "for their toughness at low temperature, so the group often "
+           "appears on cold service where ordinary A105 is not permitted.",
+    "2-1": "This is Type 304, the most widely used austenitic stainless "
+           "steel. It is chosen for corrosion resistance, for cleanliness, "
+           "for very low temperatures, and for temperatures beyond the "
+           "useful range of carbon steel.",
+    "2-2": "This is Type 316 and Type 317, the austenitic stainless steels "
+           "that contain molybdenum. They are chosen over Type 304 where "
+           "chlorides or aggressive process chemistry would pit it, and "
+           "they carry a slightly higher rating than Type 304 when hot.",
     "2-3": "These are the low-carbon L grades of austenitic stainless "
            "steel. The lower carbon protects the weld zone from "
            "intergranular corrosion, and it costs some strength, so the "
@@ -3595,6 +3701,10 @@ def ref_pt_ratings(pt):
         for g in pt["groups"])
 
     g11 = next(g for g in pt["groups"] if g["slug"] == "1-1")
+    g22 = next(g for g in pt["groups"] if g["slug"] == "2-2")
+    i900 = temps.index(900)
+    cross = next(t for i, t in enumerate(temps)
+                 if g22["ratings"]["300"][i] > g11["ratings"]["300"][i])
     headers = ["Class"] + [f"{t} °F" for t in temps]
     rows = [[f"<strong>Class {c}</strong>"] + [str(v) for v in g11["ratings"][c]]
             for c in ["150", "300", "400", "600", "900", "1500", "2500"]]
@@ -3621,20 +3731,25 @@ def ref_pt_ratings(pt):
                     note="Interpolation between listed temperatures is "
                          "permitted. Extrapolation beyond the table is not.")
             + "<h2>Why stainless crosses over carbon steel</h2>"
-            "<p>Carbon steel starts higher and falls off a cliff. Austenitic "
-            "stainless starts lower — a Class 300 F316 flange is 720 psig at "
-            "ambient against carbon steel's 740 — but at 900 °F the stainless is "
-            "still holding 395 psig while the carbon steel has dropped to 170. "
-            "Above roughly 650 °F the stainless is the stronger flange, which is "
-            "why high-temperature service specifies it even where corrosion is "
-            "not the concern.</p>"
+            "<p>Carbon steel starts higher and falls away steeply once it "
+            "is hot. Austenitic stainless starts lower — a Class 300 flange "
+            f"in Type 316 is {g22['ratings']['300'][0]} psig at ambient "
+            f"against carbon steel's {g11['ratings']['300'][0]} — but at "
+            f"900 °F the stainless is still holding {g22['ratings']['300'][i900]} "
+            f"psig while the carbon steel has dropped to "
+            f"{g11['ratings']['300'][i900]}. From {cross} °F upward the "
+            "stainless is the stronger flange, which is why high-temperature "
+            "service specifies it even where corrosion is not the "
+            "concern.</p>"
             f'<h2>All material groups</h2><div class="grid">{cards}</div>')
 
     q = [
         ("What pressure is a Class 150 flange rated for?",
-         "<p>285 psig at 100 °F in A105 carbon steel, falling to 140 psig at "
-         "600 °F and 20 psig at 1000 °F. In 316 stainless it is 275 psig at "
-         "100 °F. The class number itself is not a pressure.</p>"),
+         f"<p>{g11['ratings']['150'][0]} psig at 100 °F in A105 carbon "
+         f"steel, falling to {g11['ratings']['150'][temps.index(600)]} psig "
+         f"at 600 °F and {g11['ratings']['150'][-1]} psig at 1000 °F. In "
+         f"Type 316 stainless it is {g22['ratings']['150'][0]} psig at "
+         f"100 °F. The class number itself is not a pressure.</p>"),
         ("Can I interpolate between temperatures in the table?",
          "<p>Yes. ASME B16.5 explicitly permits linear interpolation between "
          "listed temperatures. It does not permit extrapolation beyond the ends "
@@ -3753,7 +3868,10 @@ def ref_pt_ratings(pt):
              f'<div class="page-head"><h1>{esc(g["name"])} Pressure-Temperature '
              f'Ratings</h1><p class="lede">{esc(g["blurb"])}</p></div>'
              + facts([("Standard", "ASME B16.5"), ("Group", esc(g["name"])),
-                      ("Materials", esc(g["materials"])),
+                      ("Materials", esc(g["materials"]))]
+                     + ([("Pipe normally used with it", esc(g["pipe"]))]
+                        if g.get("pipe") else [])
+                     + [
                       ("Class 150 at 100 °F", psi_bar(r150[0])),
                       ("Class 150 at 600 °F", psi_bar(r150[5]))])
              + table(headers, rows,
@@ -3764,6 +3882,11 @@ def ref_pt_ratings(pt):
                           + ("" if max_t >= 1000 else
                              f" ASME B16.5 does not publish a rating for this "
                              f"group above {max_t} °F."))
+             + (f'<div class="callout warn"><p><strong>How far this table '
+                f'has been checked.</strong> {esc(g["caveat"])} None of the '
+                f'values on this site has been checked against the standard '
+                f'itself; see <a href="/about/#method">how the figures are '
+                f'checked</a>.</p></div>' if g.get("caveat") else "")
              + use_html + g_read
              + fh
              + f'<h2>Other material groups</h2>'
@@ -4239,7 +4362,10 @@ def ref_stainless(ss, pipes, cmp_):
         body, faq_pairs=q, card_meta="B36.19M · 5S, 10S, 40S, 80S")
 
 
-def ref_face_types():
+def ref_face_types(b165):
+    # The worked figure is read from the data, so it follows a correction.
+    blk300 = b165["classes"]["300"]
+    six = next(r for r in blk300["rows"] if r["nps"] == "6")
     faces = [
         ("Raised Face (RF)", "The default in ASME B16.5 and by far the most "
          "common. A circular raised area carries the gasket, concentrating bolt "
@@ -4288,9 +4414,14 @@ def ref_face_types():
             "is nothing for the gasket to key into.</p>"
             "<h2>Flange thickness and the raised face</h2>"
             "<p>The thickness tabulated in B16.5 excludes the raised face. A "
-            "Class 300 NPS 6 flange is listed at 1.44 in and measures 1.50 in "
-            "overall with its 1/16 in raised face. Class 400 and above add "
-            "1/4 in. This matters when calculating stud bolt length.</p>")
+            f"Class 300 NPS 6 flange is listed at {n(six['tf'], 2)} in and "
+            f"measures {n(six['tf'] + blk300['rf_height'], 2)} in overall "
+            "with its 1/16 in raised face. Class 400 and above add 1/4 in. "
+            "This matters when calculating stud bolt length. Older "
+            "catalogues and editions before 2003 print the Class 150 and "
+            "300 thickness with the raised face included, so a figure "
+            "1/16 in larger than the one here is the same flange measured "
+            "the other way.</p>")
 
     q = [
         ("Can I bolt a raised face flange to a flat face flange?",
@@ -5376,8 +5507,8 @@ def cmp_flange_class(cfg, b165, pt, ftypes):
                     rt_rows,
                     caption=f"Pressure-temperature ratings, Class {ca} against "
                             f"Class {cb}, ASME B16.5.",
-                    note="Group 1.1 is A105 carbon steel; Group 2.1 is 304/316 "
-                         "stainless. Ratings are maximum allowable working "
+                    note="Group 1.1 is A105 carbon steel; Group 2.1 is Type "
+                         "304 stainless. Ratings are maximum allowable working "
                          "gauge pressure at the metal temperature.")
             + "<h2>The flange gets bigger, thicker and more heavily bolted</h2>"
             f"<p>Moving from Class {ca} to Class {cb} grows the flange outside "
@@ -5991,8 +6122,9 @@ def cmp_so_thd(b165, ftypes):
                      "Cl 300 OD", "Cl 300 hub", "Cl 300 bolting"], trs,
                     caption="Shared slip-on and threaded flange dimensions, "
                             "ASME B16.5 Classes 150 and 300.",
-                    note="Length through hub Y is published once for slip-on, "
-                         "threaded and socket weld flanges.")
+                    note="Slip-on and threaded flanges share one length "
+                         "through hub, measured from the flange face without "
+                         "the raised face.")
             + "<h2>Where threaded flanges earn their place</h2>"
             "<p>No hot work. In an operating plant, a live tank farm, or a "
             "classified area, getting a welding permit can take longer than the "
@@ -6150,7 +6282,7 @@ def cmp_lj_so(b165, ftypes):
             dual(blk["150"]["y_so"], 2), dual(blk["300"]["y_so"], 2)]
            for nps, blk in rows]
 
-    body = (facts([("Dimensions", "Same B16.5 table as slip-on"),
+    body = (facts([("Dimensions", "Same OD and bolting as slip-on"),
                    ("Wetted?", "Lap joint never touches the fluid"),
                    ("Extra component", "Lap joint needs a stub end"),
                    ("Bolt hole alignment", "Lap joint rotates freely")])
@@ -6176,11 +6308,16 @@ def cmp_lj_so(b165, ftypes):
             "grows with size and alloy cost.</p>"
             + UNITS_NOTE
             + table(["NPS", "Flange OD", "Bolt circle", "Bolting",
-                     "Cl 150 hub", "Cl 300 hub"], trs,
+                     "Cl 150 slip-on hub", "Cl 300 slip-on hub"], trs,
                     caption="Lap joint and slip-on flange dimensions, ASME "
-                            "B16.5 — one table serves both types.",
-                    note="Lap joint flanges use the slip-on dimensions. The "
-                         "mating stub end is dimensioned by ASME B16.9.")
+                            "B16.5.",
+                    note="Outside diameter, bolt circle and bolting are "
+                         "common to both types. The hub length shown is the "
+                         "slip-on figure. B16.5 tabulates the lap joint hub "
+                         "separately, and from NPS 14 upward it is longer "
+                         "than the slip-on hub; those figures are not yet on "
+                         "this site. The mating stub end is dimensioned by "
+                         "ASME B16.9.")
             + "<h2>The rotation advantage</h2>"
             "<p>A welded flange's bolt holes are fixed the moment the weld "
             "cools. Get the orientation wrong on a long spool with a flange at "
@@ -6540,7 +6677,7 @@ def cmp_cs_ss(pt, mats):
                  temps[-1])
 
     body = (facts([("Carbon steel group", "B16.5 Group 1.1 (A105)"),
-                   ("Stainless group", "B16.5 Group 2.1 (F304/F316)"),
+                   ("Stainless group", "B16.5 Group 2.1 (F304)"),
                    ("Ambient advantage", "Carbon steel"),
                    ("High-temperature advantage", f"Stainless, above {cross} °F")])
             + verdict(
@@ -6560,9 +6697,10 @@ def cmp_cs_ss(pt, mats):
             "steadily as temperature rises, while austenitic stainless flattens "
             f"out. By {cross} °F the stainless rating is the higher of the two, "
             "and by 1000 °F it is several times higher.</p>"
-            + "<p>Carbon steel is also hard-limited by oxidation and "
-            "graphitisation well before its rating runs out — most codes stop "
-            "carbon steel around 800 °F regardless of what the table says. "
+            + "<p>Carbon steel is also limited by oxidation and "
+            "graphitisation before its rating runs out. B16.5 permits it "
+            "above 800 °F but advises against prolonged use there, and most "
+            "specifications stop carbon steel at about that temperature. "
             "Stainless keeps going.</p>"
             + table(["Temperature", "Cl 150 carbon", "Cl 150 stainless",
                      "Difference", "Cl 300 carbon", "Cl 300 stainless",
@@ -6571,7 +6709,8 @@ def cmp_cs_ss(pt, mats):
                             "1.1 carbon steel against Group 2.1 austenitic "
                             "stainless.",
                     note="Group 1.1 is A105 and equivalents; Group 2.1 is "
-                         "F304/F316. Ratings are maximum allowable working "
+                         "F304. Type 316 is Group 2.2 and rates slightly "
+                         "higher when hot. Ratings are maximum allowable working "
                          "gauge pressure at metal temperature.")
             + "<h2>Strength and temperature limits by grade</h2>"
             + grade_table(mats,
@@ -6764,19 +6903,30 @@ def cmp_a106_a53(mats, pipes):
 
 def cmp_304_316(mats, pt):
     g21 = rating_row(pt, "300", "2-1")
+    g22 = rating_row(pt, "300", "2-2")
     g23 = rating_row(pt, "300", "2-3")
     temps = pt["temperatures"][:len(g23)]
-    rows = [[f"<strong>{t} °F</strong>", f"{g21[i]} psig", f"{g23[i]} psig",
-             pct(g23[i], g21[i])] for i, t in enumerate(temps)]
+    rows = [[f"<strong>{t} °F</strong>", f"{g21[i]} psig", f"{g22[i]} psig",
+             pct(g22[i], g21[i]), f"{g23[i]} psig"]
+            for i, t in enumerate(temps)]
+    # Where 316 rates above 304 and by how much, from the tables.
+    all_t = pt["temperatures"]
+    gaps = [(all_t[i], g22[i] - g21[i]) for i in range(len(all_t))]
+    widest = max(gaps, key=lambda x: x[1])
 
     body = (facts([("Key difference", "316 adds 2–3% molybdenum"),
                    ("Chloride pitting", "316 markedly better"),
                    ("Cost premium", "316 roughly 20–30% over 304"),
-                   ("Strength", "Identical specified minimums")])
+                   ("Strength", "Identical specified minimums"),
+                   ("B16.5 group", "304 is Group 2.1, 316 is Group 2.2")])
             + verdict(
-                "304 and 316 have the same specified minimum strength and the "
-                "same B16.5 material group, so they carry identical pressure "
-                "ratings. The difference is chemistry: 316 contains 2–3% "
+                "304 and 316 have the same specified minimum strength at "
+                "room temperature, but ASME B16.5 puts them in different "
+                "material groups: 304 in Group 2.1 and 316 in Group 2.2. "
+                f"Their flange ratings are equal at 100 °F and 316 rates "
+                f"higher when hot, by up to {widest[1]} psig in Class 300 "
+                f"at {widest[0]} °F. The main difference is chemistry: 316 "
+                "contains 2–3% "
                 "molybdenum, which markedly improves resistance to chloride "
                 "pitting and crevice corrosion. Use 304 for clean, dry and "
                 "non-chloride service; use 316 wherever chlorides, seawater, "
@@ -6810,15 +6960,17 @@ def cmp_304_316(mats, pt):
             "there is little to precipitate.</p>"
             "<p>For welded piping the practical default is 316L, which is why "
             "it is the most commonly stocked stainless pipe grade. The cost of "
-            "the L grade is a slightly lower allowable stress — B16.5 puts the "
-            "L grades in Group 2.3 rather than 2.1:</p>"
-            + table(["Temperature", "Class 300 Group 2.1 (304/316)",
-                     "Class 300 Group 2.3 (304L/316L)", "Difference"], rows,
-                    caption="ASME B16.5 Class 300 ratings, standard-carbon "
-                            "against low-carbon austenitic stainless.",
-                    note="Group 2.1 covers F304/F316 and A312 TP304/TP316; "
-                         "Group 2.3 covers the L grades, with no B16.5 rating "
-                         "published above 850 °F.")
+            "the L grade is a lower allowable stress — B16.5 puts the L "
+            "grades in Group 2.3, below both 304 and 316:</p>"
+            + table(["Temperature", "Class 300 Group 2.1 (304)",
+                     "Class 300 Group 2.2 (316)", "316 against 304",
+                     "Class 300 Group 2.3 (304L, 316L)"], rows,
+                    caption="ASME B16.5 Class 300 flange ratings for Type "
+                            "304, Type 316 and the low-carbon grades.",
+                    note="Group 2.1 covers F304 and F304H; Group 2.2 covers "
+                         "F316, F316H and F317; Group 2.3 covers the L "
+                         "grades, with no B16.5 rating published above "
+                         "850 °F and 304L limited to 800 °F.")
             + vs_columns(
                 "Choose 304 / 304L when",
                 ["The service is clean water, steam condensate, food or "
@@ -6854,12 +7006,15 @@ def cmp_304_316(mats, pt):
     q = [
         ("What is the main difference between 304 and 316 stainless?",
          "<p>316 contains 2–3% molybdenum, which substantially improves "
-         "resistance to chloride pitting and crevice corrosion. Strength, "
-         "pressure rating and temperature range are otherwise the same.</p>"),
+         "resistance to chloride pitting and crevice corrosion. Specified "
+         "minimum strength is the same; flange pressure ratings are equal "
+         "at 100 °F and slightly higher for 316 when hot.</p>"),
         ("Is 316 stainless stronger than 304?",
-         "<p>No. Both A312 TP304 and TP316 specify 75 ksi tensile and 30 ksi "
-         "yield minimum, and both sit in B16.5 material Group 2.1, so they "
-         "carry identical pressure-temperature ratings.</p>"),
+         "<p>Not at room temperature: both A312 TP304 and TP316 specify "
+         "75 ksi tensile and 30 ksi yield minimum. When hot, 316 keeps its "
+         "strength a little better, which is why B16.5 puts it in Group 2.2 "
+         f"and rates a Class 300 flange at {g22[5]} psig at 600 °F against "
+         f"{g21[5]} psig for 304 in Group 2.1.</p>"),
         ("Should I use 316 or 316L?",
          "<p>316L for anything welded, which is nearly all piping. The low "
          "carbon prevents sensitisation at the weld. The cost is a slightly "
@@ -6877,13 +7032,14 @@ def cmp_304_316(mats, pt):
 
     compare("304-vs-316-stainless-steel-pipe",
             "304 vs 316 Stainless Pipe: Which Grade to Use",
-            "316 adds 2–3% molybdenum for chloride pitting resistance; 304 and "
-            "316 have identical strength and pressure ratings. Full grade and "
-            "rating comparison.",
+            "316 adds 2–3% molybdenum for chloride pitting resistance. 304 "
+            "and 316 share minimum strength but sit in different B16.5 "
+            "rating groups. Full comparison.",
             "304 vs 316 Stainless Steel Pipe",
-            "Same strength, same pressure rating, different corrosion "
-            "behaviour. What the molybdenum buys, and why the L grade question "
-            "matters more than the 304-versus-316 one.",
+            "Same minimum strength, nearly the same pressure rating, "
+            "different corrosion behaviour. What the molybdenum buys, and "
+            "why the L grade question matters more than the 304-versus-316 "
+            "one.",
             body, faq_pairs=q, card_meta="Molybdenum · chlorides · L grades")
 
 
@@ -8321,7 +8477,8 @@ def guide_pt_derating(pt):
             + "<h2>Reading a rating in four steps</h2>"
             "<ol>"
             "<li><strong>Find the material group.</strong> A105 carbon steel is "
-            "Group 1.1; F304/F316 stainless is Group 2.1; the L grades are "
+            "Group 1.1; F304 stainless is Group 2.1 and F316 is Group 2.2; "
+            "the L grades are "
             "Group 2.3. The group, not the class, determines the shape of the "
             "curve.</li>"
             "<li><strong>Use the metal temperature.</strong> B16.5 rates on the "
@@ -9411,6 +9568,45 @@ def about_page(pipes, ftypes, fittings):
             "thinner than anything in B36.10M. They match Schedule 5 and "
             "Schedule 10 in every size where both are published.</li>"
             "</ul>"
+            "<p>A check of the flange data against published reproductions "
+            "of the ASME B16.5 tables, completed on "
+            + long_date(CONTENT_UPDATED) + ", found larger errors. All have "
+            "been corrected:</p>"
+            "<ul>"
+            "<li><strong>Pressure-temperature ratings, Group 1.1.</strong> "
+            "Classes 300 to 2500 carried values from an edition of the "
+            "1980s and 1990s at 850 °F and above, and in a few cells "
+            "below. At 900 °F a Class 300 carbon steel flange was shown as "
+            "170 psig; the current figure is 230 psig.</li>"
+            "<li><strong>Pressure-temperature ratings, Group 1.2.</strong> "
+            "Both the list of materials and the whole table were wrong and "
+            "have been replaced.</li>"
+            "<li><strong>Type 316 stainless steel</strong> was listed in "
+            "Group 2.1 with Type 304. It belongs to Group 2.2, which now "
+            "has its own table. The Group 2.1 table had carried old Type "
+            "316 values and now carries the Type 304 values.</li>"
+            "<li><strong>Flange thickness and hub length in Classes 150 "
+            "and 300</strong> were the older figures that include the "
+            "1/16 in raised face, on pages that said the raised face was "
+            "excluded. Every one was 0.06 in too large and has been "
+            "reduced.</li>"
+            "<li><strong>Slip-on hub lengths in Class 150, NPS 14 to "
+            "24,</strong> were those of the lap joint flange.</li>"
+            "<li><strong>Slip-on and socket weld flanges</strong> were "
+            "shown in classes and sizes in which ASME B16.5 does not "
+            "publish them. There is no Class 2500 slip-on flange, and no "
+            "socket weld flange in Class 400, 900 or 2500. Those pages "
+            "have been withdrawn and the remaining tables cut back to the "
+            "published sizes.</li>"
+            "</ul>"
+            "<p>The check was made against manufacturers' and distributors' "
+            "reproductions of the tables, with two or more independent "
+            "sources for most values. It was not made against the standard "
+            "itself. A few items could not be confirmed and are marked on "
+            "the pages concerned: the Class 400 rows of four rating "
+            "tables, the size range of threaded flanges in Classes 1500 "
+            "and 2500, and most of the Class 300 hub lengths. Raised face "
+            "diameters above NPS 3 have not been checked.</p>"
             '<h2 id="editions">Standards and editions</h2>'
             "<p>The table lists the standards these pages refer to and the "
             "most recent edition of each that we know of. The data on "
@@ -9949,6 +10145,8 @@ def main():
                 for r in blk["rows"]:
                     flange_detail_page(ft, cls, r, blk, b165, sizes_by_nps,
                                        ftypes)
+        for cls in ft["unpublished"]:
+            flange_unpublished_page(ft, cls, ftypes)
         flange_type_page(ft, b165, ftypes)
     flange_nps_list = sorted(
         {r["nps"] for blk in b165["classes"].values() for r in blk["rows"]},
@@ -9971,7 +10169,7 @@ def main():
     ref_bolt_chart(b165, ftypes)
     ref_materials(mats)
     ref_weight_chart(pipes)
-    ref_face_types()
+    ref_face_types(b165)
     ref_color_coding(pipes)
     reference_index()
 

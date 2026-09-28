@@ -1,5 +1,21 @@
 # The six flange types dimensioned by ASME B16.5.
-# `classes` lists the pressure classes each type is published in.
+#
+# `classes`      pressure classes the type is published in.
+# `max_nps`      largest size published in a class, where that is smaller than
+#                the class table itself. A class not named runs the full table.
+# `unpublished`  classes B16.5 does not publish for the type. The generator
+#                keeps a short noindex notice at the old address, since the
+#                site once carried a dimension page there.
+# `unchecked`    classes whose size range could not be confirmed.
+#
+# Corrected on 2026-09-28, against secondary reproductions of the B16.5 tables
+# (the standard itself was not consulted). Every type had been listed in all
+# seven classes and all sizes. Slip-on and socket weld are not:
+#   - slip-on: Class 1500 to NPS 2 1/2 only; no Class 2500.
+#   - socket weld: Classes 150, 300 and 600 to NPS 3; Class 1500 to NPS 2 1/2;
+#     no table of its own in Class 400 or 900; no Class 2500.
+# NOT CONFIRMED: the size range of threaded flanges in Classes 1500 and 2500,
+# where two sources disagree.
 
 types:
   - slug: weld-neck
@@ -25,7 +41,9 @@ types:
     name: "Slip-On Flange"
     short: "slip-on"
     abbrev: "SO"
-    classes: ["150", "300", "400", "600", "900", "1500", "2500"]
+    classes: ["150", "300", "400", "600", "900", "1500"]
+    max_nps: {"1500": "2 1/2"}
+    unpublished: ["2500"]
     blurb: >-
       Slides over the outside of the pipe and is fillet-welded both inside and
       outside. The bore is sized to the pipe OD rather than to a schedule, so a
@@ -43,11 +61,14 @@ types:
     name: "Socket Weld Flange"
     short: "socket weld"
     abbrev: "SW"
-    classes: ["150", "300", "400", "600", "900", "1500", "2500"]
+    classes: ["150", "300", "600", "1500"]
+    max_nps: {"150": "3", "300": "3", "600": "3", "1500": "2 1/2"}
+    unpublished: ["400", "900", "2500"]
     blurb: >-
       The pipe drops into a counterbored socket and is fillet-welded on the
-      outside only. Published in NPS 1/2 through NPS 3 for the lower classes;
-      the small-bore equivalent of a slip-on.
+      outside only. Published in NPS 1/2 through NPS 3 in Classes 150, 300 and
+      600 and through NPS 2 1/2 in Class 1500; the small-bore equivalent of a
+      slip-on.
     pros:
       - "Good static strength in small bore, and easy to fit up"
       - "No weld metal can protrude into the bore"
@@ -79,6 +100,7 @@ types:
     short: "threaded"
     abbrev: "THD"
     classes: ["150", "300", "400", "600", "900", "1500", "2500"]
+    unchecked: ["1500", "2500"]
     blurb: >-
       Tapped with an ASME B1.20.1 NPT taper thread and screwed onto matching
       pipe, with no welding at all. That makes it the flange for places where a
