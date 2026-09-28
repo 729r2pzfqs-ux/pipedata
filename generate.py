@@ -671,7 +671,7 @@ READING = {
         "Barlow and ASME B31.3, corrosion allowance and mill tolerance."),
     "/guides/hydrostatic-test-pressure/": (
         "Hydrostatic test pressure",
-        "What a line and its flanges are tested to, and why."),
+        "What a line is tested at, and what its flanges allow."),
     "/guides/pressure-temperature-derating/": (
         "Pressure-temperature derating",
         "Reading a P-T table and interpolating between temperatures."),
@@ -1262,6 +1262,7 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
                 f"<strong>Class {c}</strong>",
                 dual(r["y_wn"], 2) if r.get("y_wn") else '<span class="na">—</span>',
                 dual(r["y_so"], 2) if r.get("y_so") else '<span class="na">—</span>',
+                dual(r["y_lj"], 2) if r.get("y_lj") else '<span class="na">—</span>',
                 inch_mm(blk["rf_height"], 2),
             ])
         lo, hi = found[0], found[-1]
@@ -1294,14 +1295,13 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
               f"bored {inch_mm(id_thick)}. The schedule therefore belongs on "
               "every weld neck flange requisition.</p>"
             + (table(["Class", "Weld neck", "Slip-on / threaded",
-                      "Raised face height"], hub_rows,
+                      "Lap joint", "Raised face height"], hub_rows,
                      caption=f"ASME B16.5 length through hub, NPS {e_nps}.",
                      note="Length through hub is how far the flange stands "
                           "off the joint, which is what a spool drawing "
                           "needs. It is measured from the flange face, "
                           "without the raised face, and is tabulated here "
-                          "for Classes 150 and 300. The Class 300 figures "
-                          "are only partly checked.")
+                          "for Classes 150 and 300.")
                if hub_rows else "")
             + '<div class="chip-links">'
             + "".join(f'<a class="chip-link" href="/flanges/{slug_}/">'
@@ -1797,7 +1797,7 @@ def schedule_page(k, pipes):
                 f"{len(sizes)} sizes · ASME B36.10")
 
 
-WATER_LB_GAL = 8.3454   # US gallon of fresh water at 60 °F
+WATER_LB_GAL = 8.3454   # US gallon of fresh water at its densest, 39 °F
 SQIN_TO_SQMM = 645.16
 
 
@@ -2218,11 +2218,10 @@ def flange_class_page(ft, cls, blk, b165, ftypes, sizes_by_nps):
     blk = dict(blk, rows=type_rows(ft, cls, blk))
     rows = []
     rf = b165["raised_face"]
-    # Lap joint hub lengths are tabulated separately in B16.5 and are not in
-    # data/, so the slip-on figure must not be shown under a lap joint heading.
-    show_hub = (any(r.get("y_wn") for r in blk["rows"])
-                and ft["slug"] not in ("blind", "lap-joint"))
-    hub_key = "y_wn" if ft["slug"] == "weld-neck" else "y_so"
+    # Each type reads its own hub length: the lap joint hub is tabulated
+    # separately in B16.5 and is longer than the slip-on hub in large sizes.
+    show_hub = any(r.get("y_wn") for r in blk["rows"]) and ft["slug"] != "blind"
+    hub_key = {"weld-neck": "y_wn", "lap-joint": "y_lj"}.get(ft["slug"], "y_so")
 
     headers = ["Size", "Flange OD", "Thickness", "Bolt circle", "Bolts",
                "Bolt dia.", "Raised face OD"]
@@ -2325,20 +2324,20 @@ def flange_class_page(ft, cls, blk, b165, ftypes, sizes_by_nps):
                       f"{esc(full_rows[-1]['nps'])} for other flange types, "
                       f"but there is no {esc(ft['short'])} flange in those "
                       f"sizes, so they are not listed here.</p>")
-    if ft["slug"] == "lap-joint":
-        type_note += ("<p>Length through hub is not shown for the lap joint "
-                      "flange. ASME B16.5 tabulates it separately from the "
-                      "slip-on hub, and from NPS 14 upward the lap joint hub "
-                      "is the longer of the two. Those figures are not yet "
-                      "on this site.</p>")
-    if show_hub and cls == "300":
-        type_note += ("<p>Class 300 hub lengths on this page have been "
-                      "checked against a second source in three sizes only. "
-                      "Confirm the hub length against the standard where a "
-                      "spool dimension depends on it.</p>")
+    if ft["slug"] == "lap-joint" and show_hub:
+        type_note += ("<p>The hub length shown is the lap joint figure, "
+                      "which ASME B16.5 tabulates separately from the "
+                      "slip-on hub and which is longer than it in the large "
+                      "sizes. Some makers supply lap joint flanges to the "
+                      "slip-on hub length, so confirm which you are "
+                      "getting. In Classes 150 and 300 a lap joint flange "
+                      "is also made 1/16 in thicker than the thickness "
+                      "tabulated here; that figure comes from a single "
+                      "source.</p>")
     if cls in ft["class_notes"]:
-        type_note += ('<div class="callout warn"><p><strong>No table of its '
-                      f'own.</strong> {esc(ft["class_notes"][cls])}</p></div>')
+        type_note += ('<div class="callout warn"><p><strong>Not fully '
+                      f'confirmed.</strong> {esc(ft["class_notes"][cls])}'
+                      '</p></div>')
     if cls in ft["unchecked"]:
         type_note += ('<div class="callout warn"><p><strong>Size range not '
                       f'confirmed.</strong> The sources we checked disagree on '
@@ -4555,7 +4554,7 @@ def ref_face_types(b165):
             f'<div class="face-grid">{cards}</div>'
             + "<h2>Surface finish matters as much as the face</h2>"
             "<p>ASME B16.5 specifies a serrated finish on raised and flat faces, "
-            "either concentric or spiral, at 125 to 500 microinches Ra. The "
+            "either concentric or spiral, at 125 to 250 microinches Ra (3.2 to 6.3 micrometres), with 45 to 55 grooves per inch. The "
             "serrations bite into a soft gasket and hold it in place. A face "
             "machined smooth — which looks better — seals worse, because there "
             "is nothing for the gasket to key into.</p>"
@@ -4598,46 +4597,60 @@ def ref_face_types(b165):
         body, faq_pairs=q, card_meta="RF · FF · RTJ · T&G · M&F")
 
 
+# ASME A13.1-2023, as reproduced by two pipe marker makers. The 2023 edition
+# changed the scheme of 2015 and 2020: combustible fluids moved in with
+# flammable under yellow, brown became user-defined, and gray, which had been
+# user-defined, became the colour for steam and hot water. A13_CHANGED states
+# the older scheme so that a reader looking at markers bought before 2023 is
+# not told they are wrong. Checked 2026-09-28; the standard was not consulted.
+A13_EDITION = "2023"
+
 A13_SCHEME = [
-    ("Flammable and oxidizing fluids", "#000000", "#FFD100", "Black", "Yellow"),
-    ("Combustible fluids", "#FFFFFF", "#6B4226", "White", "Brown"),
-    ("Toxic and corrosive fluids", "#000000", "#F07300", "Black", "Orange"),
     ("Fire-quenching fluids", "#FFFFFF", "#C8102E", "White", "Red"),
-    ("Water — potable, cooling, boiler feed and other", "#FFFFFF", "#00843D",
+    ("Toxic and corrosive fluids", "#000000", "#F07300", "Black", "Orange"),
+    ("Flammable, combustible and oxidizing fluids", "#000000", "#FFD100",
+     "Black", "Yellow"),
+    ("Steam, steam condensate, boiler feed water and other hot water",
+     "#000000", "#9AA0A6", "Black", "Gray"),
+    ("Potable, cooling and other cold or tepid water", "#FFFFFF", "#00843D",
      "White", "Green"),
     ("Compressed air", "#FFFFFF", "#0057B8", "White", "Blue"),
 ]
 
 A13_USER = [
     ("User defined", "#FFFFFF", "#5B2D8E", "White", "Purple"),
-    ("User defined", "#FFFFFF", "#000000", "White", "Black"),
     ("User defined", "#000000", "#FFFFFF", "Black", "White"),
-    ("User defined", "#000000", "#9AA0A6", "Black", "Gray"),
+    ("User defined", "#FFFFFF", "#6B4226", "White", "Brown"),
+    ("User defined", "#FFFFFF", "#000000", "White", "Black"),
 ]
 
-# ASME A13.1 Table 1. Stated by the standard against the outside diameter of
-# the pipe *or its covering*; applied here by NPS, which is how it is used in
-# the field. A lagged line moves up a band — see the note on the page.
+# Table of marker size, as it has stood since the 2020 edition. Bands are
+# outside diameter in inches of the pipe OR ITS COVERING, and a13_band()
+# applies them to the actual outside diameter, not to the NPS number: NPS 10
+# is 10.750 in across and so falls in the last band.
 A13_SIZES = [
-    (0.75, 1.25, 8, 0.5),
-    (1.5, 2.0, 8, 0.75),
-    (2.5, 6.0, 12, 1.25),
-    (8.0, 10.0, 24, 2.5),
+    (0.7, 1.3, 8, 0.5),
+    (1.4, 2.4, 8, 0.7),
+    (2.5, 6.7, 12, 1.3),
+    (6.8, 10.0, 24, 2.5),
     (10.0, None, 32, 3.5),
 ]
 
 
-def a13_band(nps):
-    v = nps_value(nps)
-    for lo, hi, length, letter in A13_SIZES:
-        if hi is None:
-            if v > lo:
-                return length, letter
-        elif lo <= v <= hi:
-            return length, letter
-    # Below NPS 3/4 the standard gives no field size; A13.1 directs the user to
-    # a permanently attached tag instead of a wrapped marker.
-    return None, None
+def a13_band(od):
+    """Marker length and letter height for a bare pipe of this outside
+    diameter. The published bands leave small gaps (1.3 to 1.4 in); a
+    diameter in a gap takes the band below it, as 1.315 in rounds to 1.3."""
+    if od < A13_SIZES[0][0]:
+        # The standard gives no field size this small and recommends a
+        # permanently attached tag instead of a wrapped marker.
+        return None, None
+    chosen = A13_SIZES[0]
+    for band in A13_SIZES:
+        lo, hi = band[0], band[1]
+        if (od > lo) if hi is None else (od >= lo - 0.05):
+            chosen = band
+    return chosen[2], chosen[3]
 
 
 def ref_color_coding(pipes):
@@ -4656,28 +4669,37 @@ def ref_color_coding(pipes):
     band_rows = []
     for lo, hi, length, letter in A13_SIZES:
         rng = (f"Over {n(lo, 0)} in" if hi is None else
-               f"{n(lo, 2).rstrip('0').rstrip('.')} – "
-               f"{n(hi, 2).rstrip('0').rstrip('.')} in")
-        band_rows.append([rng, f"{length} in", f"{n(letter, 2)} in"])
+               f"{n(lo, 1)} – {n(hi, 1)} in")
+        band_rows.append([rng, f"{length} in", f"{n(letter, 1)} in"])
 
     size_rows = []
     for s in pipes["sizes"]:
-        length, letter = a13_band(s["nps"])
+        length, letter = a13_band(s["od"])
         size_rows.append([
             f'<a href="{s["url"]}"><strong>NPS {esc(s["nps"])}</strong></a>',
             dual(s["od"], 3),
             f"{length} in" if length else '<span class="na">tag instead</span>',
-            f"{n(letter, 2)} in" if letter else '<span class="na">—</span>',
+            f"{n(letter, 1)} in" if letter else '<span class="na">—</span>',
         ])
+    tagged = [s["nps"] for s in pipes["sizes"] if a13_band(s["od"])[0] is None]
 
     q = [
         ("What do the ASME A13.1 pipe colours mean?",
-         "<p>Six colour combinations are fixed by hazard, not by contents. "
-         "Yellow with black lettering is flammable or oxidizing; brown with "
-         "white is combustible; orange with black is toxic or corrosive; red "
-         "with white is fire-quenching; green with white is water; blue with "
-         "white is compressed air. Four further combinations — purple, black, "
-         "white and gray fields — are left for the user to define.</p>"),
+         f"<p>In the {A13_EDITION} edition six colour combinations are "
+         "fixed. Red with white lettering is fire-quenching; orange with "
+         "black is toxic or corrosive; yellow with black is flammable, "
+         "combustible or oxidizing; gray with black is steam and hot water; "
+         "green with white is cold water; blue with white is compressed "
+         "air. Four further combinations — purple, white, brown and black "
+         "fields — are left for the user to define.</p>"),
+        ("Did the colours change in 2023?",
+         "<p>Yes. In the 2015 and 2020 editions brown with white lettering "
+         "meant combustible fluids, green covered all water including "
+         "boiler feed, and gray was one of the user-defined colours. The "
+         "2023 edition moved combustible fluids into yellow, gave gray to "
+         "steam and hot water, and made brown user-defined. Markers to the "
+         "older scheme are still widely installed, so check which edition "
+         "a site works to.</p>"),
         ("Is the colour enough on its own?",
          "<p>No. A13.1 requires the legend — the name of the contents in "
          "words — plus an arrow showing flow direction. The colour field is "
@@ -4701,10 +4723,10 @@ def ref_color_coding(pipes):
 
     body = (
         "<h2>The six fixed colour combinations</h2>"
-        "<p>ASME A13.1 classifies by <em>hazard</em>, not by fluid. What "
-        "determines the colour is what the contents would do if they escaped, "
-        "which is why steam, hot oil and natural gas do not each get a colour "
-        "of their own.</p>"
+        f"<p>This is the scheme of ASME A13.1-{A13_EDITION}. It classifies "
+        "mostly by <em>hazard</em>, not by fluid: what determines the colour "
+        "is what the contents would do if they escaped, which is why hot "
+        "oil and natural gas do not each get a colour of their own.</p>"
         + table(["Contents", "Marker", "Legend colour", "Field colour"],
                 scheme_rows,
                 caption="ASME A13.1 pipe marker colour scheme.",
@@ -4717,13 +4739,25 @@ def ref_color_coding(pipes):
         "undocumented purple line tells a stranger nothing.</p>"
         + table(["Contents", "Marker", "Legend colour", "Field colour"],
                 user_rows, caption="ASME A13.1 user-defined combinations.")
+        + "<h2>What changed from the 2020 edition</h2>"
+        "<p>Markers bought before 2023 follow an older scheme, and both "
+        "are in service. In the 2015 and 2020 editions:</p><ul>"
+        "<li>combustible fluids had their own colour, white on brown; they "
+        "are now black on yellow with the flammable fluids;</li>"
+        "<li>green covered every kind of water, including boiler feed "
+        "water; hot water and boiler feed are now black on gray;</li>"
+        "<li>steam had no colour of its own; it is now black on gray;</li>"
+        "<li>the user-defined colours were purple, black, white and gray, "
+        "the gray with white lettering; they are now purple, white, brown "
+        "and black.</li></ul>"
         + "<h2>Marker size</h2>"
         "<p>The size of the colour field and the letter height both follow the "
         "pipe diameter, so a marker legible on a 2 in line is not compliant on "
         "a 12 in header.</p>"
         + table(["Pipe outside diameter", "Length of colour field",
                  "Letter height"], band_rows,
-                caption="ASME A13.1 Table 1 — marker and legend size.",
+                caption="ASME A13.1 marker and legend size, 2020 and 2023 "
+                        "editions.",
                 note="The standard states these against the outside diameter "
                      "of the pipe <em>or its covering</em>. An insulated line "
                      "is sized on the lagging, not the pipe, so it often moves "
@@ -4737,9 +4771,12 @@ def ref_color_coding(pipes):
                  "Letter height"], size_rows,
                 caption="ASME A13.1 marker size for each B36.10M pipe size, "
                         "bare pipe.",
-                note="Below NPS 3/4 A13.1 gives no field size: the standard "
-                     "calls for a permanently attached tag rather than a "
-                     "wrapped marker.")
+                note="The band is chosen from the outside diameter, not "
+                     "from the NPS number, so NPS 10, which is 10.750 in "
+                     "across, takes the largest marker. NPS "
+                     + comma_list(tagged) + " are below 0.7 in across, "
+                     "where the standard gives no field size and "
+                     "recommends a permanently attached tag.")
         + '<div class="callout"><p><strong>Colour is not the '
         "identification.</strong> Every A13.1 marker needs the legend in words "
         "and an arrow for flow direction. Colour classifies the hazard; the "
@@ -4749,9 +4786,9 @@ def ref_color_coding(pipes):
 
     ref("pipe-color-coding",
         "Pipe Color Coding Chart — ASME A13.1 | PipeData",
-        "ASME A13.1 pipe marker colours: black on yellow for flammable, black "
-        "on orange for toxic, white on green for water. Marker and letter size "
-        "for every pipe size.",
+        "ASME A13.1-2023 pipe marker colours: black on yellow for flammable, "
+        "black on orange for toxic, black on gray for steam. Marker and "
+        "letter size for every pipe.",
         "Pipe Color Coding — ASME A13.1",
         "The six fixed colour combinations, the four user-defined ones, and "
         "the legend and letter size required at every pipe diameter.",
@@ -6425,8 +6462,13 @@ def cmp_lj_so(b165, ftypes):
     trs = [[f'<strong><a href="/pipes/nps-{nps_slug(nps)}/#flanges">NPS {esc(nps)}</a></strong>',
             dual(blk["150"]["o"], 2), dual(blk["150"]["bc"], 2),
             f'{blk["150"]["bolts"]} × {esc(blk["150"]["bolt"])}"',
-            dual(blk["150"]["y_so"], 2), dual(blk["300"]["y_so"], 2)]
+            dual(blk["150"]["y_so"], 2), dual(blk["150"]["y_lj"], 2),
+            dual(blk["300"]["y_so"], 2), dual(blk["300"]["y_lj"], 2)]
            for nps, blk in rows]
+    longer150 = next(nps for nps, blk in rows
+                     if blk["150"]["y_lj"] > blk["150"]["y_so"] + 0.1)
+    longer300 = next(nps for nps, blk in rows
+                     if blk["300"]["y_lj"] > blk["300"]["y_so"] + 0.1)
 
     body = (facts([("Dimensions", "Same OD and bolting as slip-on"),
                    ("Wetted?", "Lap joint never touches the fluid"),
@@ -6454,16 +6496,19 @@ def cmp_lj_so(b165, ftypes):
             "grows with size and alloy cost.</p>"
             + UNITS_NOTE
             + table(["NPS", "Flange OD", "Bolt circle", "Bolting",
-                     "Cl 150 slip-on hub", "Cl 300 slip-on hub"], trs,
+                     "Cl 150 slip-on hub", "Cl 150 lap joint hub",
+                     "Cl 300 slip-on hub", "Cl 300 lap joint hub"], trs,
                     caption="Lap joint and slip-on flange dimensions, ASME "
-                            "B16.5.",
+                            "B16.5. Flange OD, bolt circle and bolting are "
+                            "for Class 150.",
                     note="Outside diameter, bolt circle and bolting are "
-                         "common to both types. The hub length shown is the "
-                         "slip-on figure. B16.5 tabulates the lap joint hub "
-                         "separately, and from NPS 14 upward it is longer "
-                         "than the slip-on hub; those figures are not yet on "
-                         "this site. The mating stub end is dimensioned by "
-                         "ASME B16.9.")
+                         "common to both types. The hub lengths are not: "
+                         f"from NPS {esc(longer150)} in Class 150 and NPS "
+                         f"{esc(longer300)} in Class 300 the lap joint hub "
+                         "is the longer. The slip-on hub is measured "
+                         "without the raised face; a lap joint flange has "
+                         "none. The mating stub end is dimensioned by ASME "
+                         "B16.9.", cls="specs wide")
             + "<h2>The rotation advantage</h2>"
             "<p>A welded flange's bolt holes are fixed the moment the weld "
             "cools. Get the orientation wrong on a long spool with a flange at "
@@ -6565,10 +6610,9 @@ def cmp_rf_rtj(b165):
                      "RF height, Cl 150/300", "RF height, Cl 400+"], rows,
                     caption="Raised face gasket contact diameters, ASME "
                             "B16.5.",
-                    note="Raised face outside diameter is common to Classes 150 "
-                         "through 600. Classes 900, 1500 and 2500 use different "
-                         "gasket surfaces in several sizes — check B16.5 Table 9 "
-                         "before ordering a gasket.")
+                    note="The raised face outside diameter depends on the "
+                         "size alone and is the same in every class from 150 "
+                         "to 2500. The height of the face is what changes.")
             + vs_columns(
                 "Raised face (RF)",
                 ["The B16.5 default — widest availability and lowest cost",
@@ -6675,6 +6719,8 @@ JOINT_EFFICIENCY = [
      "Full radiography restores the seamless factor."),
     ("Electric fusion welded, double butt, spot radiographed", "0.90",
      "Partial examination, partial credit."),
+    ("Electric fusion welded, double butt, as supplied", "0.85",
+     "No radiography beyond what the pipe specification requires."),
     ("Electric fusion welded, single butt", "0.80",
      "Welded from one side only."),
     ("Furnace butt welded, continuous weld", "0.60",
@@ -7585,7 +7631,10 @@ VELOCITY_LIMITS = [
      "Higher velocities are tolerable but noise and erosion rise sharply."),
     ("Superheated steam", "100 – 200 ft/s",
      "Dry steam is less erosive, so higher velocity is acceptable."),
-    ("Compressed air and gas", "30 – 60 ft/s",
+    ("Compressed air, plant mains", "20 – 30 ft/s",
+     "Kept low to hold down pressure drop and carry-over of condensate; "
+     "drops to equipment are often run at 40 to 50 ft/s."),
+    ("Process gas", "30 – 60 ft/s",
      "Set by pressure drop over the run rather than by erosion."),
     ("Pump suction, boiling liquid", "1 – 3 ft/s",
      "Anything at its bubble point needs the lowest suction velocity you can "
@@ -7756,7 +7805,7 @@ def guide_hydrotest(pt, b165):
     groups = pt["groups"]
 
     def shell_test(rating):
-        """B16.5 shell test: 1.5 x the 100 degF rating, rounded up to 25 psi."""
+        """B16.5 test limit: 1.5 x the 100 degF rating, rounded up to 25 psi."""
         return int(math.ceil(rating * 1.5 / 25.0) * 25)
 
     rows = []
@@ -7778,42 +7827,43 @@ def guide_hydrotest(pt, b165):
     g11 = next(g for g in groups if g["slug"] == "1-1")
     ex_rating = g11["ratings"]["300"][0]
 
-    body = (facts([("B16.5 shell test", "1.5 × the 100 °F rating"),
+    body = (facts([("B16.5 test limit", "1.5 × the 100 °F rating"),
                    ("B31.3 hydrotest", "1.5 × design pressure, stress adjusted"),
                    ("Minimum hold time", "10 minutes, then examine"),
                    ("Rounding", "Up to the next 25 psi increment")])
             + verdict(
-                "Two different test pressures get confused with each other. The "
-                "<em>shell test</em> in ASME B16.5 is a factory proof test on "
-                "the flange itself, at 1.5 times the 100 °F rating of its class "
-                "and material group. The <em>hydrostatic leak test</em> in ASME "
-                "B31.3 is a field test on the completed system, at 1.5 times the "
-                "design pressure, adjusted upward when the test temperature is "
-                "colder than the design temperature.")
-            + "<h2>The B16.5 shell test</h2>"
-            "<p>Every flanged fitting is proof tested at the works before it "
-            "ships. B16.5 sets that pressure at 1.5 times the ambient rating "
-            "for the class and material group, rounded up to the next 25 psi "
-            "increment. It is a one-off structural proof, not a leak test of a "
-            "gasketed joint — the flange is tested as a pressure-containing "
-            "shell.</p>"
-            + '<p class="formula">Shell test = 1.5 × (rating at 100 °F), '
+                "Two different pressures get confused with each other. ASME "
+                "B16.5 sets a <em>limit</em>: a flanged joint may be "
+                "hydrostatically tested at up to 1.5 times the 100 °F rating "
+                "of its class and material group. ASME B31.3 sets the "
+                "<em>test pressure</em> for the completed system: 1.5 times "
+                "the design pressure, adjusted upward when the test "
+                "temperature is colder than the design temperature. The "
+                "second must not exceed the first.")
+            + "<h2>The B16.5 test limit</h2>"
+            "<p>B16.5 allows flanged joints and flanged fittings to be put "
+            "through a system hydrostatic test at up to 1.5 times the ambient "
+            "rating for the class and material group, rounded up to the next "
+            "25 psi. The same figure is the shell test pressure for a "
+            "flanged fitting, which is proof tested at the works. B16.5 does "
+            "not require a flange on its own to be pressure tested.</p>"
+            + '<p class="formula">Test limit = 1.5 × (rating at 100 °F), '
             "rounded up to the next 25 psi</p>"
             + table(["Material group"] + [f"Class {c}" for c in CLASS_ORDER],
                     rating_rows,
                     caption="ASME B16.5 pressure ratings at 100 °F, psig — the "
-                            "basis of the shell test.",
+                            "basis of the test limit.",
                     note="These are the ambient ratings for each material "
                          "group. See the full "
                          '<a href="/reference/pressure-temperature-ratings/">'
                          "P-T rating tables</a> for the temperature curves.")
             + table(["Material group"] + [f"Class {c}" for c in CLASS_ORDER],
                     rows,
-                    caption="Computed hydrostatic shell test pressures, psig — "
+                    caption="Computed hydrostatic test limits, psig — "
                             "1.5 × the ambient rating, rounded up to 25 psi.",
                     note="Computed from the ratings in the table above. "
-                         "Confirm against ASME B16.5 Table F2 before using "
-                         "these for acceptance.")
+                         "Confirm against a current copy of ASME B16.5 "
+                         "before using these for acceptance.")
             + "<h2>The B31.3 system hydrotest</h2>"
             "<p>Once the system is built, ASME B31.3 paragraph 345.4.2 requires "
             "a hydrostatic leak test at not less than 1.5 times the design "
@@ -7837,11 +7887,14 @@ def guide_hydrotest(pt, b165):
             "17,300 psi at 650 °F, so S<sub>T</sub>/S = 1.156</li>"
             "<li>Corrected test pressure: 750 × 1.156 = 867 psig</li>"
             f"<li>Check against the flange: a Class 300 Group 1.1 flange is "
-            f"rated {ex_rating} psig at 100 °F, so 867 psig is within it and "
-            "the flanges do not limit the test.</li>"
+            f"rated {ex_rating} psig at 100 °F, so it may be tested at up to "
+            f"1.5 × {ex_rating} = {n(ex_rating * 1.5, 0)}, rounded up to "
+            f"{shell_test(ex_rating)} psig. The 867 psig test is within "
+            "that, and the flanges do not limit it.</li>"
             "</ol>"
             "<p>That last check is the one that gets missed. If the corrected "
-            "test pressure exceeds the ambient rating of any flange, valve or "
+            "test pressure exceeds 1.5 times the ambient rating of any "
+            "flange, or the test limit of any valve or other "
             "component in the test envelope, the test cannot proceed at that "
             "pressure — either the component is removed and blanked, or the "
             "test is split into sections, or a lower test pressure is agreed "
@@ -7850,8 +7903,8 @@ def guide_hydrotest(pt, b165):
             + table(
                 ["Requirement", "ASME B31.3 provision"],
                 [["<strong>Minimum hold time</strong>",
-                  "10 minutes at test pressure, after which the pressure may "
-                  "be reduced to the design pressure for examination."],
+                  "At least 10 minutes at test pressure, and long enough "
+                  "after that to examine every joint for leaks."],
                  ["<strong>Test fluid</strong>",
                   "Water unless there is a risk of damage from freezing or "
                   "from adverse effects on the piping material."],
@@ -7885,20 +7938,21 @@ def guide_hydrotest(pt, b165):
 
     q = [
         ("What is the hydrostatic test pressure for a Class 150 flange?",
-         f"<p>The B16.5 shell test for a Group 1.1 Class 150 flange is "
+         f"<p>A Group 1.1 Class 150 flanged joint may be tested at up to "
          f"{shell_test(g11['ratings']['150'][0])} psig — 1.5 times the "
          f"{g11['ratings']['150'][0]} psig ambient rating, rounded up to the "
-         "next 25 psi. That is a works proof test, not the field system "
-         "test.</p>"),
+         "next 25 psi. That is the most the flange allows. The pressure "
+         "the system is actually tested at comes from the piping code and "
+         "the design pressure.</p>"),
         ("How is the B31.3 hydrotest pressure calculated?",
          "<p>1.5 times the design pressure, multiplied by the ratio of "
          "allowable stress at test temperature to allowable stress at design "
          "temperature. The ratio is capped at 6.5 and the result must not "
          "yield the material.</p>"),
         ("How long must a hydrostatic test be held?",
-         "<p>ASME B31.3 requires at least 10 minutes at the test pressure. The "
-         "pressure may then be reduced to the design pressure while the joints "
-         "are examined for leakage.</p>"),
+         "<p>ASME B31.3 requires at least 10 minutes at the test pressure, "
+         "and the test has to last long enough for every joint to be "
+         "examined for leakage.</p>"),
         ("Why is chloride limited in stainless steel test water?",
          "<p>Because residual chlorides concentrate as the system dries and can "
          "initiate stress corrosion cracking in austenitic stainless. A limit "
@@ -7913,14 +7967,14 @@ def guide_hydrotest(pt, b165):
 
     guide("hydrostatic-test-pressure",
           "Hydrostatic Test Pressure: B16.5 and B31.3",
-          "Flange shell test is 1.5x the 100 degF rating; the B31.3 system test "
-          "is 1.5x design pressure stress-adjusted. Computed test pressures for "
+          "A flange may be tested to 1.5x its 100 degF rating; the B31.3 system "
+          "test is 1.5x design pressure, stress-adjusted. Computed limits for "
           "every class and group.",
           "Hydrostatic Test Pressure",
-          "Two different tests that get confused with each other: the factory "
-          "shell test on a flange, and the field leak test on a completed "
-          "system. Both worked through with tables.",
-          body, faq_pairs=q, card_meta="Shell test · B31.3 · by class")
+          "Two pressures that get confused with each other: the most a "
+          "flanged joint may be tested to, and the pressure a completed "
+          "system must be tested at. Both worked through with tables.",
+          body, faq_pairs=q, card_meta="Test limit · B31.3 · by class")
 
 
 def guide_wall_thickness(pipes):
@@ -8336,7 +8390,7 @@ def guide_face_types(b165):
                      "cracked-casting case.")
             + "<h2>Raised face dimensions</h2>"
             "<p>The raised face outside diameter is the gasket contact "
-            "diameter, and it is common to Classes 150 through 600 in a given "
+            "diameter, and it is the same in every class in a given "
             "size. The tabulated flange thickness in B16.5 <em>excludes</em> "
             "the raised face, so a flange always measures thicker than the "
             "table by the face height.</p>"
@@ -8345,12 +8399,11 @@ def guide_face_types(b165):
                      "RF height, Cl 150/300", "RF height, Cl 400+"], rows,
                     caption="Raised face gasket contact diameters and face "
                             "heights, ASME B16.5.",
-                    note="Raised face OD is common to Classes 150–600. Classes "
-                         "900, 1500 and 2500 use different gasket surfaces in "
-                         "several sizes — check B16.5 Table 9.")
+                    note="Raised face OD is the same in every class, 150 to "
+                         "2500. Only the height of the face changes.")
             + "<h2>Surface finish</h2>"
             "<p>ASME B16.5 requires a serrated finish on raised and flat faces, "
-            "concentric or spiral, at 125 to 500 microinches Ra. This is "
+            "concentric or spiral, at 125 to 250 microinches Ra (3.2 to 6.3 micrometres), with 45 to 55 grooves per inch. This is "
             "counter-intuitive but important: a face machined smooth seals "
             "<em>worse</em>, because the gasket has nothing to key into and can "
             "slide radially under pressure. If a face has been skimmed during "
@@ -8397,7 +8450,7 @@ def guide_face_types(b165):
          "<p>1/16 in (1.6 mm) for Classes 150 and 300, and 1/4 in (6.4 mm) for "
          "Class 400 and above. The B16.5 thickness tables exclude it.</p>"),
         ("Should flange faces be machined smooth?",
-         "<p>No. B16.5 specifies a serrated finish of 125 to 500 microinches "
+         "<p>No. B16.5 specifies a serrated finish of 125 to 250 microinches "
          "Ra. A smooth face gives the gasket nothing to grip and seals worse "
          "than a properly serrated one.</p>"),
     ]
@@ -9804,9 +9857,19 @@ def about_page(pipes, ftypes, fittings):
             "copy of a standard. A few items could not be confirmed and are marked on "
             "the pages concerned: the Class 400 rows of four rating "
             "tables, the size range of threaded flanges in Classes 1500 "
-            "and 2500, the Class 400 socket weld flange, and most of the "
-            "Class 300 hub lengths. Raised face "
-            "diameters above NPS 3 have not been checked.</p>"
+            "and 2500, the Class 400 socket weld flange, and the "
+            "dimensions of the four obsolete pipe sizes.</p>"
+            "<p>The same check covered the tables written into the "
+            "guides. It corrected the pipe marking page, which carried the "
+            "colour scheme and size bands of an earlier edition of ASME "
+            "A13.1; the flange face finish, which B16.5 sets at 125 to 250 "
+            "microinches, not 125 to 500; the statement that the raised "
+            "face diameter differs in Classes 900 and above, which it "
+            "does not; and the hydrostatic test guide, which compared a "
+            "test pressure with the flange rating where it should have "
+            "compared it with 1.5 times the rating, and described a "
+            "reduction to design pressure that belongs to the pneumatic "
+            "test.</p>"
             '<h2 id="editions">Standards and editions</h2>'
             "<p>The table lists the standards these pages refer to and the "
             "most recent edition of each that we know of. The data on "

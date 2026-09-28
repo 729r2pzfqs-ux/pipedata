@@ -8,6 +8,9 @@
 #   bolt     bolt diameter (nominal)
 #   y_wn     length through hub, welding neck (raised face NOT included)
 #   y_so     length through hub, slip-on and threaded (raised face NOT included)
+#   y_lj     length through hub, lap joint (a lap joint flange has no raised
+#            face; from NPS 14 in Class 150 and NPS 10 in Class 300 it is
+#            longer than the slip-on hub)
 #
 # y_wn / y_so are carried for Classes 150 and 300 only; for the higher classes
 # the hub geometry varies by bore and the generator renders those cells as "—".
@@ -19,17 +22,21 @@
 # Every Class 150 and 300 tf, y_wn and y_so was reduced by 1/16 in.
 #   - tf: Class 150 checked against three sources, Class 300 against two.
 #   - Class 150 y_wn and y_so: checked against a reproduction of the 2017 table.
-#   - Class 300 y_wn and y_so: PARTLY CHECKED. Three slip-on values were
-#     confirmed; the rest follow from the same 1/16 in change and have not
-#     been individually confirmed.
+#   - Class 300 y_wn and y_so: checked in a second pass against three inch
+#     tables and one millimetre table, all 20 sizes, and confirmed to within
+#     0.01 in. Twelve values differ from the printed inch tables in the last
+#     digit only (e.g. 3.31 here, 3.32 printed for 3 5/16 in): the tables
+#     print the old figure less 0.06, this file rounds the fraction.
+#   - y_lj was added in that second pass, from two sources in different units
+#     that agree in every row both carry. NPS 5 rests on one source.
 #   - Class 150 y_so for NPS 14 to 24 had been the lap joint hub lengths. They
 #     are now the slip-on/threaded values.
 # y_so does not apply to socket weld flanges above NPS 3, which B16.5 does not
 # publish.
 
-# Raised-face outside diameter (gasket contact OD). NOT CHECKED above NPS 3,
-# and not checked for Classes 900 and above: confirm against the standard
-# before ordering a gasket.
+# Raised-face outside diameter (gasket contact OD). It depends on the size
+# alone and is the same in every class, 150 to 2500. Checked for every size
+# against three sources.
 raised_face:
   "1/2": 1.38
   "3/4": 1.69
@@ -56,50 +63,50 @@ classes:
   "150":
     rf_height: 0.06
     rows:
-      - {nps: "1/2",     o: 3.50,  tf: 0.38, bc: 2.38,  bolts: 4,  bolt: "1/2",   y_wn: 1.81, y_so: 0.56}
-      - {nps: "3/4",     o: 3.88,  tf: 0.44, bc: 2.75,  bolts: 4,  bolt: "1/2",   y_wn: 2.00, y_so: 0.56}
-      - {nps: "1",       o: 4.25,  tf: 0.50, bc: 3.12,  bolts: 4,  bolt: "1/2",   y_wn: 2.12, y_so: 0.62}
-      - {nps: "1 1/4",   o: 4.62,  tf: 0.56, bc: 3.50,  bolts: 4,  bolt: "1/2",   y_wn: 2.19, y_so: 0.75}
-      - {nps: "1 1/2",   o: 5.00,  tf: 0.62, bc: 3.88,  bolts: 4,  bolt: "1/2",   y_wn: 2.38, y_so: 0.81}
-      - {nps: "2",       o: 6.00,  tf: 0.69, bc: 4.75,  bolts: 4,  bolt: "5/8",   y_wn: 2.44, y_so: 0.94}
-      - {nps: "2 1/2",   o: 7.00,  tf: 0.81, bc: 5.50,  bolts: 4,  bolt: "5/8",   y_wn: 2.69, y_so: 1.06}
-      - {nps: "3",       o: 7.50,  tf: 0.88, bc: 6.00,  bolts: 4,  bolt: "5/8",   y_wn: 2.69, y_so: 1.12}
-      - {nps: "3 1/2",   o: 8.50,  tf: 0.88, bc: 7.00,  bolts: 8,  bolt: "5/8",   y_wn: 2.75, y_so: 1.19}
-      - {nps: "4",       o: 9.00,  tf: 0.88, bc: 7.50,  bolts: 8,  bolt: "5/8",   y_wn: 2.94, y_so: 1.25}
-      - {nps: "5",       o: 10.00, tf: 0.88, bc: 8.50,  bolts: 8,  bolt: "3/4",   y_wn: 3.44, y_so: 1.38}
-      - {nps: "6",       o: 11.00, tf: 0.94, bc: 9.50,  bolts: 8,  bolt: "3/4",   y_wn: 3.44, y_so: 1.50}
-      - {nps: "8",       o: 13.50, tf: 1.06, bc: 11.75, bolts: 8,  bolt: "3/4",   y_wn: 3.94, y_so: 1.69}
-      - {nps: "10",      o: 16.00, tf: 1.12, bc: 14.25, bolts: 12, bolt: "7/8",   y_wn: 3.94, y_so: 1.88}
-      - {nps: "12",      o: 19.00, tf: 1.19, bc: 17.00, bolts: 12, bolt: "7/8",   y_wn: 4.44, y_so: 2.12}
-      - {nps: "14",      o: 21.00, tf: 1.31, bc: 18.75, bolts: 12, bolt: "1",     y_wn: 4.94, y_so: 2.19}
-      - {nps: "16",      o: 23.50, tf: 1.38, bc: 21.25, bolts: 16, bolt: "1",     y_wn: 4.94, y_so: 2.44}
-      - {nps: "18",      o: 25.00, tf: 1.50, bc: 22.75, bolts: 16, bolt: "1 1/8", y_wn: 5.44, y_so: 2.62}
-      - {nps: "20",      o: 27.50, tf: 1.62, bc: 25.00, bolts: 20, bolt: "1 1/8", y_wn: 5.62, y_so: 2.81}
-      - {nps: "24",      o: 32.00, tf: 1.81, bc: 29.50, bolts: 20, bolt: "1 1/4", y_wn: 5.94, y_so: 3.19}
+      - {nps: "1/2",     o: 3.50,  tf: 0.38, bc: 2.38,  bolts: 4,  bolt: "1/2",   y_wn: 1.81, y_so: 0.56, y_lj: 0.62}
+      - {nps: "3/4",     o: 3.88,  tf: 0.44, bc: 2.75,  bolts: 4,  bolt: "1/2",   y_wn: 2.00, y_so: 0.56, y_lj: 0.62}
+      - {nps: "1",       o: 4.25,  tf: 0.50, bc: 3.12,  bolts: 4,  bolt: "1/2",   y_wn: 2.12, y_so: 0.62, y_lj: 0.69}
+      - {nps: "1 1/4",   o: 4.62,  tf: 0.56, bc: 3.50,  bolts: 4,  bolt: "1/2",   y_wn: 2.19, y_so: 0.75, y_lj: 0.81}
+      - {nps: "1 1/2",   o: 5.00,  tf: 0.62, bc: 3.88,  bolts: 4,  bolt: "1/2",   y_wn: 2.38, y_so: 0.81, y_lj: 0.88}
+      - {nps: "2",       o: 6.00,  tf: 0.69, bc: 4.75,  bolts: 4,  bolt: "5/8",   y_wn: 2.44, y_so: 0.94, y_lj: 1.00}
+      - {nps: "2 1/2",   o: 7.00,  tf: 0.81, bc: 5.50,  bolts: 4,  bolt: "5/8",   y_wn: 2.69, y_so: 1.06, y_lj: 1.12}
+      - {nps: "3",       o: 7.50,  tf: 0.88, bc: 6.00,  bolts: 4,  bolt: "5/8",   y_wn: 2.69, y_so: 1.12, y_lj: 1.19}
+      - {nps: "3 1/2",   o: 8.50,  tf: 0.88, bc: 7.00,  bolts: 8,  bolt: "5/8",   y_wn: 2.75, y_so: 1.19, y_lj: 1.25}
+      - {nps: "4",       o: 9.00,  tf: 0.88, bc: 7.50,  bolts: 8,  bolt: "5/8",   y_wn: 2.94, y_so: 1.25, y_lj: 1.31}
+      - {nps: "5",       o: 10.00, tf: 0.88, bc: 8.50,  bolts: 8,  bolt: "3/4",   y_wn: 3.44, y_so: 1.38, y_lj: 1.44}
+      - {nps: "6",       o: 11.00, tf: 0.94, bc: 9.50,  bolts: 8,  bolt: "3/4",   y_wn: 3.44, y_so: 1.50, y_lj: 1.56}
+      - {nps: "8",       o: 13.50, tf: 1.06, bc: 11.75, bolts: 8,  bolt: "3/4",   y_wn: 3.94, y_so: 1.69, y_lj: 1.75}
+      - {nps: "10",      o: 16.00, tf: 1.12, bc: 14.25, bolts: 12, bolt: "7/8",   y_wn: 3.94, y_so: 1.88, y_lj: 1.94}
+      - {nps: "12",      o: 19.00, tf: 1.19, bc: 17.00, bolts: 12, bolt: "7/8",   y_wn: 4.44, y_so: 2.12, y_lj: 2.19}
+      - {nps: "14",      o: 21.00, tf: 1.31, bc: 18.75, bolts: 12, bolt: "1",     y_wn: 4.94, y_so: 2.19, y_lj: 3.12}
+      - {nps: "16",      o: 23.50, tf: 1.38, bc: 21.25, bolts: 16, bolt: "1",     y_wn: 4.94, y_so: 2.44, y_lj: 3.44}
+      - {nps: "18",      o: 25.00, tf: 1.50, bc: 22.75, bolts: 16, bolt: "1 1/8", y_wn: 5.44, y_so: 2.62, y_lj: 3.81}
+      - {nps: "20",      o: 27.50, tf: 1.62, bc: 25.00, bolts: 20, bolt: "1 1/8", y_wn: 5.62, y_so: 2.81, y_lj: 4.06}
+      - {nps: "24",      o: 32.00, tf: 1.81, bc: 29.50, bolts: 20, bolt: "1 1/4", y_wn: 5.94, y_so: 3.19, y_lj: 4.38}
 
   "300":
     rf_height: 0.06
     rows:
-      - {nps: "1/2",     o: 3.75,  tf: 0.50, bc: 2.62,  bolts: 4,  bolt: "1/2",   y_wn: 2.00, y_so: 0.81}
-      - {nps: "3/4",     o: 4.62,  tf: 0.56, bc: 3.25,  bolts: 4,  bolt: "5/8",   y_wn: 2.19, y_so: 0.94}
-      - {nps: "1",       o: 4.88,  tf: 0.62, bc: 3.50,  bolts: 4,  bolt: "5/8",   y_wn: 2.38, y_so: 1.00}
-      - {nps: "1 1/4",   o: 5.25,  tf: 0.69, bc: 3.88,  bolts: 4,  bolt: "5/8",   y_wn: 2.50, y_so: 1.00}
-      - {nps: "1 1/2",   o: 6.12,  tf: 0.75, bc: 4.50,  bolts: 4,  bolt: "3/4",   y_wn: 2.62, y_so: 1.12}
-      - {nps: "2",       o: 6.50,  tf: 0.81, bc: 5.00,  bolts: 8,  bolt: "5/8",   y_wn: 2.69, y_so: 1.25}
-      - {nps: "2 1/2",   o: 7.50,  tf: 0.94, bc: 5.88,  bolts: 8,  bolt: "3/4",   y_wn: 2.94, y_so: 1.44}
-      - {nps: "3",       o: 8.25,  tf: 1.06, bc: 6.62,  bolts: 8,  bolt: "3/4",   y_wn: 3.06, y_so: 1.62}
-      - {nps: "3 1/2",   o: 9.00,  tf: 1.12, bc: 7.25,  bolts: 8,  bolt: "3/4",   y_wn: 3.12, y_so: 1.69}
-      - {nps: "4",       o: 10.00, tf: 1.19, bc: 7.88,  bolts: 8,  bolt: "3/4",   y_wn: 3.31, y_so: 1.81}
-      - {nps: "5",       o: 11.00, tf: 1.31, bc: 9.25,  bolts: 8,  bolt: "3/4",   y_wn: 3.81, y_so: 1.94}
-      - {nps: "6",       o: 12.50, tf: 1.38, bc: 10.62, bolts: 12, bolt: "3/4",   y_wn: 3.81, y_so: 2.00}
-      - {nps: "8",       o: 15.00, tf: 1.56, bc: 13.00, bolts: 12, bolt: "7/8",   y_wn: 4.31, y_so: 2.38}
-      - {nps: "10",      o: 17.50, tf: 1.81, bc: 15.25, bolts: 16, bolt: "1",     y_wn: 4.56, y_so: 2.56}
-      - {nps: "12",      o: 20.50, tf: 1.94, bc: 17.75, bolts: 16, bolt: "1 1/8", y_wn: 5.06, y_so: 2.81}
-      - {nps: "14",      o: 23.00, tf: 2.06, bc: 20.25, bolts: 20, bolt: "1 1/8", y_wn: 5.56, y_so: 2.94}
-      - {nps: "16",      o: 25.50, tf: 2.19, bc: 22.50, bolts: 20, bolt: "1 1/4", y_wn: 5.69, y_so: 3.19}
-      - {nps: "18",      o: 28.00, tf: 2.31, bc: 24.75, bolts: 24, bolt: "1 1/4", y_wn: 6.19, y_so: 3.44}
-      - {nps: "20",      o: 30.50, tf: 2.44, bc: 27.00, bolts: 24, bolt: "1 1/4", y_wn: 6.31, y_so: 3.69}
-      - {nps: "24",      o: 36.00, tf: 2.69, bc: 32.00, bolts: 24, bolt: "1 1/2", y_wn: 6.56, y_so: 4.12}
+      - {nps: "1/2",     o: 3.75,  tf: 0.50, bc: 2.62,  bolts: 4,  bolt: "1/2",   y_wn: 2.00, y_so: 0.81, y_lj: 0.88}
+      - {nps: "3/4",     o: 4.62,  tf: 0.56, bc: 3.25,  bolts: 4,  bolt: "5/8",   y_wn: 2.19, y_so: 0.94, y_lj: 1.00}
+      - {nps: "1",       o: 4.88,  tf: 0.62, bc: 3.50,  bolts: 4,  bolt: "5/8",   y_wn: 2.38, y_so: 1.00, y_lj: 1.06}
+      - {nps: "1 1/4",   o: 5.25,  tf: 0.69, bc: 3.88,  bolts: 4,  bolt: "5/8",   y_wn: 2.50, y_so: 1.00, y_lj: 1.06}
+      - {nps: "1 1/2",   o: 6.12,  tf: 0.75, bc: 4.50,  bolts: 4,  bolt: "3/4",   y_wn: 2.62, y_so: 1.12, y_lj: 1.19}
+      - {nps: "2",       o: 6.50,  tf: 0.81, bc: 5.00,  bolts: 8,  bolt: "5/8",   y_wn: 2.69, y_so: 1.25, y_lj: 1.31}
+      - {nps: "2 1/2",   o: 7.50,  tf: 0.94, bc: 5.88,  bolts: 8,  bolt: "3/4",   y_wn: 2.94, y_so: 1.44, y_lj: 1.50}
+      - {nps: "3",       o: 8.25,  tf: 1.06, bc: 6.62,  bolts: 8,  bolt: "3/4",   y_wn: 3.06, y_so: 1.62, y_lj: 1.69}
+      - {nps: "3 1/2",   o: 9.00,  tf: 1.12, bc: 7.25,  bolts: 8,  bolt: "3/4",   y_wn: 3.12, y_so: 1.69, y_lj: 1.75}
+      - {nps: "4",       o: 10.00, tf: 1.19, bc: 7.88,  bolts: 8,  bolt: "3/4",   y_wn: 3.31, y_so: 1.81, y_lj: 1.88}
+      - {nps: "5",       o: 11.00, tf: 1.31, bc: 9.25,  bolts: 8,  bolt: "3/4",   y_wn: 3.81, y_so: 1.94, y_lj: 2.00}
+      - {nps: "6",       o: 12.50, tf: 1.38, bc: 10.62, bolts: 12, bolt: "3/4",   y_wn: 3.81, y_so: 2.00, y_lj: 2.06}
+      - {nps: "8",       o: 15.00, tf: 1.56, bc: 13.00, bolts: 12, bolt: "7/8",   y_wn: 4.31, y_so: 2.38, y_lj: 2.44}
+      - {nps: "10",      o: 17.50, tf: 1.81, bc: 15.25, bolts: 16, bolt: "1",     y_wn: 4.56, y_so: 2.56, y_lj: 3.75}
+      - {nps: "12",      o: 20.50, tf: 1.94, bc: 17.75, bolts: 16, bolt: "1 1/8", y_wn: 5.06, y_so: 2.81, y_lj: 4.00}
+      - {nps: "14",      o: 23.00, tf: 2.06, bc: 20.25, bolts: 20, bolt: "1 1/8", y_wn: 5.56, y_so: 2.94, y_lj: 4.38}
+      - {nps: "16",      o: 25.50, tf: 2.19, bc: 22.50, bolts: 20, bolt: "1 1/4", y_wn: 5.69, y_so: 3.19, y_lj: 4.75}
+      - {nps: "18",      o: 28.00, tf: 2.31, bc: 24.75, bolts: 24, bolt: "1 1/4", y_wn: 6.19, y_so: 3.44, y_lj: 5.12}
+      - {nps: "20",      o: 30.50, tf: 2.44, bc: 27.00, bolts: 24, bolt: "1 1/4", y_wn: 6.31, y_so: 3.69, y_lj: 5.50}
+      - {nps: "24",      o: 36.00, tf: 2.69, bc: 32.00, bolts: 24, bolt: "1 1/2", y_wn: 6.56, y_so: 4.12, y_lj: 6.00}
 
   "400":
     rf_height: 0.25

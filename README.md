@@ -122,18 +122,27 @@ Still unconfirmed, and marked as such in the YAML comments and on the pages:
 
 - Class 400 rows of Groups 1.2, 1.9, 1.10 and 1.15, and Group 1.2 from 850 °F
   up (one source only).
-- Class 300 `y_wn` and `y_so` (three slip-on values confirmed; the rest follow
-  from the same 1/16 in change).
-- Size range of threaded flanges in Classes 1500 and 2500 (sources disagree).
+- Size range of threaded flanges in Classes 1500 and 2500: NPS 2 1/2, on two
+  secondary sources (medium confidence).
 - The Class 400 socket weld flange, to NPS 2 1/2 on Class 600 dimensions (one
   source only).
-- Raised face diameters above NPS 3, and for Classes 900 and above.
 - NPS 4 1/2, 7, 9 and 11 pipe (`trade_size: true`): one distributor chart only.
   Their pages are noindex and say so.
 - B36.10 Schedule 160 and XXS for NPS 1/8 to 3/8: in the 2022 edition only.
 - A403 strengths and most upper temperature limits in `materials.yaml`.
-- Lap joint hub lengths are not in `data/` at all. The slip-on figure must not
-  be shown under a lap joint heading.
+- Lap joint flange thickness in Classes 150 and 300 (tabulated `tf` plus
+  1/16 in): one source.
+
+Settled in the second pass and no longer open: Class 300 hub lengths, raised
+face diameters (the same in every class), and lap joint hub lengths (`y_lj`).
+Each flange type reads its own hub length; never show `y_so` under a lap
+joint heading.
+
+Tables written into `generate.py` were checked too. `A13_SCHEME` and
+`A13_SIZES` follow ASME A13.1-2023 and band on the outside diameter, not the
+NPS number. The hydrostatic test guide treats 1.5 times the 100 °F rating as
+the most a flanged joint may be tested to, not as a test B16.5 requires of a
+flange.
 
 `checked: full | partial` and `caveat` on each rating group drive the notice
 printed on its page. `max_nps` and `unpublished` on each flange type decide
