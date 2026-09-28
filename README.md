@@ -9,7 +9,7 @@ ASME B16 and B36 standards. Imperial primary, metric alongside.
 
 | Standard | What | Pages |
 | --- | --- | --- |
-| ASME B36.10M | Pipe dimensions, NPS 1/8 – NPS 36, 14 schedules | 34 size + 14 schedule + 286 size×schedule |
+| ASME B36.10 | Pipe dimensions, NPS 1/8 – NPS 36, 14 schedules | 30 size + 14 schedule, plus 4 trade-size pages and the size×schedule extracts (noindex) |
 | ASME B36.19M | Stainless S-schedules — 5S, 10S, 40S, 80S | 4 + reference |
 | ASME B16.5 | Flanges, 6 types × 7 classes, NPS 1/2 – NPS 24 | 6 type + 42 class + 20 size + 264 detail |
 | ASME B16.47 | Large flanges, Series A and B, NPS 26 – NPS 60 | 4 |
@@ -19,9 +19,10 @@ ASME B16 and B36 standards. Imperial primary, metric alongside.
 | Compare | Schedule, flange type, flange class, material and fitting pairs | 24 + index |
 | Guides | Sizing, wall thickness, test pressure, torque, material choice | 10 + index |
 
-746 pages are built. 172 are indexed and in the sitemap; the rest are kept
-live as `noindex`: 570 single-row extracts (see below) and 3 notices for
-flanges B16.5 does not publish.
+765 pages are built. 168 are indexed and in the sitemap; the rest are kept
+live as `noindex`: the single-row extracts (see below), the four trade-size
+pipe pages, and notices at the addresses of flanges and pipe schedules the
+standards do not publish.
 
 ### Page granularity: what is indexed and what is not
 
@@ -57,19 +58,23 @@ requirements of a standard. Every number in the surrounding text is computed
 from `data/`. `READING` maps each guide and comparison to a one-line reason to
 read it, and `reading()` puts the relevant ones on each data page.
 
-NPS 4 1/2, 7, 9 and 11 are carried even though they are effectively obsolete —
-B36.10M publishes them, and B16.5 and B16.9 do not, so their pages omit the
-flange and fitting cross-references rather than inventing them.
+NPS 4 1/2, 7, 9 and 11 are obsolete trade sizes. They are NOT in ASME B36.10
+(2004, 2015 or 2022), whatever this README once said. They keep their own
+pages, marked as unconfirmed and `noindex`, and are excluded from every table
+captioned as B36.10 (`pipes["sizes"]` is the standard; `pipes["all_sizes"]`
+adds them).
 
 ### Generated claims, not asserted ones
 
 `s_schedule_comparison()` computes where each B36.19M S-schedule agrees and
 disagrees with its B36.10M counterpart by walking both data files, and the
 stainless pages render that result as prose. An earlier hand-written version of
-that claim was wrong (it said 5S and 10S are thinner than anything in B36.10M —
-they are not; they match Schedule 5 and Schedule 10 in every published size).
-Prefer computing this kind of cross-table claim over writing it out, so a data
-edit cannot leave stale prose behind.
+that claim was wrong (it said 5S and 10S are thinner than anything in B36.10M).
+The correction was wrong too: it said they match in every size, which held only
+because `pipe_sizes.yaml` had the 10S walls in its Schedule 10 slot. 5S matches
+Schedule 5 everywhere; 10S is thinner than Schedule 10 at NPS 14 to 22.
+Computing a claim protects it from stale prose, not from wrong data: a
+comparison of two files is only as good as both of them.
 
 The comparison and guide pages follow the same rule, and building them turned up
 four hand-written claims that the data contradicted:
@@ -95,15 +100,23 @@ cannot.
 
 ### Data accuracy
 
-**The data has been checked against secondary reproductions of the ASME
-tables, not against the standards themselves.** A check on 2026-09-28 found
-and corrected:
+**Every data file has now been checked, and every one contained errors.**
+The flange files were checked against secondary reproductions of the ASME
+tables; the pipe, fitting and large flange files mostly against publicly
+hosted copies of the standards' own text. Nothing was checked against a
+purchased copy. Checks on 2026-09-28 found and corrected:
 
 | File | What was wrong |
 | --- | --- |
 | `pt_ratings.yaml` | Group 1.1 Classes 300 to 2500 carried 1988/1996-edition values above 800 °F. Group 1.2 had the wrong materials and a table belonging to no edition of that group. Group 2.1 listed 316 and carried old Group 2.2 values; 316 is now its own Group 2.2. |
 | `flanges_b165.yaml` | Every Class 150 and 300 `tf`, `y_wn` and `y_so` included the 1/16 in raised face, on a site that says it is excluded. Class 150 `y_so` for NPS 14 to 24 were lap joint values. |
 | `flange_types.yaml` | Slip-on and socket weld were listed in classes and sizes B16.5 does not publish. |
+| `pipe_sizes.yaml` | Schedule 10 at NPS 14 to 22 carried the 10S walls. Schedule 5 (NPS 1/8 to 3/8) and XXS (NPS 3 1/2) do not exist. Schedule 30 was missing for NPS 1/8 to 4. NPS 4 1/2, 7, 9 and 11 are not in B36.10 at all. |
+| `pipe_sizes_b3619.yaml` | Every value was right, but 40S and 80S for NPS 14 to 24 and the NPS 22 row were missing. |
+| `fittings_b169.yaml` | NPS 3/4 elbows (90 and 45), the NPS 22 45 elbow, and a reducer with a large end of NPS 1/2 that does not exist. The cap had no heavy-wall length. |
+| `flanges_b1647.yaml` | Every Series A Class 150 thickness, and the bolt size for NPS 50 to 60. |
+| `materials.yaml` | B16.5 group of LF2, F316 and the L grades; grade 91 forging and fitting tensile (90 ksi, not 85). |
+| `generate.py` | Pipe weight constant was 10.6802; B36.10 uses 10.69. |
 
 Still unconfirmed, and marked as such in the YAML comments and on the pages:
 
@@ -115,6 +128,10 @@ Still unconfirmed, and marked as such in the YAML comments and on the pages:
 - The Class 400 socket weld flange, to NPS 2 1/2 on Class 600 dimensions (one
   source only).
 - Raised face diameters above NPS 3, and for Classes 900 and above.
+- NPS 4 1/2, 7, 9 and 11 pipe (`trade_size: true`): one distributor chart only.
+  Their pages are noindex and say so.
+- B36.10 Schedule 160 and XXS for NPS 1/8 to 3/8: in the 2022 edition only.
+- A403 strengths and most upper temperature limits in `materials.yaml`.
 - Lap joint hub lengths are not in `data/` at all. The slip-on figure must not
   be shown under a lap joint heading.
 

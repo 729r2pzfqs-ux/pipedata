@@ -2,22 +2,38 @@
 #
 # All dimensions in inches, measured from the centre of the fitting to the
 # welding end ("centre-to-end") unless the fitting note says otherwise.
-# B16.9 dimensions are a function of NPS only — they do not change with wall
-# thickness or schedule, so one table covers every schedule in that size.
+# B16.9 sets these dimensions from NPS, so one table covers every schedule in
+# a size. Two exceptions: the length of a CAP is longer above a limiting wall
+# thickness (see `limit_wall` and `rows_heavy` on the cap), and lap joint stub
+# ends, which are not carried here at all.
+#
+# Checked on 2026-09-28 against the text of B16.9-2003, B16.9-2018 and
+# B16.9-2024 as hosted publicly, and three independent charts. The three
+# editions agree on every value carried here. Corrected then:
+#   - 90 LR elbow NPS 3/4 was 1.12; it is 1.50.
+#   - 45 elbow NPS 3/4 was 0.44; it is 0.75. NPS 22 was 13.75; it is 13.50.
+#   - Reducers listed a large end of NPS 1/2. The smallest reducer is 3/4 x 1/2.
+#   - The 45 elbow formula reproduced no tabulated value and was removed.
+#   - The cap had no mention of the longer length for heavy wall.
+#
+# Coverage limits, not errors: B16.9 runs to NPS 48 and this file stops at
+# NPS 24. Lap joint stub ends (B16.9 Table 6.1-9, and MSS SP-43 for light
+# wall), 3D elbows, reducing elbows and short radius returns are not carried.
 
 fittings:
   - slug: 90-degree-elbow
     name: "90° Long Radius Elbow"
     short: "90° LR elbow"
     dim_label: "Centre-to-end A"
-    formula: "A = 1.5 × NPS"
+    formula: "A = 1.5 × NPS from NPS 1 up; 1.50 in at NPS 1/2 and 3/4"
     blurb: >-
-      The default elbow in process piping. Its centreline radius is 1.5 times
-      the nominal pipe size, which keeps pressure drop low and leaves room for
-      a weld on both ends.
+      The default elbow in process piping. From NPS 1 upward its centreline
+      radius is 1.5 times the nominal pipe size, which keeps pressure drop low
+      and leaves room for a weld on both ends. NPS 1/2 and NPS 3/4 are made to
+      the NPS 1 dimension.
     rows:
       "1/2": 1.50
-      "3/4": 1.12
+      "3/4": 1.50
       "1": 1.50
       "1 1/4": 1.88
       "1 1/2": 2.25
@@ -72,14 +88,15 @@ fittings:
     name: "45° Long Radius Elbow"
     short: "45° elbow"
     dim_label: "Centre-to-end B"
-    formula: "B = 1.5 × NPS × tan 22.5°"
+    formula: null
     blurb: >-
-      A half-turn on the same 1.5 NPS centreline radius as the long radius 90°.
-      Two of them make a rolling offset without the pressure drop of a pair of
-      90s.
+      A half-turn on nominally the same centreline radius as the long radius
+      90°. Two of them make a rolling offset without the pressure drop of a
+      pair of 90s. Dimension B is tabulated size by size and cannot be
+      calculated from the radius.
     rows:
       "1/2": 0.62
-      "3/4": 0.44
+      "3/4": 0.75
       "1": 0.88
       "1 1/4": 1.00
       "1 1/2": 1.12
@@ -97,7 +114,7 @@ fittings:
       "16": 10.00
       "18": 11.25
       "20": 12.50
-      "22": 13.75
+      "22": 13.50
       "24": 15.00
 
   - slug: 180-degree-return-bend
@@ -178,11 +195,12 @@ fittings:
     extra: >-
       The branch dimension M is not reproduced here. Unlike C, it depends on
       the size PAIR, and B16.9 tabulates it combination by combination in
-      Table 8 rather than deriving it from a rule. Read M for your exact run x
-      branch from a current copy of the standard or the manufacturer's
-      catalogue; do not assume it equals the straight tee value for either
-      size.
+      Table 6.1-8 rather than deriving it from a rule. Read M for your exact
+      run x branch from a current copy of the standard or the manufacturer's
+      catalogue. For runs of NPS 14 and larger the standard gives M as
+      recommended, not required.
     rows:
+      "1/2": 1.00
       "3/4": 1.12
       "1": 1.50
       "1 1/4": 1.88
@@ -218,9 +236,9 @@ fittings:
     extra: >-
       B16.9's cross table applies through NPS 24 only; above that size the
       standard tabulates tees but not crosses. Reducing crosses, where the
-      branches are smaller than the run, are tabulated separately by size
-      combination in B16.9 Table 9, the same way reducing tees are — read the
-      branch dimension for your exact combination from a current copy of the
+      branches are smaller than the run, are tabulated by size combination in
+      the same table as reducing tees, B16.9 Table 6.1-8 — read the branch
+      dimension for your exact combination from a current copy of the
       standard.
     rows:
       "1/2": 1.00
@@ -253,9 +271,9 @@ fittings:
     blurb: >-
       A reducer whose two ends share a common centreline. Used on vertical runs
       and anywhere the pipe centreline must stay put through the size change.
-      The length H is set by the LARGER of the two ends.
+      The length H is set by the LARGER of the two ends. The smallest reducer
+      in B16.9 is NPS 3/4 by 1/2.
     rows:
-      "1/2": 1.50
       "3/4": 1.50
       "1": 2.00
       "1 1/4": 2.00
@@ -288,7 +306,6 @@ fittings:
       on pump suction to avoid trapping vapour, and flat-side-down on horizontal
       runs to avoid trapping liquid.
     rows:
-      "1/2": 1.50
       "3/4": 1.50
       "1": 2.00
       "1 1/4": 2.00
@@ -318,7 +335,56 @@ fittings:
     blurb: >-
       A domed end closure welded onto the end of a run. E is measured from the
       welding end to the outside of the crown, so it is the length the cap adds
-      to the pipe.
+      to the pipe. It is the one B16.9 dimension on this site that depends on
+      the wall thickness.
+    extra: >-
+      The length in the main table applies up to the limiting wall thickness
+      for the size. A cap with a heavier wall is longer. Editions up to 2018
+      call the longer length E1; the 2024 edition calls both E.
+    limit_wall:
+      "1/2": 0.18
+      "3/4": 0.15
+      "1": 0.18
+      "1 1/4": 0.19
+      "1 1/2": 0.20
+      "2": 0.22
+      "2 1/2": 0.28
+      "3": 0.30
+      "3 1/2": 0.32
+      "4": 0.34
+      "5": 0.38
+      "6": 0.43
+      "8": 0.50
+      "10": 0.50
+      "12": 0.50
+      "14": 0.50
+      "16": 0.50
+      "18": 0.50
+      "20": 0.50
+      "22": 0.50
+      "24": 0.50
+    rows_heavy:
+      "1/2": 1.00
+      "3/4": 1.00
+      "1": 1.50
+      "1 1/4": 1.50
+      "1 1/2": 1.50
+      "2": 1.75
+      "2 1/2": 2.00
+      "3": 2.50
+      "3 1/2": 3.00
+      "4": 3.00
+      "5": 3.50
+      "6": 4.00
+      "8": 5.00
+      "10": 6.00
+      "12": 7.00
+      "14": 7.50
+      "16": 8.00
+      "18": 9.00
+      "20": 10.00
+      "22": 10.00
+      "24": 12.00
     rows:
       "1/2": 1.00
       "3/4": 1.00

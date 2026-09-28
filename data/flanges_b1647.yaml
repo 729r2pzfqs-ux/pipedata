@@ -1,10 +1,27 @@
 # ASME B16.47 — Large Diameter Steel Flanges, NPS 26 through NPS 60
 #
-# B16.47 carries two independent, NON-INTERCHANGEABLE series:
+# B16.47 carries two series that are, in general, not interchangeable:
 #   Series A — derived from MSS SP-44. Heavier, larger OD, larger bolting.
 #   Series B — derived from API 605. Lighter, smaller OD, more/smaller bolts.
-# A Series A flange will not bolt to a Series B flange of the same size and
-# class: the bolt circles and hole counts differ.
+# In Classes 75, 150 and 300, and in NPS 36 and smaller in Classes 400, 600
+# and 900, a Series A flange will not bolt to a Series B flange of the same
+# size and class. At NPS 38 and larger in Classes 400, 600 and 900 the two
+# series have the same dimensions.
+#
+# The standard covers welding neck and blind flanges only.
+#
+# `tf` is the minimum flange thickness. In Series A Class 150 it is the same
+# for the welding neck and the blind flange, and it does NOT include the
+# 0.06 in (2 mm) raised face.
+#
+# Checked on 2026-09-28 against the text of B16.47-2017 and two distributor
+# tables that agree with it. The 2025 edition is current; its dimension table
+# was not read, and no dimensional change is reported. Corrected then:
+#   - every `tf` was 0.7 to 1.9 in too thin, matching no series or edition;
+#   - `bolt` for NPS 50 was 1 1/2 and for NPS 52 to 60 was 1 5/8. It is 1 3/4
+#     for all six sizes (1 5/8 is the bolt HOLE of the 1 1/2 in bolts);
+#   - the size ranges of the higher classes were not stated.
+# `o`, `bc` and `bolts` were correct in all 18 rows.
 #
 # Dimensions in inches.
 #
@@ -16,23 +33,25 @@ series:
   a:
     name: "Series A"
     origin: "MSS SP-44"
-    sizes: "NPS 26 through NPS 60"
+    sizes: "NPS 26 through NPS 60, Class 900 through NPS 48"
     classes: ["150", "300", "400", "600", "900"]
     blurb: >-
-      Series A is the heavier of the two large-flange series and the default
-      choice for new refinery, power and pipeline work in North America. It has
-      a larger outside diameter, a thicker flange and fewer, larger bolts than
-      Series B at the same size and class.
+      Series A is the heavier of the two large-flange series, which the
+      standard describes as the one for general use. It has a larger outside
+      diameter, a thicker flange and fewer, larger bolts than Series B at the
+      same size and class. Class 900 is published through NPS 48 only.
   b:
     name: "Series B"
     origin: "API 605"
-    sizes: "NPS 26 through NPS 60"
+    sizes: "NPS 26 through NPS 60, Class 900 through NPS 48"
     classes: ["75", "150", "300", "400", "600", "900"]
     blurb: >-
-      Series B is the lighter series, carried over from API 605. It uses a
-      smaller outside diameter and a larger number of smaller-diameter bolts,
-      which makes it thinner and cheaper but leaves less flange rigidity. It
-      also carries a Class 75 rating that Series A does not.
+      Series B is the lighter, compact series, carried over from API 605. It
+      uses a smaller outside diameter and a larger number of smaller-diameter
+      bolts, which makes it thinner and cheaper but leaves less flange
+      rigidity. It also carries a Class 75 rating that Series A does not. In
+      Classes 400, 600 and 900 it has dimensions of its own through NPS 36
+      only; from NPS 38 up it uses the Series A dimensions.
 
 combinations:
   - {series: a, class: "150", tabulated: true}
@@ -50,21 +69,21 @@ combinations:
 tables:
   a-150:
     rows:
-      - {nps: 26, o: 34.25, tf: 1.94, bc: 31.75, bolts: 24, bolt: "1 1/4"}
-      - {nps: 28, o: 36.50, tf: 2.06, bc: 34.00, bolts: 28, bolt: "1 1/4"}
-      - {nps: 30, o: 38.75, tf: 2.12, bc: 36.00, bolts: 28, bolt: "1 1/4"}
-      - {nps: 32, o: 41.75, tf: 2.25, bc: 38.50, bolts: 28, bolt: "1 1/2"}
-      - {nps: 34, o: 43.75, tf: 2.31, bc: 40.50, bolts: 32, bolt: "1 1/2"}
-      - {nps: 36, o: 46.00, tf: 2.38, bc: 42.75, bolts: 32, bolt: "1 1/2"}
-      - {nps: 38, o: 48.75, tf: 2.50, bc: 45.25, bolts: 32, bolt: "1 1/2"}
-      - {nps: 40, o: 50.75, tf: 2.56, bc: 47.25, bolts: 36, bolt: "1 1/2"}
-      - {nps: 42, o: 53.00, tf: 2.62, bc: 49.50, bolts: 36, bolt: "1 1/2"}
-      - {nps: 44, o: 55.25, tf: 2.69, bc: 51.75, bolts: 40, bolt: "1 1/2"}
-      - {nps: 46, o: 57.25, tf: 2.75, bc: 53.75, bolts: 40, bolt: "1 1/2"}
-      - {nps: 48, o: 59.50, tf: 2.81, bc: 56.00, bolts: 44, bolt: "1 1/2"}
-      - {nps: 50, o: 61.75, tf: 2.88, bc: 58.25, bolts: 44, bolt: "1 1/2"}
-      - {nps: 52, o: 64.00, tf: 2.94, bc: 60.50, bolts: 44, bolt: "1 5/8"}
-      - {nps: 54, o: 66.25, tf: 3.00, bc: 62.75, bolts: 44, bolt: "1 5/8"}
-      - {nps: 56, o: 68.75, tf: 3.12, bc: 65.00, bolts: 48, bolt: "1 5/8"}
-      - {nps: 58, o: 71.00, tf: 3.19, bc: 67.25, bolts: 48, bolt: "1 5/8"}
-      - {nps: 60, o: 73.00, tf: 3.25, bc: 69.25, bolts: 52, bolt: "1 5/8"}
+      - {nps: 26, o: 34.25, tf: 2.63, bc: 31.75, bolts: 24, bolt: "1 1/4"}
+      - {nps: 28, o: 36.50, tf: 2.75, bc: 34.00, bolts: 28, bolt: "1 1/4"}
+      - {nps: 30, o: 38.75, tf: 2.88, bc: 36.00, bolts: 28, bolt: "1 1/4"}
+      - {nps: 32, o: 41.75, tf: 3.13, bc: 38.50, bolts: 28, bolt: "1 1/2"}
+      - {nps: 34, o: 43.75, tf: 3.19, bc: 40.50, bolts: 32, bolt: "1 1/2"}
+      - {nps: 36, o: 46.00, tf: 3.50, bc: 42.75, bolts: 32, bolt: "1 1/2"}
+      - {nps: 38, o: 48.75, tf: 3.38, bc: 45.25, bolts: 32, bolt: "1 1/2"}
+      - {nps: 40, o: 50.75, tf: 3.50, bc: 47.25, bolts: 36, bolt: "1 1/2"}
+      - {nps: 42, o: 53.00, tf: 3.75, bc: 49.50, bolts: 36, bolt: "1 1/2"}
+      - {nps: 44, o: 55.25, tf: 3.94, bc: 51.75, bolts: 40, bolt: "1 1/2"}
+      - {nps: 46, o: 57.25, tf: 4.00, bc: 53.75, bolts: 40, bolt: "1 1/2"}
+      - {nps: 48, o: 59.50, tf: 4.19, bc: 56.00, bolts: 44, bolt: "1 1/2"}
+      - {nps: 50, o: 61.75, tf: 4.32, bc: 58.25, bolts: 44, bolt: "1 3/4"}
+      - {nps: 52, o: 64.00, tf: 4.50, bc: 60.50, bolts: 44, bolt: "1 3/4"}
+      - {nps: 54, o: 66.25, tf: 4.69, bc: 62.75, bolts: 44, bolt: "1 3/4"}
+      - {nps: 56, o: 68.75, tf: 4.82, bc: 65.00, bolts: 48, bolt: "1 3/4"}
+      - {nps: 58, o: 71.00, tf: 5.00, bc: 67.25, bolts: 48, bolt: "1 3/4"}
+      - {nps: 60, o: 73.00, tf: 5.13, bc: 69.25, bolts: 52, bolt: "1 3/4"}

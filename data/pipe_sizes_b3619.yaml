@@ -1,17 +1,25 @@
-# ASME B36.19M — Stainless Steel Pipe
+# ASME B36.19 — Welded and Seamless Wrought Stainless Steel Pipe
+# (published as B36.19M until the 2022 edition)
 #
 # The S-schedules. Wall thicknesses in inches; outside diameters are the same
-# as B36.10M and are read from pipe_sizes.yaml rather than repeated here.
+# as B36.10 and are read from pipe_sizes.yaml rather than repeated here.
 #
-# B36.19M is a SHORTER standard than B36.10M in two ways that matter:
-#   - it publishes 40S and 80S only through NPS 12
-#   - it publishes 5S and 10S only through NPS 30
-# Anything outside that is a B36.10M schedule, whatever the material.
+# Coverage, from Table 2-1 of the 2022 edition:
+#   - 5S starts at NPS 1/2; 10S, 40S and 80S start at NPS 1/8
+#   - 5S and 10S run through NPS 30, with no NPS 26 or 28
+#   - 40S and 80S run through NPS 24, except NPS 22, which has neither
+# Above NPS 12 every 40S wall is 0.375 in and every 80S wall is 0.500 in. The
+# standard itself marks those as not conforming to B36.10.
 #
-# The wall thicknesses themselves coincide with the B36.10M schedules in most
-# sizes. The divergences are few, specific, and the whole reason this page
-# exists — see `divergences` below, which the generator renders rather than
-# hardcoding the claim in prose.
+# Where an S-schedule differs from the B36.10 schedule of the same number is
+# computed by the generator from the two files, not written down here.
+#
+# Checked on 2026-09-28 against the text of B36.19-2022 and four independent
+# charts. Every wall that was in the file was correct. Added then: 40S and 80S
+# for NPS 14, 16, 18, 20 and 24, and the NPS 22 row, which had been left out
+# in the belief that 40S and 80S stop at NPS 12.
+#
+# NOT CARRIED: Schedule 160S, which the 2022 edition added for NPS 1/8 to 6.
 
 schedules: ["5S", "10S", "40S", "80S"]
 
@@ -34,11 +42,12 @@ sizes:
   "8":     {5S: 0.109, 10S: 0.148, 40S: 0.322, 80S: 0.500}
   "10":    {5S: 0.134, 10S: 0.165, 40S: 0.365, 80S: 0.500}
   "12":    {5S: 0.156, 10S: 0.180, 40S: 0.375, 80S: 0.500}
-  "14":    {5S: 0.156, 10S: 0.188}
-  "16":    {5S: 0.165, 10S: 0.188}
-  "18":    {5S: 0.165, 10S: 0.188}
-  "20":    {5S: 0.188, 10S: 0.218}
-  "24":    {5S: 0.218, 10S: 0.250}
+  "14":    {5S: 0.156, 10S: 0.188, 40S: 0.375, 80S: 0.500}
+  "16":    {5S: 0.165, 10S: 0.188, 40S: 0.375, 80S: 0.500}
+  "18":    {5S: 0.165, 10S: 0.188, 40S: 0.375, 80S: 0.500}
+  "20":    {5S: 0.188, 10S: 0.218, 40S: 0.375, 80S: 0.500}
+  "22":    {5S: 0.188, 10S: 0.218}
+  "24":    {5S: 0.218, 10S: 0.250, 40S: 0.375, 80S: 0.500}
   "30":    {5S: 0.250, 10S: 0.312}
 
 # Which B36.10M schedule each S-schedule is usually confused with. The

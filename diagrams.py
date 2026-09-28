@@ -573,8 +573,9 @@ def fitting(slug):
             165, "90° long radius elbow",
             "Outline of a 90 degree long radius elbow. Dimension A runs from "
             "the point where the two end centrelines cross to the face of "
-            "each end, and equals the centreline bend radius of 1.5 times "
-            "the nominal pipe size.", "Radius = 1.5 × NPS")
+            "each end. From NPS 1 upward it equals the centreline bend "
+            "radius of 1.5 times the nominal pipe size.",
+            "Radius = 1.5 × NPS (NPS 1 up)")
     if slug == "90-degree-elbow-short-radius":
         return _elbow90(
             110, "90° short radius elbow",

@@ -96,8 +96,11 @@ DESC_MIN = 120
 DESC_MAX = 160
 TITLE_MAX = 60
 
-# Steel weight constant: w (lb/ft) = 10.6802 * t * (OD - t), both in inches.
-STEEL_W = 10.6802
+# Steel weight constant: w (lb/ft) = 10.69 * t * (OD - t), both in inches.
+# This is the constant ASME B36.10 itself states, and it reproduces the
+# weights the standard tabulates. The site used 10.6802 until 2026-09-28,
+# which ran about 0.09% light against the published table.
+STEEL_W = 10.69
 MM = 25.4
 LBFT_TO_KGM = 1.48816
 
@@ -269,6 +272,11 @@ def load():
         # YAML parses bare 5/10/40 as ints and STD/XS/XXS as strings; normalise.
         s["walls"] = {str(k): float(v) for k, v in s["walls"].items()}
     pipes["sizes"].sort(key=lambda s: s["val"])
+    # NPS 4 1/2, 7, 9 and 11 are not in B36.10. They keep their own pages,
+    # marked as unconfirmed trade sizes, and stay out of every table that is
+    # captioned as B36.10: `sizes` is the standard, `all_sizes` adds them.
+    pipes["all_sizes"] = pipes["sizes"]
+    pipes["sizes"] = [s for s in pipes["all_sizes"] if not s.get("trade_size")]
     pipes["schedule_order"] = [str(x) for x in pipes["schedule_order"]]
 
     b165 = load_yaml("flanges_b165.yaml")
@@ -302,7 +310,7 @@ def load():
     ss["counterparts"] = {str(k): str(v) for k, v in ss["counterparts"].items()}
 
     errors = []
-    for s in pipes["sizes"]:
+    for s in pipes["all_sizes"]:
         for k, t in s["walls"].items():
             if t * 2 >= s["od"]:
                 errors.append(f"NPS {s['nps']} sch {k}: wall {t} closes the bore")
@@ -823,6 +831,50 @@ def fig_flange_face(b165, cls, nps="6", bore=None):
     return svg_, r, rf, hole
 
 
+SS_CMP = {}      # filled in main(): s_schedule_comparison() result
+SS_DATA = {}     # filled in main(): the B36.19 data
+
+
+def s_last(sch):
+    """Largest NPS in which B36.19 publishes this S-schedule."""
+    return max((k for k, v in SS_DATA["sizes"].items() if sch in v),
+               key=nps_value)
+
+
+def s_coverage():
+    """One sentence on how far each S-schedule runs, from the data."""
+    gaps = [k for k, v in SS_DATA["sizes"].items()
+            if "10S" in v and "40S" not in v
+            and nps_value(k) < nps_value(s_last("40S"))]
+    return (f"B36.19 publishes 40S and 80S through NPS {s_last('40S')}"
+            + (f", except NPS {comma_list(gaps)}" if gaps else "")
+            + f", and 5S and 10S through NPS {s_last('10S')}")
+
+
+def s_match(sch):
+    """Where an S-schedule agrees with the B36.10 schedule of the same
+    number and where it does not. Computed, because this claim has been
+    written wrongly by hand twice."""
+    info = SS_CMP[sch]
+    cp = info["counterpart"]
+    if not info["differs"]:
+        return (f"{sch} has the same wall as Schedule {cp} in every size "
+                f"where both are published.")
+    d = info["differs"]
+    walls_s = sorted({x[1] for x in d})
+    return (f"{sch} has the same wall as Schedule {cp} in "
+            f"{len(info['same'])} sizes and a different one in "
+            f"{len(d)}: NPS {comma_list([x[0] for x in d])}. In those sizes "
+            f"{sch} is "
+            + (f"{n(walls_s[0], 3)} in" if len(walls_s) == 1 else
+               f"{n(walls_s[0], 3)} to {n(walls_s[-1], 3)} in")
+            + ", against "
+            + (f"{n(d[0][2], 3)} in" if len({x[2] for x in d}) == 1 else
+               f"{n(min(x[2] for x in d), 3)} to "
+               f"{n(max(x[2] for x in d), 3)} in")
+            + f" for Schedule {cp}.")
+
+
 def long_date(iso):
     y, m, d = (int(x) for x in iso.split("-"))
     return f"{d} {date(y, m, d).strftime('%B')} {y}"
@@ -922,24 +974,24 @@ SIZE_NOTES = {
              "and stock is correspondingly thin.",
     "4": "One of the most widely used sizes in process, utility and fire "
          "water service, and one of the best stocked in every schedule.",
-    "4 1/2": "Effectively obsolete. B36.10M still carries the size, but B16.5 "
-             "publishes no flange for it and B16.9 no fitting, so it appears "
-             "here for completeness and for anyone identifying old pipe.",
+    "4 1/2": "An obsolete trade size that is not in ASME B36.10. B16.5 "
+             "publishes no flange for it and B16.9 no fitting. It appears "
+             "here for anyone identifying old pipe.",
     "5": "Used in some building services and fire protection systems, but "
          "left off many process piping size lists, which step from NPS 4 to "
          "NPS 6. B16.5 and B16.9 both publish it.",
     "6": "A workhorse size for process lines, utility headers and fire water "
          "mains, stocked in every common schedule.",
-    "7": "Effectively obsolete. B36.10M still carries the size, but B16.5 "
+    "7": "An obsolete trade size that is not in ASME B36.10. B16.5 "
          "publishes no flange for it and B16.9 no fitting.",
     "8": "A common header and transfer line size, and the smallest size in "
          "which B36.10M publishes the full run of numbered schedules from "
          "Schedule 20 through Schedule 160.",
-    "9": "Effectively obsolete. B36.10M still carries the size, but B16.5 "
+    "9": "An obsolete trade size that is not in ASME B36.10. B16.5 "
          "publishes no flange for it and B16.9 no fitting.",
     "10": "A common size for main process lines, cooling water and flare "
           "sub-headers.",
-    "11": "Effectively obsolete. B36.10M still carries the size, but B16.5 "
+    "11": "An obsolete trade size that is not in ASME B36.10. B16.5 "
           "publishes no flange for it and B16.9 no fitting.",
     "12": "A common main header size, and the largest size in which B16.5 "
           "publishes a Class 2500 flange.",
@@ -993,6 +1045,8 @@ def b313_pressure(od, t):
 
 
 def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
+    trade = bool(s.get("trade_size"))
+    source = ("a distributor's stock chart" if trade else "ASME B36.10")
     order = [k for k in pipes["schedule_order"] if k in s["walls"]]
     od = s["od"]
     nps = s["nps"]
@@ -1084,7 +1138,8 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
     w_thin, w_thick = weight_lbft(od, t_thin), weight_lbft(od, t_thick)
     distinct = sorted({round(s["walls"][k], 4) for k in order})
     spread_para = (
-        f"B36.10M lists {len(order)} designations in NPS {e_nps}, which "
+        f"{'The chart' if trade else 'B36.10'} lists {len(order)} "
+        f"designations in NPS {e_nps}, which "
         f"between them give {len(distinct)} different wall thicknesses. The "
         f"lightest is {sched_long(thin_k)} at {inch_mm(t_thin)} and the "
         f"heaviest is {sched_long(thick_k)} at {inch_mm(t_thick)}. Going from "
@@ -1133,10 +1188,13 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
             ["Schedule", "Wall thickness", "Inside diameter", "Weight, empty",
              "Weight, water filled", "Flow area (in²)", "Water (US gal/ft)"],
             rows,
-            caption=(f"ASME B36.10M wall thicknesses for NPS {e_nps} "
-                     f"(DN {s['dn']}), outside diameter {inch_mm(od)}."),
+            caption=((f"Wall thicknesses for NPS {e_nps}, an obsolete trade "
+                      f"size that is not in ASME B36.10. Values not "
+                      f"confirmed." if trade else
+                      f"ASME B36.10 wall thicknesses for NPS {e_nps} "
+                      f"(DN {s['dn']}), outside diameter {inch_mm(od)}.")),
             note=("Inside diameter is OD − 2t. Weight is calculated for "
-                  "carbon steel as w = 10.6802 × t × (OD − t) lb/ft and is the "
+                  "carbon steel as w = 10.69 × t × (OD − t) lb/ft and is the "
                   "plain-end weight, excluding coatings, linings and "
                   "fittings. Water-filled weight adds fresh water at "
                   "8.3454 lb per US gallon."),
@@ -1269,7 +1327,7 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
             f'<h2 id="flanges">Flanges for NPS {e_nps} pipe</h2>'
             f"<p>ASME B16.5 publishes no flange in NPS {e_nps} and ASME B16.9 "
             f"no buttweld fitting. That is the practical meaning of an "
-            f"obsolete size: the pipe dimensions are still in B36.10M, but "
+            f"obsolete size: pipe of this diameter exists in old plant, but "
             f"nothing standard is made to connect to it. New work uses the "
             f"next size up or down.</p>")
 
@@ -1300,18 +1358,26 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
               "has to match the pipe at the weld.</p>"
             + table(["Fitting", "Dimension", "NPS " + e_nps], fit_rows,
                     caption=f"ASME B16.9 buttweld fitting dimensions in NPS "
-                            f"{e_nps}."))
+                            f"{e_nps}.",
+                    note="The cap is the exception to the rule above: its "
+                         "length is for walls up to a limiting thickness, "
+                         "and a heavier wall takes a longer cap. See the "
+                         '<a href="/fittings/cap/">cap page</a>.'))
 
     # neighbouring sizes
-    idx = [x["slug"] for x in pipes["sizes"]].index(s["slug"])
+    # A standard size steps to the next standard size; a trade size sits
+    # between its two standard neighbours.
+    near = [x for x in pipes["all_sizes"]
+            if x is s or not x.get("trade_size")]
+    idx = [x["slug"] for x in near].index(s["slug"])
     nav = []
     if idx > 0:
-        p = pipes["sizes"][idx - 1]
+        p = near[idx - 1]
         nav.append(f'<a class="card" href="{p["url"]}">'
                    f'<span class="card-title">← NPS {esc(p["nps"])}</span>'
                    f'<span class="card-meta">OD {inch_mm(p["od"])}</span></a>')
-    if idx < len(pipes["sizes"]) - 1:
-        nx = pipes["sizes"][idx + 1]
+    if idx < len(near) - 1:
+        nx = near[idx + 1]
         nav.append(f'<a class="card" href="{nx["url"]}">'
                    f'<span class="card-title">NPS {esc(nx["nps"])} →</span>'
                    f'<span class="card-meta">OD {inch_mm(nx["od"])}</span></a>')
@@ -1378,9 +1444,16 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
     body = (crumb_html + '<div class="wrap">'
             f'<div class="page-head"><h1>NPS {e_nps} Pipe Dimensions</h1>'
             f'<p class="lede">Outside diameter {inch_mm(od)} — fixed across every '
-            f'schedule. {len(order)} wall thicknesses from ASME B36.10M, with bore, '
+            f'schedule. {len(order)} wall thicknesses from {source}, with bore, '
             f'weight, flow and pressure capacity for each, and the flanges '
             f'and fittings that go with the size.</p></div>'
+            + ('<div class="callout warn"><p><strong>Not an ASME B36.10 '
+               f'size.</strong> NPS {e_nps} does not appear in the 2004, '
+               '2015 or 2022 editions of ASME B36.10. It is an obsolete '
+               'trade size. The dimensions on this page come from a single '
+               "distributor's stock chart and have not been confirmed "
+               'against a second source. Use them to identify old pipe, '
+               'not to specify new.</p></div>' if trade else "")
             + facts(fact_rows)
             + "".join(body_rows)
             + flange_block + fit_block
@@ -1392,7 +1465,8 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
                if nav else "")
             + "</div>")
 
-    page(s["url"], title, desc, body, ld=[crumb_ld, faq_ld])
+    page(s["url"], title, desc, body,
+         ld=[crumb_ld] if trade else [crumb_ld, faq_ld], noindex=trade)
     index_entry(f"NPS {nps} pipe", s["url"],
                 f"DN {s['dn']} · OD {n(od, 3)} in · {len(order)} schedules")
 
@@ -1458,7 +1532,16 @@ def pipes_index(pipes):
                             "schedule.")
             + '<h2>Browse by size</h2>'
             f'<div class="grid tight">{size_cards}</div>'
-            + '<h2>Browse by schedule</h2>'
+            + '<h2>Obsolete sizes outside the standard</h2>'
+            '<p>NPS 4 1/2, 7, 9 and 11 turn up in old plant and on some '
+            'stock charts, but ASME B36.10 does not publish them, so they '
+            'are left out of the tables on this site. Each has a page of '
+            'its own, with dimensions that have not been confirmed against '
+            'a second source.</p><div class="chip-links">'
+            + "".join(f'<a class="chip-link" href="{t["url"]}">NPS '
+                      f'{esc(t["nps"])}</a>' for t in pipes["all_sizes"]
+                      if t.get("trade_size"))
+            + '</div><h2>Browse by schedule</h2>'
             f'<div class="grid">{"".join(scheds)}</div>'
             + reading(["/guides/pipe-schedule-explained/",
                        "/guides/nps-vs-dn-explained/",
@@ -1702,7 +1785,7 @@ def schedule_page(k, pipes):
                     rows,
                     caption=f"ASME B36.10M {label.lower()} dimensions.",
                     note="Weight is plain-end carbon steel, "
-                         "w = 10.6802 × t × (OD − t) lb/ft.")
+                         "w = 10.69 × t × (OD − t) lb/ft.")
             + "<h2>How the wall changes with size</h2>"
             + f"<p>{trend_para}</p>" + flat_para
             + alias_para + reading(read) + faq_html
@@ -1716,6 +1799,34 @@ def schedule_page(k, pipes):
 
 WATER_LB_GAL = 8.3454   # US gallon of fresh water at 60 °F
 SQIN_TO_SQMM = 645.16
+
+
+# Size and schedule pairs the site once published that ASME B36.10 does not.
+# The pages keep their address, as a notice, so that no old link breaks.
+WITHDRAWN_COMBOS = [("1/8", "5"), ("1/4", "5"), ("3/8", "5"), ("3 1/2", "XXS")]
+
+
+def withdrawn_combo_page(s, k):
+    long_ = sched_long(k)
+    url = f"/pipes/nps-{s['slug']}/{sched_slug(k)}/"
+    crumb_html, crumb_ld = crumbs([
+        ("Home", "/"), ("Pipe", "/pipes/"),
+        (f"NPS {s['nps']}", s["url"]), (sched_label(k), None)])
+    body = (crumb_html + '<div class="wrap narrow">'
+            f'<div class="page-head"><h1>NPS {esc(s["nps"])} {esc(long_)} '
+            f'Pipe</h1><p class="lede">ASME B36.10 does not publish '
+            f'{esc(long_)} in NPS {esc(s["nps"])}.</p></div>'
+            '<div class="callout warn"><p><strong>Correction.</strong> This '
+            'page used to show dimensions for a size and schedule that are '
+            'not in the 2004, 2015 or 2022 editions of ASME B36.10. The '
+            'figures have been withdrawn.</p></div>'
+            f'<p>The schedules the standard does publish in this size are on '
+            f'the <a href="{s["url"]}">NPS {esc(s["nps"])} pipe dimensions '
+            f'page</a>.</p></div>')
+    page(url, f"NPS {s['nps']} {long_} Pipe — Not Published",
+         f"ASME B36.10 does not publish {long_} in NPS {s['nps']}. The "
+         f"schedules the standard does publish in this size are on the NPS "
+         f"{s['nps']} pipe page.", body, ld=[crumb_ld], noindex=True)
 
 
 def combo_page(s, k, pipes, b165, fittings):
@@ -1876,7 +1987,7 @@ def combo_page(s, k, pipes, b165, fittings):
                     caption=f"ASME B36.10M schedules published in NPS "
                             f"{esc(s['nps'])}, outside diameter {inch_mm(od)}.",
                     note="Weight is plain-end carbon steel, "
-                         "w = 10.6802 × t × (OD − t) lb/ft.")
+                         "w = 10.69 × t × (OD − t) lb/ft.")
             + flange_block + fit_block + faq_html
             + '<h2>Related</h2><div class="chip-links">'
             f'<a class="chip-link" href="{s["url"]}">All NPS {esc(s["nps"])} '
@@ -2951,7 +3062,7 @@ def flanges_index(ftypes, b165):
         ("Where does B16.5 stop and B16.47 start?",
          "<p>ASME B16.5 covers NPS 1/2 through NPS 24. From NPS 26 up, flanges "
          "are covered by <a href='/flanges/large/'>ASME B16.47</a>, which has two "
-         "non-interchangeable series — Series A and Series B.</p>"),
+         "series, A and B, that in general do not interchange.</p>"),
     ]
     faq_html, faq_ld = faq(q)
     crumb_html, crumb_ld = crumbs([("Home", "/"), ("Flanges", None)])
@@ -2988,7 +3099,7 @@ def flanges_index(ftypes, b165):
             f'<div class="grid tight">{size_cards}</div>'
             + '<h2>Larger than NPS 24</h2>'
             '<p>Flanges from NPS 26 to NPS 60 fall under ASME B16.47, in two '
-            'series that will not bolt to each other. '
+            'series that in general will not bolt to each other. '
             '<a class="more" href="/flanges/large/">Large diameter flanges →</a></p>'
             + reading(["/guides/pressure-temperature-derating/",
                        "/guides/flange-face-types/",
@@ -3009,6 +3120,10 @@ def flanges_index(ftypes, b165):
                        "ASME B16.5 flange types")])
     index_entry("Flange dimensions index", "/flanges/",
                 "ASME B16.5 · 6 types · 7 classes")
+
+
+B1647_SAME = ("At NPS 38 and larger in Classes 400, 600 and 900 the two "
+              "series have the same dimensions.")
 
 
 def large_flange_pages(b1647):
@@ -3041,17 +3156,20 @@ def large_flange_pages(b1647):
 
     q = [
         ("Can a Series A flange bolt to a Series B flange?",
-         "<p>No. At the same NPS and class the two series have different outside "
-         "diameters, different bolt circles and different bolt counts. They are "
-         "separate, non-interchangeable products that happen to live in the same "
-         "standard. Always state the series on the requisition.</p>"),
+         "<p>In general, no. In Classes 75, 150 and 300, and in NPS 36 and "
+         "smaller in the higher classes, the two series have different "
+         "outside diameters, bolt circles and bolt counts. " + B1647_SAME +
+         " Always state the series on the requisition.</p>"),
         ("Which B16.47 series should I specify?",
-         "<p>Series A is the heavier and the usual default for new North "
-         "American refinery, power and pipeline work. Series B is lighter and "
-         "cheaper but less rigid; it is normally chosen only to match existing "
-         "API 605 flanges already in the plant.</p>"),
+         "<p>The standard describes Series A as the series for general use "
+         "and Series B as the compact one. Series A is heavier and more "
+         "rigid. Series B is lighter and cheaper, and is often chosen to "
+         "match API 605 flanges already in a plant. The project "
+         "specification decides.</p>"),
         ("What sizes does ASME B16.47 cover?",
-         "<p>NPS 26 through NPS 60 in both series. Below NPS 26, flanges are "
+         "<p>NPS 26 through NPS 60 in both series, in even sizes, with "
+         "Class 900 published through NPS 48 only. It covers welding neck "
+         "and blind flanges. Below NPS 26, flanges are "
          "covered by <a href='/flanges/'>ASME B16.5</a> instead — the two "
          "standards meet at NPS 24/26 with no overlap.</p>"),
     ]
@@ -3061,13 +3179,16 @@ def large_flange_pages(b1647):
 
     body = (crumb_html + '<div class="wrap">'
             '<div class="page-head"><h1>Large Diameter Flanges — ASME B16.47</h1>'
-            '<p class="lede">NPS 26 through NPS 60 in two non-interchangeable '
-            'series. Series A comes from MSS SP-44 and is the heavier; Series B '
-            'comes from API 605 and is the lighter.</p></div>'
+            '<p class="lede">NPS 26 through NPS 60 in two series that in '
+            'general do not interchange. Series A comes from MSS SP-44 and is '
+            'the heavier; Series B comes from API 605 and is the lighter.'
+            '</p></div>'
             f'<div class="grid">{cards}</div>'
             + '<div class="callout warn"><p><strong>The two series do not '
-            'mate.</strong> A Series A and a Series B flange of the same NPS and '
-            'class have different bolt circles and bolt counts. Specifying '
+            'mate, with one exception.</strong> In Classes 75, 150 and 300, '
+            'and in NPS 36 and smaller in Classes 400, 600 and 900, a Series '
+            'A and a Series B flange of the same NPS and class have different '
+            'bolt circles and bolt counts. ' + B1647_SAME + ' Specifying '
             '&ldquo;NPS 36 Class 150 B16.47&rdquo; without the series is an '
             'incomplete specification.</p></div>'
             + '<h2>Series and class coverage</h2>'
@@ -3083,9 +3204,9 @@ def large_flange_pages(b1647):
 
     page("/flanges/large/",
          "Large Diameter Flanges — ASME B16.47 | PipeData",
-         "ASME B16.47 covers flanges NPS 26 to NPS 60 in two non-interchangeable "
-         "series: Series A from MSS SP-44 and Series B from API 605. Dimensions "
-         "and bolting.",
+         "ASME B16.47 covers welding neck and blind flanges NPS 26 to NPS 60 "
+         "in two series: Series A from MSS SP-44 and Series B from API 605. "
+         "Dimensions and bolting.",
          body, ld=[crumb_ld, faq_ld])
     index_entry("Large diameter flanges", "/flanges/large/",
                 "ASME B16.47 · NPS 26–60")
@@ -3135,8 +3256,10 @@ def large_flange_pages(b1647):
                 f'<div class="chip-links">{cls_links}</div>' if cls_links else "")
              + '<div class="callout warn"><p><strong>Not interchangeable with '
                f'{esc(other["name"])}.</strong> The two series differ in outside '
-               'diameter, bolt circle and bolt count at every size and class. '
-               'Never mix them in a joint.</p></div>'
+               'diameter, bolt circle and bolt count in Classes 75, 150 and '
+               '300, and in NPS 36 and smaller in the higher classes. '
+               + B1647_SAME + ' Never mix them in a joint without checking.'
+               '</p></div>'
              + faq2_html
              + f'<p><a class="more" href="/flanges/large/series-{other_key}/">'
                f'Compare with {esc(other["name"])} →</a></p></div>')
@@ -3174,9 +3297,10 @@ def large_flange_pages(b1647):
                  for r in tbl["rows"] if r["nps"] == 36) + "</p>"),
             ("Are these dimensions the same as Series "
              f"{other_key.upper()}?",
-             "<p>No. Series A and Series B differ in outside diameter, bolt "
-             "circle and bolt count at every size. The two will not bolt "
-             "together, and a gasket for one will not suit the other.</p>"),
+             f"<p>No. In Class {c['class']} Series A and Series B differ in "
+             "outside diameter, bolt circle and bolt count at every size. "
+             "The two will not bolt together, and a gasket for one will not "
+             "suit the other.</p>"),
         ]
         f3_html, f3_ld = faq(q3)
         cr_html, cr_ld = crumbs([
@@ -3243,16 +3367,21 @@ FITTING_READING = {
 def fitting_page(f, fittings, pipes):
     od_by_nps = {s["nps"]: s["od"] for s in pipes["sizes"]}
     keys = sorted(f["rows"], key=nps_value)
+    heavy = f.get("rows_heavy")
     rows = []
     for k in keys:
         v = f["rows"][k]
         od = od_by_nps.get(k)
-        rows.append([
+        row = [
             f'<strong>NPS {esc(k)}</strong>',
             f'<a href="/pipes/nps-{nps_slug(k)}/">{n(od, 3)} in</a>'
             if od else '<span class="na">—</span>',
             dual(v, 2),
-        ])
+        ]
+        if heavy:
+            row += [dual(float(f["limit_wall"][k]), 2),
+                    dual(float(heavy[k]), 2)]
+        rows.append(row)
 
     smallest, largest = keys[0], keys[-1]
     others = "".join(
@@ -3271,6 +3400,14 @@ def fitting_page(f, fittings, pipes):
         (f"How is a {f['short']} dimensioned?",
          f"<p>By its {f['dim_label'].lower()}, in inches, as a function of NPS "
          f"alone.</p>"),
+        (f"Does the {f['short']} dimension change with wall thickness?",
+         "<p>Yes, for a cap. ASME B16.9 gives one length for walls up to a "
+         "limiting thickness and a longer one for heavier walls. In NPS 6 "
+         f"the cap is {n(f['rows']['6'], 2)} in long up to a "
+         f"{n(float(f['limit_wall']['6']), 2)} in wall and "
+         f"{n(float(heavy['6']), 2)} in long above it. The cap is the "
+         "exception: elbows, tees and reducers keep one dimension in every "
+         "schedule.</p>") if heavy else
         (f"Does the {f['short']} dimension change with wall thickness?",
          "<p>No. ASME B16.9 sets fitting dimensions from NPS alone. A schedule "
          "40 and a schedule 160 fitting of the same size have identical "
@@ -3311,15 +3448,28 @@ def fitting_page(f, fittings, pipes):
                 f"{esc(f['dim_label'][0].lower() + f['dim_label'][1:])} for "
                 f"each size. Not to scale.")
             + UNITS_NOTE
-            + table(["Size", "Matching pipe OD", esc(f["dim_label"])], rows,
+            + table(["Size", "Matching pipe OD", esc(f["dim_label"])]
+                    + (["Limiting wall thickness",
+                        "Length above the limiting wall"] if heavy else []),
+                    rows,
                     caption=f"ASME B16.9 {f['name'].lower()} dimensions.",
-                    note="B16.9 dimensions are a function of NPS only and do "
-                         "not change with schedule or wall thickness.")
-            + '<div class="callout"><p><strong>Same size, any schedule.</strong> '
-            'Because these dimensions depend on NPS alone, a spool drawing can '
-            'be dimensioned before the schedule is fixed. The wall thickness '
-            'still has to be ordered to match the pipe, or the weld prep will '
-            'not line up.</p></div>'
+                    note=("Length E applies where the wall of the cap is no "
+                          "thicker than the limiting wall thickness. Above "
+                          "it the longer length applies. Editions of B16.9 "
+                          "up to 2018 call the longer length E1."
+                          if heavy else
+                          "B16.9 dimensions are a function of NPS only and do "
+                          "not change with schedule or wall thickness."))
+            + ('<div class="callout"><p><strong>Check the wall before '
+               'dimensioning.</strong> A cap is the one buttweld fitting '
+               'whose length depends on its wall thickness, so the schedule '
+               'has to be known before the overall length of a capped spool '
+               'can be fixed.</p></div>' if heavy else
+               '<div class="callout"><p><strong>Same size, any schedule.'
+               '</strong> Because these dimensions depend on NPS alone, a '
+               'spool drawing can be dimensioned before the schedule is '
+               'fixed. The wall thickness still has to be ordered to match '
+               'the pipe, or the weld prep will not line up.</p></div>')
             + (f'<div class="callout"><p><strong>Not tabulated here.</strong> '
                f'{esc(f["extra"])}</p></div>' if f.get("extra") else "")
             + reading(FITTING_READING.get(f["slug"], [])
@@ -3614,9 +3764,9 @@ def ref_schedule_chart(pipes):
             "to ASME B36.19M, the stainless steel pipe standard, not to "
             "B36.10M. The S does not mean a thinner wall: in most sizes an "
             "S-schedule carries exactly the same wall as the numbered schedule "
-            "it shares a number with. What differs is the size range B36.19M "
-            "publishes, and two specific wall thicknesses — 40S at NPS 12, and "
-            "80S at NPS 10 and 12. "
+            "it shares a number with. What differs is the size range B36.19 "
+            "publishes, and the wall in the larger sizes. "
+            + s_match("10S") + " " + s_match("40S") + " "
             '<a class="more" href="/reference/stainless-pipe-schedules/">'
             "Full comparison →</a></p>"
             f'<h2>Every schedule</h2><div class="grid">{sched_cards}</div>')
@@ -4076,14 +4226,14 @@ def ref_weight_chart(pipes):
                          else '<span class="na">—</span>')
         rows.append(cells)
 
-    body = (facts([("Formula", "w = 10.6802 × t × (OD − t)"),
+    body = (facts([("Formula", "w = 10.69 × t × (OD − t)"),
                    ("Units", "lb/ft, with kg/m beneath"),
                    ("Material", "Carbon steel, 0.2836 lb/in³"),
                    ("Basis", "Plain end, no coating or lining")])
             + "<h2>The formula</h2>"
             "<p>Plain-end steel pipe weight follows directly from the annular "
             "cross-section and the density of steel:</p>"
-            '<p class="formula">w (lb/ft) = 10.6802 × t × (OD − t)</p>'
+            '<p class="formula">w (lb/ft) = 10.69 × t × (OD − t)</p>'
             "<p>with wall thickness <em>t</em> and outside diameter <em>OD</em> "
             "both in inches. The constant folds in the density of carbon steel, "
             "0.2836 lb/in³, and the conversion from inches to feet. For "
@@ -4107,7 +4257,7 @@ def ref_weight_chart(pipes):
 
     q = [
         ("How do I calculate pipe weight per foot?",
-         "<p>w = 10.6802 × t × (OD − t), with wall thickness and outside "
+         "<p>w = 10.69 × t × (OD − t), with wall thickness and outside "
          "diameter in inches, giving pounds per foot of plain-end carbon steel. "
          "Multiply by 1.48816 for kg/m.</p>"),
         ("Does the weight include the contents?",
@@ -4195,9 +4345,8 @@ def s_schedule_page(sch, ss, pipes, cmp_):
            f"B36.10M continues.</p>"),
         (f"What sizes does {sch} come in?",
          f"<p>NPS {npss[0]} through NPS {npss[-1]} — {len(npss)} sizes. "
-         f"B36.19M is a shorter standard than B36.10M: it publishes 40S and 80S "
-         f"only through NPS 12, and 5S and 10S only through NPS 30. Beyond "
-         f"that, stainless pipe is ordered to a B36.10M schedule.</p>"),
+         f"B36.19 is a shorter standard than B36.10: {s_coverage()}. Beyond "
+         f"that, stainless pipe is ordered to a B36.10 schedule.</p>"),
         (f"Why is {sch} pipe used?",
          "<p>Stainless costs several times what carbon steel does, so stainless "
          "lines are run as thin as the pressure allows. The S-schedules exist to "
@@ -4238,7 +4387,7 @@ def s_schedule_page(sch, ss, pipes, cmp_):
                             f"comparison.",
                     note="Weight is plain-end austenitic stainless, taken as "
                          "1.5% heavier than the carbon steel formula "
-                         "w = 10.6802 × t × (OD − t) lb/ft.")
+                         "w = 10.69 × t × (OD − t) lb/ft.")
             + diverge
             + reading(["/compare/schedule-5s-vs-schedule-10s/",
                        "/compare/carbon-steel-vs-stainless-steel-pipe/",
@@ -4295,8 +4444,8 @@ def ref_stainless(ss, pipes, cmp_):
 
     body = (facts([("Standard", "ASME B36.19M"),
                    ("Schedules", comma_list(ss["schedules"])),
-                   ("40S and 80S published to", "NPS 12"),
-                   ("5S and 10S published to", "NPS 30")])
+                   ("40S and 80S published to", "NPS " + s_last("40S")),
+                   ("5S and 10S published to", "NPS " + s_last("10S"))])
             + "<h2>The S means stainless, not thinner</h2>"
             "<p>The most common belief about the S-schedules — that they are a "
             "thin-wall series with no carbon steel equivalent — is wrong. In "
@@ -4319,12 +4468,14 @@ def ref_stainless(ss, pipes, cmp_):
                          "far shorter list than B36.10M's.",
                     cls="specs wide")
             + "<h2>The size range is the bigger difference</h2>"
-            "<p>B36.19M publishes 40S and 80S only through NPS 12, and 5S and "
-            "10S only through NPS 30. B36.10M runs to NPS 36 and beyond in the "
-            "numbered schedules. A drawing calling for &ldquo;NPS 16, 40S&rdquo; "
-            "is asking for something the standard does not define — the "
-            "intention is almost always NPS 16 Schedule 40 in a stainless "
-            "grade, ordered to B36.10M dimensions.</p>"
+            f"<p>{s_coverage()}. B36.10 runs to NPS 36 and beyond in the "
+            "numbered schedules. Above NPS 12 every 40S wall is 0.375 in "
+            "and every 80S wall is 0.500 in, which are the standard weight "
+            "and extra strong walls, and B36.19 itself notes that they do "
+            "not conform to B36.10. A drawing calling for &ldquo;NPS 16, "
+            "40S&rdquo; is therefore asking for a 0.375 in wall, not for "
+            "the 0.500 in wall of NPS 16 Schedule 40. If the heavier wall "
+            "is what is wanted, the drawing has to say Schedule 40.</p>"
             "<h2>Stainless S-schedule dimensions</h2>"
             + UNITS_NOTE
             + table(headers, rows,
@@ -4335,18 +4486,11 @@ def ref_stainless(ss, pipes, cmp_):
 
     q = [
         ("Is 10S the same as Schedule 10?",
-         "<p>In wall thickness, yes, in every size B36.19M publishes. The "
-         "difference is the standard: 10S is stainless pipe to ASME B36.19M, "
-         "which stops at NPS 30, while Schedule 10 is B36.10M and continues "
-         "further.</p>"),
+         f"<p>Not in every size. {s_match('10S')}</p>"),
         ("Is 40S the same as Schedule 40?",
-         "<p>Up to NPS 10, yes. At NPS 12 they part company — 40S is 0.375 in "
-         "while Schedule 40 is 0.406 in — and B36.19M does not publish 40S above "
-         "NPS 12 at all.</p>"),
+         f"<p>Up to NPS 10, yes. {s_match('40S')}</p>"),
         ("Is 80S the same as Schedule 80?",
-         "<p>Up to NPS 8, yes. At NPS 10 and NPS 12, 80S holds at 0.500 in while "
-         "Schedule 80 climbs to 0.594 in and 0.688 in. Above NPS 12 there is no "
-         "80S.</p>"),
+         f"<p>Up to NPS 8, yes. {s_match('80S')}</p>"),
         ("Can I order stainless pipe in a plain numbered schedule?",
          "<p>Yes, and above the S-schedule size limits you have to. Stainless "
          "pipe to ASTM A312 is routinely supplied to B36.10M schedules; the S "
@@ -4360,7 +4504,7 @@ def ref_stainless(ss, pipes, cmp_):
         "B36.10M counterpart.",
         "Stainless Pipe Schedules",
         "What the S in 10S actually means, wall thickness for every B36.19M "
-        "size, and the two places where an S-schedule stops matching the "
+        "size, and the sizes where an S-schedule stops matching the "
         "carbon steel schedule of the same number.",
         body, faq_pairs=q, card_meta="B36.19M · 5S, 10S, 40S, 80S")
 
@@ -4819,7 +4963,7 @@ def sched_compare_table(rows, a, b, link=True):
                 f"publishes both — ASME B36.10M.",
         note="Bore, weight and flow area are derived from the published outside "
              "diameter and wall thickness. Weight is bare steel pipe: "
-             "w = 10.6802 × t × (OD − t).")
+             "w = 10.69 × t × (OD − t).")
 
 
 def sched_spread(rows):
@@ -5049,10 +5193,9 @@ def cmp_sched_10_40(pipes):
          "exists only for corrosion removes cost. B36.19M formalises this with "
          "the 10S schedule.</p>"),
         ("Is Schedule 10 the same as 10S?",
-         "<p>In every size where B36.19M publishes 10S, the wall matches "
-         "Schedule 10 — but B36.19M stops at NPS 30, and 10S carries the "
-         "stainless material and tolerance requirements that Schedule 10 alone "
-         "does not.</p>"),
+         f"<p>Not in every size. {s_match('10S')} 10S also carries the "
+         "stainless material and tolerance requirements that Schedule 10 "
+         "alone does not.</p>"),
     ]
 
     compare("schedule-10-vs-schedule-40",
@@ -5401,8 +5544,8 @@ def cmp_5s_10s(ss, pipes, cmp_):
          "smaller bore. Both are stainless walls published by ASME "
          "B36.19M.</p>"),
         ("Is 5S the same as Schedule 5?",
-         "<p>In the sizes where both are published the walls generally match, "
-         "but 5S carries B36.19M's stainless material and tolerance "
+         f"<p>{s_match('5S')} "
+         "5S carries B36.19's stainless material and tolerance "
          "requirements. B36.19M also stops at NPS 30, so above that a thin "
          "stainless wall is specified by B36.10M schedule instead.</p>"),
         ("Can 5S pipe be threaded?",
@@ -6516,7 +6659,7 @@ def grade_table(mats, specs, caption):
                      f"{g['tensile']} ksi", f"{g['yield']} ksi",
                      esc(g["temp"]), esc(g["note"])])
     return table(["Specification", "Form", "Tensile min", "Yield min",
-                  "Temperature range", "Notes"], rows, caption=caption,
+                  "Typical temperature range", "Notes"], rows, caption=caption,
                  note="Strengths are specified minimums in ksi. 1 ksi = 1000 "
                       "psi = 6.895 MPa.")
 
@@ -7058,8 +7201,8 @@ def cmp_lr_sr_elbow(fittings, pipes):
     fb = fitting_by_slug(fittings)
     lr, sr = fb["90-degree-elbow"], fb["90-degree-elbow-short-radius"]
     shared = sorted(set(lr["rows"]) & set(sr["rows"]), key=nps_value)
-    # NPS 3/4 is tabulated below the 1.5 x NPS rule, so the ratio column is
-    # computed per size rather than asserted as a constant.
+    # NPS 1/2 and 3/4 are made to the NPS 1 dimension, not to 1.5 x NPS, so
+    # the ratio column is computed per size rather than asserted.
     rows = []
     for nps in shared:
         a, b = lr["rows"][nps], sr["rows"][nps]
@@ -7295,8 +7438,8 @@ def cmp_90_45_elbow(fittings):
     off = [nps for nps in shared if abs(ratios[nps] - settled) > 0.01]
     big = max(off, key=lambda n: abs(ratios[n] - settled)) if off else None
 
-    body = (facts([("90° centre-to-end", "A = 1.5 × NPS"),
-                   ("45° centre-to-end", "B = 1.5 × NPS × tan 22.5°"),
+    body = (facts([("90° centre-to-end", "A = 1.5 × NPS, from NPS 1 up"),
+                   ("45° centre-to-end", "B is tabulated, not calculated"),
                    ("Tabulated B/A, NPS 4+", f"{settled:.3f}"),
                    ("Both", "Long radius, 1.5D centreline")])
             + verdict(
@@ -8718,9 +8861,9 @@ def guide_schedule_explained(pipes):
          "2St/D, so a thicker wall holds more — but the rating also depends on "
          "material, temperature and the joint quality factor.</p>"),
         ("What is the difference between Schedule 40 and 40S?",
-         "<p>40S is the ASME B36.19M stainless designation. In most sizes the "
-         "wall matches Schedule 40, but B36.19M publishes 40S only through NPS "
-         "12 and adds stainless material and tolerance requirements.</p>"),
+         "<p>40S is the ASME B36.19 stainless designation. "
+         f"{s_match('40S')} 40S also adds stainless material and tolerance "
+         "requirements.</p>"),
     ]
 
     guide("pipe-schedule-explained",
@@ -9227,7 +9370,8 @@ def guides_index():
 STANDARDS = [
     ("ASME B36.10", "2022", "Welded and Seamless Wrought Steel Pipe",
      "Pipe outside diameters and wall thicknesses. Published as B36.10M "
-     "until the 2022 edition dropped the M."),
+     "until the 2022 edition dropped the M. Checked against the 2004, 2015 "
+     "and 2022 texts."),
     ("ASME B36.19", "2022", "Welded and Seamless Wrought Stainless Steel Pipe",
      "The 5S, 10S, 40S and 80S stainless wall series. Published as B36.19M "
      "until 2022."),
@@ -9241,7 +9385,8 @@ STANDARDS = [
      "B16.47-2020."),
     ("ASME B16.9", "2024", "Factory-Made Wrought Buttwelding Fittings",
      "Centre-to-end and end-to-end dimensions of elbows, tees, reducers "
-     "and caps. The 2024 edition replaced B16.9-2018."),
+     "and caps. The 2024 edition replaced B16.9-2018. Checked against the "
+     "2003, 2018 and 2024 texts."),
     ("ASME A13.1", "2023", "Scheme for the Identification of Piping Systems",
      "Pipe marker colours and legend sizes."),
     ("ASME B31.3", "", "Process Piping",
@@ -9568,8 +9713,8 @@ def about_page(pipes, ftypes, fittings):
             "<li>The wall of NPS 24 Schedule 40 pipe was written as "
             "0.687 in. The published value is 0.688 in.</li>"
             "<li>An early page said that the 5S and 10S stainless walls are "
-            "thinner than anything in B36.10M. They match Schedule 5 and "
-            "Schedule 10 in every size where both are published.</li>"
+            "thinner than anything in B36.10. The correction made then was "
+            "itself wrong for 10S: see the pipe entries below.</li>"
             "</ul>"
             "<p>A check of the flange data against published reproductions "
             "of the ASME B16.5 tables, completed on "
@@ -9606,10 +9751,57 @@ def about_page(pipes, ftypes, fittings):
             "The groups are defined for forgings, castings and plate, and "
             "the pipe specifications have been removed.</li>"
             "</ul>"
-            "<p>The check was made against manufacturers' and distributors' "
-            "reproductions of the tables, with two or more independent "
-            "sources for most values. It was not made against the standard "
-            "itself. A few items could not be confirmed and are marked on "
+            "<p>A second check on the same date covered every other data "
+            "file, against publicly hosted copies of the text of ASME "
+            "B36.10, B36.19, B16.9 and B16.47 and of several ASTM "
+            "specifications. It found and corrected:</p>"
+            "<ul>"
+            "<li><strong>Pipe, Schedule 10 at NPS 14 to 22</strong> carried "
+            "the stainless 10S walls of 0.188 and 0.218 in. ASME B36.10 "
+            "Schedule 10 is 0.250 in in those sizes. Because of this the "
+            "site had also said, wrongly, that 10S and Schedule 10 are the "
+            "same wall in every size.</li>"
+            "<li><strong>Schedules that do not exist</strong> were listed: "
+            "Schedule 5 in NPS 1/8, 1/4 and 3/8, and XXS in NPS 3 1/2. "
+            "<strong>Schedule 30 was missing</strong> from NPS 1/8 through "
+            "NPS 4.</li>"
+            "<li><strong>NPS 4 1/2, 7, 9 and 11</strong> were described as "
+            "ASME B36.10 sizes. They are in none of the 2004, 2015 and 2022 "
+            "editions. Their pages are now marked as unconfirmed trade "
+            "sizes and they have been taken out of every table.</li>"
+            "<li><strong>Pipe weights</strong> were calculated with a "
+            "constant of 10.6802. ASME B36.10 uses 10.69, which reproduces "
+            "its published weights. Every weight on the site was about "
+            "0.09% light.</li>"
+            "<li><strong>Stainless 40S and 80S</strong> were said to stop "
+            "at NPS 12. ASME B36.19 publishes them through NPS 24.</li>"
+            "<li><strong>Buttweld elbows in NPS 3/4</strong> were 1.12 in "
+            "for the 90° and 0.44 in for the 45°. They are 1.50 in and "
+            "0.75 in. The 45° elbow in NPS 22 was 13.75 in and is "
+            "13.50 in.</li>"
+            "<li><strong>Reducers</strong> were listed with a large end of "
+            "NPS 1/2, which does not exist.</li>"
+            "<li><strong>Caps</strong> were shown with one length. ASME "
+            "B16.9 gives a longer one above a limiting wall thickness, and "
+            "the page now carries both.</li>"
+            "<li><strong>Large flanges, Series A Class 150:</strong> every "
+            "thickness was between 0.7 and 1.9 in too thin, and the bolts "
+            "for NPS 50 to 60 were given as 1 1/2 and 1 5/8 in where the "
+            "standard has 1 3/4 in.</li>"
+            "<li><strong>Series A and Series B large flanges</strong> were "
+            "said never to bolt together. At NPS 38 and larger in Classes "
+            "400, 600 and 900 they have the same dimensions.</li>"
+            "<li><strong>Material grades:</strong> A350 LF2, A182 F316 and "
+            "the L grades were placed in the wrong rating groups, and the "
+            "minimum tensile strength of grade 91 forgings and fittings "
+            "was given as 85 ksi where it is 90 ksi.</li>"
+            "</ul>"
+            "<p>The first check was made against manufacturers' and "
+            "distributors' reproductions of the tables, and the second "
+            "mostly against hosted copies of the standards' own text, with "
+            "two or more independent "
+            "sources for most values. Neither was made against a purchased "
+            "copy of a standard. A few items could not be confirmed and are marked on "
             "the pages concerned: the Class 400 rows of four rating "
             "tables, the size range of threaded flanges in Classes 1500 "
             "and 2500, the Class 400 socket weld flange, and most of the "
@@ -10112,6 +10304,8 @@ def main():
     FLANGE_SIZES = {r["nps"] for blk in b165["classes"].values()
                     for r in blk["rows"]}
     ss_cmp = s_schedule_comparison(ss, pipes)
+    SS_CMP.update(ss_cmp)
+    SS_DATA.update(ss)
 
     if errors:
         print("Data problems found:", file=sys.stderr)
@@ -10123,15 +10317,17 @@ def main():
         shutil.rmtree(OUT)
     os.makedirs(OUT)
 
-    sizes_by_slug = {s["slug"]: s for s in pipes["sizes"]}
-    sizes_by_nps = {s["nps"]: s for s in pipes["sizes"]}
+    sizes_by_slug = {s["slug"]: s for s in pipes["all_sizes"]}
+    sizes_by_nps = {s["nps"]: s for s in pipes["all_sizes"]}
 
     # ---- pipe ----
-    for s in pipes["sizes"]:
+    for s in pipes["all_sizes"]:
         pipe_page(s, pipes, sizes_by_slug, b165, fittings)
         for k in pipes["schedule_order"]:
             if k in s["walls"]:
                 combo_page(s, k, pipes, b165, fittings)
+            elif (s["nps"], k) in WITHDRAWN_COMBOS:
+                withdrawn_combo_page(s, k)
     for k in pipes["schedule_order"]:
         schedule_page(k, pipes)
     for sch in ss["schedules"]:

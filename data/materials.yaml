@@ -1,5 +1,22 @@
-# Common ASTM/ASME material specifications for pipe, flanges and fittings.
-# Strengths in ksi (1 ksi = 1000 psi = 6.895 MPa).
+# Common ASTM and API material specifications for pipe, flanges and fittings.
+# Strengths are specified minimums in ksi (1 ksi = 1000 psi = 6.895 MPa).
+#
+# `temp` is TYPICAL GUIDANCE, not a code limit. A few of the limits are backed
+# by a standard (the impact test temperatures of the low-temperature grades,
+# the 800 F and 850 F limits on the L grades, 600 F on duplex). Most of the
+# upper limits are rules of thumb and the page says so.
+#
+# Checked on 2026-09-28 against ASTM specification texts and distributors'
+# data. All strengths for pipe were correct. Corrected then:
+#   - A350 LF2 was given as B16.5 Group 1.2. It is Group 1.1.
+#   - A182 F316 was given as Group 2.1 and the L grades as 2.2. F304 is 2.1,
+#     F316 is 2.2 and the L grades are 2.3.
+#   - A182 F91 and A234 WP91 minimum tensile is 90 ksi, not 85. (A335 P91
+#     pipe is 85.)
+#   - A182 F304L is limited to 800 F; 850 F applies to F316L only.
+#   - Bolting strengths apply to the smaller diameters only.
+# NOT CONFIRMED: A403 strengths (taken to match A312 and A182); most upper
+# temperature limits; the duplex lower limit; bolting temperature ranges.
 
 categories:
   - name: "Carbon steel pipe"
@@ -41,20 +58,26 @@ categories:
       - {spec: "ASTM A312 TP316L", form: "Pipe", tensile: 70, yield: 25,
          temp: "-425 to 850 °F", note: "Low-carbon 316. The default stainless for welded chemical process piping."}
       - {spec: "ASTM A790 S31803", form: "Pipe", tensile: 90, yield: 65,
-         temp: "-60 to 600 °F", note: "2205 duplex. Roughly twice the yield of 316L with far better chloride SCC resistance."}
+         temp: "-60 to 600 °F", note: "Duplex, commonly sold as 2205 (strictly, 2205 is UNS S32205, at 95/65 ksi). Roughly twice the yield of 316L with far better chloride SCC resistance."}
 
   - name: "Flange forgings"
     grades:
       - {spec: "ASTM A105", form: "Flange", tensile: 70, yield: 36,
          temp: "-20 to 800 °F", note: "The default carbon steel flange forging. B16.5 material Group 1.1."}
       - {spec: "ASTM A350 LF2", form: "Flange", tensile: 70, yield: 36,
-         temp: "-50 to 650 °F", note: "Impact-tested A105 equivalent for low-temperature service. Group 1.2."}
+         temp: "-50 to 650 °F", note: "Impact-tested A105 equivalent for low-temperature service. B16.5 material Group 1.1, like A105. The -50 °F limit is for Class 1."}
       - {spec: "ASTM A182 F304/F316", form: "Flange", tensile: 75, yield: 30,
-         temp: "-425 to 1500 °F", note: "Austenitic stainless flange forgings. B16.5 Group 2.1."}
-      - {spec: "ASTM A182 F304L/F316L", form: "Flange", tensile: 70, yield: 25,
-         temp: "-425 to 850 °F", note: "Low-carbon stainless flange forgings. B16.5 Group 2.2."}
-      - {spec: "ASTM A182 F11/F22/F91", form: "Flange", tensile: "70-85", yield: "40-60",
-         temp: "up to 1200 °F", note: "Chrome-moly flange forgings matched to A335 P11/P22/P91 pipe."}
+         temp: "-425 to 1500 °F", note: "Austenitic stainless flange forgings. F304 is B16.5 Group 2.1 and F316 is Group 2.2. Above 1000 °F only with carbon of 0.04% or more."}
+      - {spec: "ASTM A182 F304L", form: "Flange", tensile: 70, yield: 25,
+         temp: "-425 to 800 °F", note: "Low-carbon 304 flange forgings. B16.5 Group 2.3, not to be used above 800 °F."}
+      - {spec: "ASTM A182 F316L", form: "Flange", tensile: 70, yield: 25,
+         temp: "-425 to 850 °F", note: "Low-carbon 316 flange forgings. B16.5 Group 2.3."}
+      - {spec: "ASTM A182 F11 Cl 2", form: "Flange", tensile: 70, yield: 40,
+         temp: "up to 1100 °F", note: "1¼Cr-½Mo flange forgings matched to A335 P11 pipe. B16.5 Group 1.9."}
+      - {spec: "ASTM A182 F22 Cl 3", form: "Flange", tensile: 75, yield: 45,
+         temp: "up to 1100 °F", note: "2¼Cr-1Mo flange forgings matched to A335 P22 pipe. B16.5 Group 1.10."}
+      - {spec: "ASTM A182 F91", form: "Flange", tensile: 90, yield: 60,
+         temp: "up to 1200 °F", note: "9Cr-1Mo-V flange forgings matched to A335 P91 pipe. The forging minimum is 90 ksi against 85 ksi for the pipe. B16.5 Group 1.15."}
 
   - name: "Buttweld fittings"
     grades:
@@ -64,18 +87,20 @@ categories:
          temp: "-50 to 650 °F", note: "Impact-tested fittings matched to A333 Gr 6 pipe."}
       - {spec: "ASTM A403 WP304/WP316", form: "Fitting", tensile: 75, yield: 30,
          temp: "-425 to 1500 °F", note: "Austenitic stainless buttweld fittings matched to A312 pipe."}
-      - {spec: "ASTM A234 WP11/WP22/WP91", form: "Fitting", tensile: "60-85", yield: "30-60",
-         temp: "up to 1200 °F", note: "Chrome-moly buttweld fittings matched to A335 pipe."}
+      - {spec: "ASTM A234 WP11 Cl 1 / WP22 Cl 1", form: "Fitting", tensile: 60, yield: 30,
+         temp: "up to 1100 °F", note: "Chrome-moly buttweld fittings matched to A335 P11 and P22 pipe."}
+      - {spec: "ASTM A234 WP91", form: "Fitting", tensile: 90, yield: 60,
+         temp: "up to 1200 °F", note: "9Cr-1Mo-V buttweld fittings matched to A335 P91 pipe. Minimum tensile is 90 ksi against 85 ksi for the pipe."}
 
   - name: "Bolting"
     grades:
       - {spec: "ASTM A193 B7", form: "Stud bolt", tensile: 125, yield: 105,
-         temp: "-50 to 1000 °F", note: "The standard flange stud. Paired with A194 2H heavy hex nuts."}
+         temp: "-50 to 1000 °F", note: "The standard flange stud. Paired with A194 2H heavy hex nuts. Strengths are for 2½ in diameter and under; 115/95 ksi over 2½ to 4 in."}
       - {spec: "ASTM A193 B7M", form: "Stud bolt", tensile: 100, yield: 80,
          temp: "-50 to 1000 °F", note: "Hardness-controlled B7 for sour service per NACE MR0175."}
       - {spec: "ASTM A193 B8 Cl 2", form: "Stud bolt", tensile: 125, yield: 100,
-         temp: "-325 to 1000 °F", note: "Strain-hardened 304 stainless studs for corrosive or cryogenic duty."}
+         temp: "-325 to 1000 °F", note: "Strain-hardened 304 stainless studs for corrosive or cryogenic duty. Strengths are for ¾ in and under only: 115/80 ksi over ¾ to 1 in, 105/65 over 1 to 1¼ in, 100/50 over 1¼ to 1½ in."}
       - {spec: "ASTM A320 L7", form: "Stud bolt", tensile: 125, yield: 105,
-         temp: "-150 to 800 °F", note: "Impact-tested B7 equivalent for low-temperature service."}
+         temp: "-150 to 800 °F", note: "Impact-tested B7 equivalent for low-temperature service. Strengths are for 2½ in diameter and under."}
       - {spec: "ASTM A194 Gr 2H", form: "Nut", tensile: null, yield: null,
          temp: "-50 to 1000 °F", note: "Quenched and tempered heavy hex nut — the standard mate to A193 B7."}
