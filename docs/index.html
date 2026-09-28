@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/css/style.css">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"PipeData","url":"https://pipedata.org/","description":"Dimensional and rating data for steel pipe, flanges and buttweld fittings from the ASME B16 and B36 standards.","publisher":{"@type":"Organization","name":"PipeData","url":"https://pipedata.org/","email":"info@pipedata.org"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://pipedata.org/?q={search_term_string}"},"query-input":"required name=search_term_string"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does pipe outside diameter change with schedule?","acceptedAnswer":{"@type":"Answer","text":"No. Outside diameter is fixed for a given NPS. A higher schedule thickens the wall inward and shrinks the bore, which is what allows one set of flanges and fittings to serve every schedule in a size."}},{"@type":"Question","name":"Is a Class 150 flange rated for 150 psi?","acceptedAnswer":{"@type":"Answer","text":"No. In A105 carbon steel a Class 150 flange is rated 285 psig at 100 °F, falling to 140 psig at 600 °F. The class number is a designation, not a pressure."}},{"@type":"Question","name":"Do buttweld fitting dimensions change with wall thickness?","acceptedAnswer":{"@type":"Answer","text":"No. ASME B16.9 sets fitting dimensions from nominal size alone, so a schedule 10 and a schedule 160 elbow of the same NPS occupy exactly the same space."}},{"@type":"Question","name":"What units does PipeData use?","acceptedAnswer":{"@type":"Answer","text":"Imperial is primary throughout — inches, pounds per foot, psig — with the metric equivalent shown alongside in millimetres, kilograms per metre and bar."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"PipeData","url":"https://pipedata.org/","description":"Dimensional and rating data for steel pipe, flanges and buttweld fittings from the ASME B16 and B36 standards.","publisher":{"@type":"Organization","name":"PipeData","url":"https://pipedata.org/","email":"info@pipedata.org","logo":{"@type":"ImageObject","url":"https://pipedata.org/logos/logo-icon-512x512.png","width":512,"height":512}},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://pipedata.org/?q={search_term_string}"},"query-input":"required name=search_term_string"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"PipeData","url":"https://pipedata.org/","email":"info@pipedata.org","logo":{"@type":"ImageObject","url":"https://pipedata.org/logos/logo-icon-512x512.png","width":512,"height":512},"contactPoint":{"@type":"ContactPoint","email":"info@pipedata.org","contactType":"corrections and enquiries","url":"https://pipedata.org/contact/"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does pipe outside diameter change with schedule?","acceptedAnswer":{"@type":"Answer","text":"No. Outside diameter is fixed for a given NPS. A higher schedule thickens the wall inward and shrinks the bore, which is what allows one set of flanges and fittings to serve every schedule in a size."}},{"@type":"Question","name":"Is a Class 150 flange rated for 150 psi?","acceptedAnswer":{"@type":"Answer","text":"No. In A105 carbon steel a Class 150 flange is rated 285 psig at 100 °F, falling to 140 psig at 600 °F. The class number is a designation, not a pressure."}},{"@type":"Question","name":"Do buttweld fitting dimensions change with wall thickness?","acceptedAnswer":{"@type":"Answer","text":"No. ASME B16.9 sets fitting dimensions from nominal size alone, so a schedule 10 and a schedule 160 elbow of the same NPS occupy exactly the same space."}},{"@type":"Question","name":"What units does PipeData use?","acceptedAnswer":{"@type":"Answer","text":"Imperial is primary throughout — inches, pounds per foot, psig — with the metric equivalent shown alongside in millimetres, kilograms per metre and bar."}},{"@type":"Question","name":"Can I design or buy from these tables?","acceptedAnswer":{"@type":"Answer","text":"Use them to look a figure up, to check a drawing or to prepare an enquiry. Before anything is fabricated, purchased or signed off, confirm the figure against a current copy of the governing standard. The About page explains how the data is compiled and checked, and what that checking does not cover."}}]}</script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{'analytics_storage':'denied','ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','wait_for_update':500,'region':['BE','BG','CZ','DK','DE','EE','IE','GR','ES','FR','HR','IT','CY','LV','LT','LU','HU','MT','NL','AT','PL','PT','RO','SI','SK','FI','SE','GB','CH','IS','LI','NO']});gtag('consent','default',{'analytics_storage':'granted','ad_storage':'granted','ad_user_data':'granted','ad_personalization':'granted'});</script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5861928596436289" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YQ4MS7NNDS"></script>
@@ -65,9 +65,67 @@
   </div>
 </section>
 <div class="wrap">
+  <h2>What PipeData is</h2>
+  <p>PipeData is a free reference for the dimensions of steel pipe, flanges
+     and buttweld fittings made to the ASME B36 and B16 standards. It is
+     written for the people who look these figures up during a working day:
+     piping designers and drafters checking a drawing, pipefitters and
+     welders on a fabrication floor, buyers and estimators preparing an
+     enquiry, inspectors identifying what is in front of them, and students
+     learning how piping is specified.</p>
+  <p>A table of numbers only helps if you know what the numbers mean, so the
+     site pairs every table with an explanation. Pipe size pages say what
+     each schedule does to the bore, the weight and the pressure the pipe
+     will hold. Flange pages say what a pressure class is rated for and
+     where each flange type is used. The <a href="/guides/">guides</a> work
+     through the calculations behind a size or a schedule, and the
+     <a href="/compare/">comparisons</a> set two options side by side.</p>
+
+  <h2>How to use the data</h2>
+  <p>Three rules explain most of what is on this site, and most mistakes
+     made with piping tables come from forgetting one of them.</p>
+  <ol>
+    <li><strong>The outside diameter belongs to the size.</strong> NPS 4 pipe
+        is 4.500 in (114.3 mm) across in every schedule. Schedule 40 has a
+        0.237 in (6.0 mm) wall and Schedule 80 a 0.337 in (8.6 mm) wall, and the
+        difference comes out of the bore, which goes from
+        4.026 in (102.3 mm) to
+        3.826 in (97.2 mm). Start on the
+        <a href="/pipes/">pipe size pages</a>.</li>
+    <li><strong>A flange is sized by NPS and pressure class.</strong> An
+        NPS 4 Class 150 flange is 9.00 in (228.6 mm) across with
+        8 bolts; in Class 300 it is 10.00 in (254.0 mm)
+        across with 8 bolts. The class is not a pressure: in
+        A105 carbon steel those two are rated 285 and 740 psig at
+        100 °F, and less when hot. Start on the
+        <a href="/flanges/">flange pages</a> and the
+        <a href="/reference/pressure-temperature-ratings/">rating tables</a>.</li>
+    <li><strong>A buttweld fitting is sized by NPS alone.</strong> An elbow
+        or a tee takes up the same space in every schedule, so a layout can
+        be dimensioned before the wall is chosen. Start on the
+        <a href="/fittings/">fitting pages</a>.</li>
+  </ol>
+  <p>Figures that come straight from a standard are shown as tabulated.
+     Figures worked out from them, such as bore, weight, flow area and water
+     content, carry the formula beside the table. Inches come first
+     because the standards are written in them; millimetres, kilograms per
+     metre and bar are shown alongside.</p>
+
+  <h2>Guides</h2>
+  <p>Worked methods for the decisions the tables cannot make for you.</p>
+  <div class="grid"><a class="card" href="/guides/pipe-schedule-explained/"><span class="card-title">What a pipe schedule actually is</span><span class="card-meta">Why a schedule is a wall series and not a thickness.</span></a><a class="card" href="/guides/pipe-sizing/"><span class="card-title">Pipe sizing by flow rate and velocity</span><span class="card-meta">Turn a flow rate into a line size using velocity limits.</span></a><a class="card" href="/guides/pipe-wall-thickness-calculation/"><span class="card-title">Pipe wall thickness calculation</span><span class="card-meta">Barlow and ASME B31.3, corrosion allowance and mill tolerance.</span></a><a class="card" href="/guides/pressure-temperature-derating/"><span class="card-title">Pressure-temperature derating</span><span class="card-meta">Reading a P-T table and interpolating between temperatures.</span></a><a class="card" href="/guides/flange-bolt-torque/"><span class="card-title">Flange bolt torque</span><span class="card-meta">Target torque from bolt stress, for every B16.5 bolt size.</span></a><a class="card" href="/guides/pipe-material-selection/"><span class="card-title">Pipe material selection</span><span class="card-meta">A53, A106, A312 and A335: which grade suits which duty.</span></a></div>
+  <p><a class="more" href="/guides/">All guides →</a></p>
+
+  <h2>Comparisons</h2>
+  <p>Two options, the published dimensions of both, and when to use each.</p>
+  <div class="grid"><a class="card" href="/compare/schedule-40-vs-schedule-80/"><span class="card-title">Schedule 40 vs Schedule 80</span><span class="card-meta">Wall, bore, weight and pressure capacity, size by size.</span></a><a class="card" href="/compare/class-150-vs-class-300/"><span class="card-title">Class 150 vs Class 300</span><span class="card-meta">Dimensions, bolting and ratings of the two commonest classes.</span></a><a class="card" href="/compare/weld-neck-vs-slip-on-flange/"><span class="card-title">Weld neck vs slip-on flange</span><span class="card-meta">One butt weld against two fillet welds.</span></a><a class="card" href="/compare/seamless-vs-welded-pipe/"><span class="card-title">Seamless vs welded pipe</span><span class="card-meta">Joint factor, size range and cost.</span></a><a class="card" href="/compare/long-radius-vs-short-radius-elbow/"><span class="card-title">Long radius vs short radius elbow</span><span class="card-meta">Space saved against pressure drop added.</span></a><a class="card" href="/compare/304-vs-316-stainless-steel-pipe/"><span class="card-title">304 vs 316 stainless steel pipe</span><span class="card-meta">What the molybdenum in 316 buys.</span></a></div>
+  <p><a class="more" href="/compare/">All comparisons →</a></p>
+
   <h2>Pipe dimensions</h2>
   <p>Outside diameter, wall thickness, bore, weight and flow area for every
-     ASME B36.10M size from NPS 1/8 to NPS 36, across all fourteen schedules.</p>
+     ASME B36.10M size from NPS 1/8 to NPS 36, across all fourteen schedules.
+     Each size page also lists the flanges and fittings made for that
+     size.</p>
   <div class="chip-links"><a class="chip-link" href="/pipes/nps-1-2/">NPS 1/2</a><a class="chip-link" href="/pipes/nps-3-4/">NPS 3/4</a><a class="chip-link" href="/pipes/nps-1/">NPS 1</a><a class="chip-link" href="/pipes/nps-1-1-2/">NPS 1 1/2</a><a class="chip-link" href="/pipes/nps-2/">NPS 2</a><a class="chip-link" href="/pipes/nps-3/">NPS 3</a><a class="chip-link" href="/pipes/nps-4/">NPS 4</a><a class="chip-link" href="/pipes/nps-6/">NPS 6</a><a class="chip-link" href="/pipes/nps-8/">NPS 8</a><a class="chip-link" href="/pipes/nps-10/">NPS 10</a><a class="chip-link" href="/pipes/nps-12/">NPS 12</a><a class="chip-link" href="/pipes/nps-14/">NPS 14</a><a class="chip-link" href="/pipes/nps-16/">NPS 16</a><a class="chip-link" href="/pipes/nps-18/">NPS 18</a><a class="chip-link" href="/pipes/nps-20/">NPS 20</a><a class="chip-link" href="/pipes/nps-24/">NPS 24</a><a class="chip-link" href="/pipes/nps-30/">NPS 30</a><a class="chip-link" href="/pipes/nps-36/">NPS 36</a>
     <a class="chip-link more-chip" href="/pipes/">All sizes →</a></div>
 
@@ -84,15 +142,19 @@
   <div class="grid"><a class="card" href="/fittings/90-degree-elbow/"><span class="card-title">90° Long Radius Elbow</span><span class="card-meta">Centre-to-end A</span></a><a class="card" href="/fittings/90-degree-elbow-short-radius/"><span class="card-title">90° Short Radius Elbow</span><span class="card-meta">Centre-to-end A</span></a><a class="card" href="/fittings/45-degree-elbow/"><span class="card-title">45° Long Radius Elbow</span><span class="card-meta">Centre-to-end B</span></a><a class="card" href="/fittings/180-degree-return-bend/"><span class="card-title">180° Long Radius Return Bend</span><span class="card-meta">Centre-to-centre O</span></a><a class="card" href="/fittings/straight-tee/"><span class="card-title">Straight Tee</span><span class="card-meta">Centre-to-end C and M</span></a><a class="card" href="/fittings/reducing-tee/"><span class="card-title">Reducing Tee</span><span class="card-meta">Run centre-to-end C</span></a><a class="card" href="/fittings/straight-cross/"><span class="card-title">Straight Cross</span><span class="card-meta">Centre-to-end C</span></a><a class="card" href="/fittings/concentric-reducer/"><span class="card-title">Concentric Reducer</span><span class="card-meta">End-to-end H</span></a><a class="card" href="/fittings/eccentric-reducer/"><span class="card-title">Eccentric Reducer</span><span class="card-meta">End-to-end H</span></a><a class="card" href="/fittings/cap/"><span class="card-title">Cap</span><span class="card-meta">Length E</span></a></div>
 
   <h2>Reference tables</h2>
+  <p>Conversion charts and whole-range tables, for when the question spans
+     every size at once.</p>
   <div class="grid"><a class="card" href="/reference/nps-dn-conversion/"><span class="card-title">NPS to DN Conversion Chart</span><span class="card-meta">34 sizes · NPS 1/8 to NPS 36</span></a><a class="card" href="/reference/schedule-chart/"><span class="card-title">Pipe Schedule Chart</span><span class="card-meta">14 schedules · wall thickness</span></a><a class="card" href="/reference/stainless-pipe-schedules/"><span class="card-title">Stainless Pipe Schedules</span><span class="card-meta">B36.19M · 5S, 10S, 40S, 80S</span></a><a class="card" href="/reference/pressure-temperature-ratings/"><span class="card-title">Pressure-Temperature Ratings</span><span class="card-meta">7 groups · 7 classes · psig</span></a><a class="card" href="/reference/flange-bolt-chart/"><span class="card-title">Flange Bolt Chart</span><span class="card-meta">7 classes · bolt count and circle</span></a><a class="card" href="/reference/material-grades/"><span class="card-title">Material Grades</span><span class="card-meta">30 ASTM specifications</span></a><a class="card" href="/reference/pipe-weight-chart/"><span class="card-title">Pipe Weight Chart</span><span class="card-meta">lb/ft and kg/m · all sizes</span></a><a class="card" href="/reference/flange-face-types/"><span class="card-title">Flange Face Types</span><span class="card-meta">RF · FF · RTJ · T&G · M&F</span></a><a class="card" href="/reference/pipe-color-coding/"><span class="card-title">Pipe Color Coding — ASME A13.1</span><span class="card-meta">ASME A13.1 · 10 colour combinations</span></a></div>
 
-  <section class="faq"><h2>Common questions</h2><details><summary>Does pipe outside diameter change with schedule?</summary><div><p>No. Outside diameter is fixed for a given NPS. A higher schedule thickens the wall inward and shrinks the bore, which is what allows one set of flanges and fittings to serve every schedule in a size.</p></div></details><details><summary>Is a Class 150 flange rated for 150 psi?</summary><div><p>No. In A105 carbon steel a Class 150 flange is rated 285 psig at 100 °F, falling to 140 psig at 600 °F. The class number is a designation, not a pressure.</p></div></details><details><summary>Do buttweld fitting dimensions change with wall thickness?</summary><div><p>No. ASME B16.9 sets fitting dimensions from nominal size alone, so a schedule 10 and a schedule 160 elbow of the same NPS occupy exactly the same space.</p></div></details><details><summary>What units does PipeData use?</summary><div><p>Imperial is primary throughout — inches, pounds per foot, psig — with the metric equivalent shown alongside in millimetres, kilograms per metre and bar.</p></div></details></section>
+  <section class="faq"><h2>Common questions</h2><details><summary>Does pipe outside diameter change with schedule?</summary><div><p>No. Outside diameter is fixed for a given NPS. A higher schedule thickens the wall inward and shrinks the bore, which is what allows one set of flanges and fittings to serve every schedule in a size.</p></div></details><details><summary>Is a Class 150 flange rated for 150 psi?</summary><div><p>No. In A105 carbon steel a Class 150 flange is rated 285 psig at 100 °F, falling to 140 psig at 600 °F. The class number is a designation, not a pressure.</p></div></details><details><summary>Do buttweld fitting dimensions change with wall thickness?</summary><div><p>No. ASME B16.9 sets fitting dimensions from nominal size alone, so a schedule 10 and a schedule 160 elbow of the same NPS occupy exactly the same space.</p></div></details><details><summary>What units does PipeData use?</summary><div><p>Imperial is primary throughout — inches, pounds per foot, psig — with the metric equivalent shown alongside in millimetres, kilograms per metre and bar.</p></div></details><details><summary>Can I design or buy from these tables?</summary><div><p>Use them to look a figure up, to check a drawing or to prepare an enquiry. Before anything is fabricated, purchased or signed off, confirm the figure against a current copy of the governing standard. The <a href='/about/'>About page</a> explains how the data is compiled and checked, and what that checking does not cover.</p></div></details></section>
 
   <div class="callout">
     <p><strong>Reference only.</strong> PipeData reproduces published standard
     data for quick lookup. Confirm every dimension against a current copy of the
     governing ASME, ASTM or API standard before fabrication, procurement or
-    design.</p>
+    design. How the data is compiled and checked is set out on the
+    <a href="/about/">About page</a>; corrections are welcome through the
+    <a href="/contact/">contact page</a>.</p>
   </div>
 </div>
 </main>
@@ -150,7 +212,7 @@
           <li><a href="/about/">About</a></li>
           <li><a href="/privacy/">Privacy</a></li>
           <li><a href="/sitemap.xml">Sitemap</a></li>
-          <li><!--email_off--><a href="mailto:info&#64;pipedata&#46;org">Contact</a><!--/email_off--></li>
+          <li><a href="/contact/">Contact</a></li>
         </ul>
       </div>
     </div>

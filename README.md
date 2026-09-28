@@ -19,22 +19,42 @@ ASME B16 and B36 standards. Imperial primary, metric alongside.
 | Compare | Schedule, flange type, flange class, material and fitting pairs | 24 + index |
 | Guides | Sizing, wall thickness, test pressure, torque, material choice | 10 + index |
 
-738 pages total.
+745 pages are built. 174 are indexed and in the sitemap; the other 571 are
+single-row extracts kept live as `noindex` (see below).
 
-### Page granularity
+### Page granularity: what is indexed and what is not
 
-Three page types exist because that is the grain lookups actually arrive at:
+Google AdSense rejected the site for "low value content" in September 2026. The
+cause was the page mix: several hundred pages that were one row of a table with
+the same paragraphs round it. The data now lives on the parent pages, and the
+per-row pages are kept only so that existing links do not break.
 
-- **`/pipes/nps-4/schedule-40/`** — one NPS × schedule combination. Nobody
-  searches for a schedule in the abstract; they search for a size in one. Every
-  figure is derived from the two numbers B36.10M publishes for the pair.
-- **`/flanges/nps-6/`** — every pressure class in one size, for when the size is
-  known and the class is the open question.
-- **`/flanges/weld-neck/class-300/nps-6/`** — emitted for weld neck and blind
-  only. Those are the two types where the size adds something the class table
-  does not already say: a weld neck bore follows the schedule, and a blind's
-  weight and end load follow its diameter. The other four types would be the
-  same seven numbers under a different heading, so they get no size pages.
+| Indexed parent | Holds | `noindex` children |
+| --- | --- | --- |
+| `/pipes/nps-4/` | every schedule, flow and pressure capacity, the flanges and fittings for the size | 286 `/pipes/nps-4/schedule-40/` pages |
+| `/flanges/weld-neck/class-300/` | every size, bolting geometry, weld neck bore by schedule or blind weight and end load | 264 `/flanges/<type>/class-<n>/nps-<x>/` pages |
+| `/pipes/nps-6/#flanges` | every class in one size | 20 `/flanges/nps-6/` pages |
+
+Rules that keep it that way:
+
+- A `noindex` page passes `noindex=True` to `page()`, opens with
+  `folded_into()` pointing at its parent, and carries no FAQ markup.
+- `sitemap()` is filtered against what `head()` registered, so a `noindex` page
+  cannot get into the sitemap by being listed in `main()`.
+- Indexed pages link to the parent anchor (`/pipes/nps-4/#schedule-40`,
+  `/flanges/blind/class-150/#nps-6`), never to a `noindex` child. The rows carry
+  the matching `id`.
+- Do not add a new page type that is one row of an existing table. Add a column
+  or a section to the parent.
+
+### Prose on data pages
+
+Each indexed data page explains its table. Statements of practice ("where this
+size is used") are hand-written in `SIZE_NOTES`, `SCHEDULE_NOTES`, `CLASS_NOTES`,
+`TYPE_BAND_NOTES` and `GROUP_NOTES`, and are worded as practice, not as
+requirements of a standard. Every number in the surrounding text is computed
+from `data/`. `READING` maps each guide and comparison to a one-line reason to
+read it, and `reading()` puts the relevant ones on each data page.
 
 NPS 4 1/2, 7, 9 and 11 are carried even though they are effectively obsolete —
 B36.10M publishes them, and B16.5 and B16.9 do not, so their pages omit the
@@ -119,6 +139,20 @@ The build fails rather than shipping bad SEO:
 
 Both run over everything `head()` emitted, so a new page type is covered
 automatically without being registered anywhere.
+
+### Dates and authorship
+
+`CONTENT_PUBLISHED` and `CONTENT_UPDATED` are set by hand and feed the visible
+byline, the `Article` markup on guides and comparisons, the privacy and About
+pages, and every sitemap `lastmod`. Bump `CONTENT_UPDATED` in the same commit as
+a change to prose or data; a rebuild that changes nothing must not claim to be
+newer. The author in the markup is the organisation (`EDITORIAL`). The site
+names no individual and claims no engineering credentials, and the About page
+says so. `STANDARDS` lists the latest edition known of each standard; the site
+does not claim to be transcribed from any one edition.
+
+AdSense is omitted from `404.html` (`ads=False`), since an ad may not be shown
+on a page with no content.
 
 Neither gate checks arithmetic or links. After a build that adds pages, it is
 worth walking `docs/` for `href="/..."` targets that do not exist and for
