@@ -110,6 +110,7 @@ page wherever a value is derived rather than tabulated.
 data/       YAML spec tables — the only place to edit data
 static/     CSS, JS, favicon source; copied verbatim into docs/
 generate.py Builds docs/ from data/ + static/
+diagrams.py Inline SVG figures, imported by generate.py
 make_assets.py  Rasterises static/favicon.svg into PNG/ICO/OG card
 docs/       Build output. GitHub Pages serves from here. Never hand-edit.
 ```
@@ -139,6 +140,25 @@ The build fails rather than shipping bad SEO:
 
 Both run over everything `head()` emitted, so a new page type is covered
 automatically without being registered anywhere.
+
+### Diagrams
+
+`diagrams.py` draws every figure as inline SVG from coordinates; nothing is
+traced or imported, and there are no image files to keep in step.
+
+- **Schematic** figures (flange sections, fittings, the labelled pipe section)
+  show which dimension a table column measures. They are not to scale and their
+  captions say so.
+- **To-scale** figures are drawn from `data/`: the pipe walls on the size and
+  schedule pages, and the flange face on the class pages. They differ on every
+  page and cannot disagree with the table beside them.
+
+Figures are styled by the `.dg-*` classes in `static/css/style.css`, not by
+inline colours. The stylesheet and script links carry a content hash
+(`?v=...`), because a page drawn with a cached, older stylesheet shows the
+figures as solid black shapes. Figures go on indexed pages only.
+
+`noindex` pages also load no AdSense script: `page()` passes `ads=not noindex`.
 
 ### Dates and authorship
 

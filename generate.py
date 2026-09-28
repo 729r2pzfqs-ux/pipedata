@@ -10,6 +10,7 @@ so audit_titles() and audit_descriptions() can fail the build on a duplicate or
 an out-of-band length before anything ships.
 """
 
+import hashlib
 import html
 import json
 import math
@@ -22,6 +23,8 @@ from datetime import date
 from fractions import Fraction
 
 import yaml
+
+import diagrams as dg
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data")
@@ -48,6 +51,19 @@ TODAY = date.today().isoformat()
 CONTENT_PUBLISHED = "2026-07-22"
 CONTENT_UPDATED = "2026-09-28"
 EDITORIAL = "PipeData Editorial"
+
+
+def _asset_version(*parts):
+    """Short content hash, appended to an asset URL so that a changed file is
+    fetched again instead of being served from a visitor's cache. Without it a
+    page built against new CSS can be drawn with the old stylesheet, which for
+    the inline diagrams means solid black shapes."""
+    with open(os.path.join(STATIC, *parts), "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()[:10]
+
+
+CSS_V = _asset_version("css", "style.css")
+JS_V = _asset_version("js", "search.js")
 
 # Set to a real "G-..." measurement ID to switch analytics on. Left empty the
 # snippet is omitted entirely rather than shipped dead: a placeholder ID still
@@ -355,7 +371,9 @@ def head(title, desc, path, ld=None, og_type="website", noindex=False,
     #    themselves when the CMP reports a grant.
     # 4. Ahrefs last: it sets no cookies and has nothing to wait for.
     # ads=False drops the AdSense loader only. It is for pages with no content
-    # of their own (the 404), where AdSense policy does not allow an ad.
+    # of their own (the 404), where AdSense policy does not allow an ad, and
+    # page() passes it for every noindex page: an ad belongs on the parent
+    # page that carries the content, not on a single-row extract of it.
     parts = []
     if GA_ENABLED or ADSENSE_CLIENT:
         regions = ",".join("'%s'" % r for r in CONSENT_DENIED_REGIONS)
@@ -419,7 +437,7 @@ def head(title, desc, path, ld=None, og_type="website", noindex=False,
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/style.css?v={CSS_V}">
 {ldblocks}
 {analytics}
 </head>
@@ -513,7 +531,7 @@ def foot():
     </div>
   </div>
 </footer>
-<script src="/js/search.js" defer></script>
+<script src="/js/search.js?v={JS_V}" defer></script>
 </body>
 </html>
 """
@@ -521,7 +539,8 @@ def foot():
 
 def page(path, title, desc, body, ld=None, og_type="website", noindex=False):
     out = os.path.join(path.strip("/"), "index.html") if path != "/" else "index.html"
-    write(out, ad_free_tables(head(title, desc, path, ld, og_type, noindex)
+    write(out, ad_free_tables(head(title, desc, path, ld, og_type, noindex,
+                                   ads=not noindex)
                               + body + foot()))
 
 
@@ -740,6 +759,60 @@ def reading(paths, heading="Guides and comparisons for this page"):
         f'{esc(READING[p][0])}</span><span class="card-meta">'
         f'{esc(READING[p][1])}</span></a>' for p in paths)
     return f'<h2>{esc(heading)}</h2><div class="grid">{cards}</div>'
+
+
+def before_first_h2(body_html, block):
+    """Put a figure after a page's opening summary and before its first
+    section, which is where a reader needs the picture."""
+    i = body_html.find("<h2")
+    if i < 0:
+        return block + body_html
+    return body_html[:i] + block + body_html[i:]
+
+
+def fig_pipe_section():
+    return dg.figure(
+        [dg.pipe_section_labelled()],
+        "<strong>The three dimensions of a pipe.</strong> The outside "
+        "diameter is fixed by the nominal size. The schedule sets the wall, "
+        "and the inside diameter is what is left. Not to scale.")
+
+
+def fig_flange_pair(slugs):
+    names = [dg.FLANGE_TITLES[x] for x in slugs]
+    cells = [dg.flange_section(x)
+             + f'<span class="diagram-name">{esc(dg.FLANGE_TITLES[x])}</span>'
+             for x in slugs]
+    return dg.figure(
+        cells,
+        f"<strong>{esc(names[0])} and {esc(names[1].lower())} in "
+        "section.</strong> Both share the same flange outside diameter, bolt "
+        "circle and bolting in a given size and class. They differ in how "
+        "they join the pipe. Welds are shown in orange. Not to scale.")
+
+
+def fig_fitting_pair(slugs, fittings):
+    by = {f["slug"]: f for f in fittings}
+    cells = [dg.fitting(x)
+             + f'<span class="diagram-name">{esc(by[x]["name"])}</span>'
+             for x in slugs]
+    return dg.figure(
+        cells,
+        "<strong>" + esc(by[slugs[0]]["name"]) + " and "
+        + esc(by[slugs[1]]["name"].lower()) + ".</strong> Each letter is "
+        "the dimension ASME B16.9 tabulates for that fitting. Not to scale.")
+
+
+def fig_flange_face(b165, cls, nps="6", bore=None):
+    """Flange face to scale from the data, for one size in one class."""
+    blk = b165["classes"][cls]
+    r = next((x for x in blk["rows"] if x["nps"] == nps), blk["rows"][-1])
+    rf = b165["raised_face"].get(r["nps"])
+    hole = nps_value(r["bolt"]) + 0.125
+    svg_ = dg.flange_face(r["o"], r["bc"], rf, r["bolts"], hole, bore=bore,
+                          title=f"NPS {r['nps']} Class {cls} flange, front view",
+                          note=f"NPS {r['nps']} Class {cls}, to scale")
+    return svg_, r, rf, hole
 
 
 def long_date(iso):
@@ -1026,10 +1099,26 @@ def pipe_page(s, pipes, sizes_by_slug, b165, fittings):
         f"spacing and the load during a hydrostatic test, including on lines "
         f"that will carry gas or vapour in service.")
 
+    # The same pipe in its lightest, standard and heaviest wall, to scale.
+    picks = []
+    for k in (thin_k, "STD", thick_k):
+        if all(abs(s["walls"][k] - s["walls"][p_]) > 1e-9 for p_ in picks):
+            picks.append(k)
+    wall_fig = dg.figure(
+        [dg.pipe_walls(
+            [(sched_label(k), od, s["walls"][k],
+              f"{n(s['walls'][k], 3)} in wall · "
+              f"{n(inside_dia(od, s['walls'][k]), 3)} in bore")
+             for k in picks], od_label=f"NPS {nps}")],
+        f"<strong>NPS {e_nps} pipe drawn to scale.</strong> Every section is "
+        f"{inch_mm(od)} across the outside. Only the wall changes, and the "
+        f"bore takes up the difference.", cls="wide")
+
     body_rows = [
         f"<h2>What NPS {e_nps} is</h2>",
         f"<p>{od_para}</p>",
         f"<p>{SIZE_NOTES[nps]}</p>",
+        wall_fig,
         f'<h2 id="schedules">Every schedule in NPS {e_nps}</h2>',
         UNITS_NOTE,
         table(
@@ -1350,6 +1439,7 @@ def pipes_index(pipes):
             f'<p class="lede">Outside diameter, wall thickness, bore and weight for '
             f'{len(pipes["sizes"])} nominal pipe sizes from NPS 1/8 to NPS 36, across '
             f'every schedule the standard publishes.</p></div>'
+            + fig_pipe_section()
             + UNITS_NOTE
             + table(["Size", "DN", "Outside diameter", "STD wall",
                      "STD weight", "Schedules"], rows,
@@ -1530,6 +1620,21 @@ def schedule_page(k, pipes):
             f"{label.lower()} is a fixed thickness and no longer a series "
             f"that climbs with the size.</p>")
 
+    shown = []
+    for s_ in (first, sizes[len(sizes) // 2], last):
+        if s_ not in shown:
+            shown.append(s_)
+    sched_fig = dg.figure(
+        [dg.pipe_walls(
+            [(f"NPS {s_['nps']}", s_["od"], s_["walls"][k],
+              f"{n(s_['walls'][k], 3)} in wall on {n(s_['od'], 3)} in OD")
+             for s_ in shown], od_label=label)],
+        f"<strong>{esc(label)} in three sizes, each drawn to its own "
+        f"scale.</strong> The sections are drawn at the same width so that "
+        f"the wall can be compared with the diameter it belongs to. The wall "
+        f"gets thicker as the size goes up, but it takes up a smaller share "
+        f"of the pipe.", cls="wide")
+
     read = (SCHEDULE_READING.get(k, [])
             + ["/guides/pipe-schedule-explained/",
                "/guides/pipe-wall-thickness-calculation/",
@@ -1578,6 +1683,7 @@ def schedule_page(k, pipes):
             + facts(fact_rows)
             + f"<h2>Where {esc(label.lower())} is used</h2>"
             + f"<p>{SCHEDULE_NOTES[k]}</p>"
+            + sched_fig
             + f"<h2>{esc(label)} in every size</h2>"
             + UNITS_NOTE
             + table(["Size", "DN", "Outside diameter", "Wall thickness",
@@ -2141,6 +2247,23 @@ def flange_class_page(ft, cls, blk, b165, ftypes, sizes_by_nps):
                      'The <a href="/guides/flange-bolt-torque/">bolt torque '
                      "guide</a> gives the method and other nut factors."))
 
+    six_pipe = sizes_by_nps.get("6")
+    face_svg, fr, frf, fhole = fig_flange_face(
+        b165, cls, "6",
+        bore=(None if ft["slug"] == "blind" or not six_pipe else
+              inside_dia(six_pipe["od"], six_pipe["walls"]["STD"])
+              if ft["slug"] == "weld-neck" else six_pipe["od"]))
+    class_fig = dg.figure(
+        [dg.flange_section(ft["slug"]), face_svg],
+        f"<strong>Left: {esc(ft['name'].lower())} in section, showing what "
+        f"each column of the table measures.</strong> Welds are orange; the "
+        f"section is not to scale. <strong>Right: an NPS {esc(fr['nps'])} "
+        f"Class {cls} flange from the front, to scale.</strong> It is "
+        f"{inch_mm(fr['o'], 2)} across, with {fr['bolts']} holes of "
+        f"{n(fhole, 3)} in for {esc(fr['bolt'])} in bolts on a "
+        f"{inch_mm(fr['bc'], 2)} bolt circle. The holes straddle the "
+        f"centrelines.")
+
     q = [
         (f"How many bolts does a Class {cls} {ft['short']} flange use?",
          "<p>" + "; ".join(
@@ -2216,6 +2339,7 @@ def flange_class_page(ft, cls, blk, b165, ftypes, sizes_by_nps):
             + f"<p>{CLASS_NOTES[cls]}</p>"
             + f"<p>{TYPE_BAND_NOTES[(ft['slug'], CLASS_BAND[cls])]}</p>"
             + (f"<p>{rating_para}</p>" if rating_para else "")
+            + class_fig
             + f'<h2 id="dimensions">Dimensions in every size</h2>'
             + UNITS_NOTE
             + table(headers, rows,
@@ -2304,6 +2428,15 @@ def flange_type_page(ft, b165, ftypes):
                      ("Pressure classes", str(len(ft["classes"]))),
                      ("Size range", "NPS 1/2 – NPS 24"),
                      ("Typical service", esc(ft["use"]))])
+            + dg.figure(
+                [dg.flange_section(ft["slug"]),
+                 fig_flange_face(b165, "150", "6")[0]],
+                f"<strong>{esc(ft['name'])} in section, and a Class 150 "
+                f"flange from the front.</strong> The section shows what "
+                f"each column of the dimension tables measures, with welds "
+                f"in orange; it is not to scale. The front view is an NPS 6 "
+                f"Class 150 flange drawn to scale, with its bolt holes "
+                f"straddling the centrelines.")
             + '<h2>Dimensions by pressure class</h2>'
             f'<div class="grid">{cards}</div>'
             + '<div class="two-col"><div><h3>Strengths</h3><ul class="tick">'
@@ -2722,6 +2855,15 @@ def flanges_index(ftypes, b165):
             'NPS 1/2 through NPS 24. Outside diameter, thickness, bolt circle, '
             'bolt count and bolt size for every combination.</p></div>'
             f'<div class="grid">{cards}</div>'
+            + dg.figure(
+                [dg.flange_section(t["slug"], labels=False)
+                 + f'<span class="diagram-name">{esc(t["name"])}</span>'
+                 for t in ftypes],
+                "<strong>The six ASME B16.5 flange types in section.</strong> "
+                "Flange metal is hatched, the pipe is grey and welds are "
+                "orange. In one size and class all six have the same outside "
+                "diameter, bolt circle and bolting; they differ in how they "
+                "are fixed to the pipe. Not to scale.", cls="small")
             + '<h2>What the pressure class buys you</h2>'
             '<p>The same NPS 6 flange across all seven classes, so the jump in '
             'metal and bolting is visible at a glance. Ratings are for A105 '
@@ -3056,6 +3198,11 @@ def fitting_page(f, fittings, pipes):
                      ("Dimension", esc(f["dim_label"])),
                      ("Size range", f"NPS {esc(smallest)} – NPS {esc(largest)}"),
                      ("Sizes published", str(len(keys)))] + formula_row)
+            + dg.figure(
+                [dg.fitting(f["slug"])],
+                f"<strong>{esc(f['name'])}.</strong> The table below gives "
+                f"{esc(f['dim_label'][0].lower() + f['dim_label'][1:])} for "
+                f"each size. Not to scale.")
             + UNITS_NOTE
             + table(["Size", "Matching pipe OD", esc(f["dim_label"])], rows,
                     caption=f"ASME B16.9 {f['name'].lower()} dimensions.",
@@ -3126,6 +3273,15 @@ def fittings_index(fittings):
             'B16.9 dimensions depend on nominal size alone, one table covers '
             'every schedule.</p></div>'
             f'<div class="grid">{cards}</div>'
+            + dg.figure(
+                [dg.fitting(f["slug"])
+                 + f'<span class="diagram-name">{esc(f["name"])}</span>'
+                 for f in fittings],
+                "<strong>The ten buttweld fittings on this site.</strong> "
+                "Each letter is the dimension ASME B16.9 tabulates for that "
+                "fitting: A and B for elbows, O and K for return bends, C "
+                "and M for tees and crosses, H for reducers and E for caps. "
+                "Not to scale.", cls="small")
             + '<h2>Fittings side by side</h2>'
             '<p>The governing dimension of each fitting at four common sizes.</p>'
             + UNITS_NOTE
@@ -3192,6 +3348,14 @@ REF_READING = {
 }
 
 
+REF_FIGS = {
+    "nps-dn-conversion": fig_pipe_section,
+    "schedule-chart": fig_pipe_section,
+    "pipe-weight-chart": fig_pipe_section,
+    "stainless-pipe-schedules": fig_pipe_section,
+}
+
+
 def ref(slug, title, desc, h1, lede, body_html, ld_extra=None, faq_pairs=None,
         card_meta=""):
     """Emit a /reference/<slug>/ page and register it for the reference index."""
@@ -3206,7 +3370,8 @@ def ref(slug, title, desc, h1, lede, body_html, ld_extra=None, faq_pairs=None,
     body = (crumb_html + '<div class="wrap">'
             f'<div class="page-head"><h1>{esc(h1)}</h1>'
             f'<p class="lede">{lede}</p></div>'
-            + body_html
+            + (before_first_h2(body_html, REF_FIGS[slug]())
+               if slug in REF_FIGS else body_html)
             + (reading(REF_READING[slug]) if slug in REF_READING else "")
             + extra + "</div>")
     url = f"/reference/{slug}/"
@@ -4406,6 +4571,11 @@ COMPARE_PAGES = []
 GUIDE_PAGES = []
 
 
+# Figures for guides and comparisons, keyed by path. Filled in main() once the
+# data is loaded, since the fitting figures take their names from it.
+ARTICLE_FIGS = {}
+
+
 def _section_page(section_slug, section_name, registry, slug, title, desc, h1,
                   lede, body_html, ld_extra=None, faq_pairs=None, card_meta=""):
     """Emit a /<section>/<slug>/ page and register it for that section index.
@@ -4427,7 +4597,9 @@ def _section_page(section_slug, section_name, registry, slug, title, desc, h1,
     body = (crumb_html + '<div class="wrap">'
             f'<div class="page-head"><h1>{esc(h1)}</h1>'
             f'<p class="lede">{lede}</p>' + byline() + '</div>'
-            + body_html + extra + "</div>")
+            + (before_first_h2(body_html, ARTICLE_FIGS[url]())
+               if url in ARTICLE_FIGS else body_html)
+            + extra + "</div>")
     page(url, title, desc, body, ld=ld, og_type="article")
     registry.append((h1, url, card_meta))
     index_entry(h1, url, card_meta or section_name)
@@ -9802,6 +9974,33 @@ def main():
     ref_face_types()
     ref_color_coding(pipes)
     reference_index()
+
+    ARTICLE_FIGS.update({
+        "/compare/weld-neck-vs-slip-on-flange/":
+            lambda: fig_flange_pair(["weld-neck", "slip-on"]),
+        "/compare/weld-neck-vs-blind-flange/":
+            lambda: fig_flange_pair(["weld-neck", "blind"]),
+        "/compare/slip-on-vs-threaded-flange/":
+            lambda: fig_flange_pair(["slip-on", "threaded"]),
+        "/compare/socket-weld-vs-threaded-flange/":
+            lambda: fig_flange_pair(["socket-weld", "threaded"]),
+        "/compare/lap-joint-vs-slip-on-flange/":
+            lambda: fig_flange_pair(["lap-joint", "slip-on"]),
+        "/compare/long-radius-vs-short-radius-elbow/":
+            lambda: fig_fitting_pair(["90-degree-elbow",
+                                      "90-degree-elbow-short-radius"],
+                                     fittings),
+        "/compare/90-degree-vs-45-degree-elbow/":
+            lambda: fig_fitting_pair(["90-degree-elbow", "45-degree-elbow"],
+                                     fittings),
+        "/compare/concentric-vs-eccentric-reducer/":
+            lambda: fig_fitting_pair(["concentric-reducer",
+                                      "eccentric-reducer"], fittings),
+        "/guides/pipe-schedule-explained/": fig_pipe_section,
+        "/guides/pipe-wall-thickness-calculation/": fig_pipe_section,
+        "/guides/nps-vs-dn-explained/": fig_pipe_section,
+        "/guides/pipe-sizing/": fig_pipe_section,
+    })
 
     # ---- comparisons (order here is the order on the index) ----
     cmp_sched_40_80(pipes)
