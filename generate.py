@@ -286,6 +286,8 @@ def load():
                         for k, v in (t.get("max_nps") or {}).items()}
         t["unpublished"] = [str(c) for c in t.get("unpublished") or []]
         t["unchecked"] = [str(c) for c in t.get("unchecked") or []]
+        t["class_notes"] = {str(k): str(v) for k, v
+                            in (t.get("class_notes") or {}).items()}
     b1647 = load_yaml("flanges_b1647.yaml")
     fittings = load_yaml("fittings_b169.yaml")["fittings"]
     for f in fittings:
@@ -2223,6 +2225,9 @@ def flange_class_page(ft, cls, blk, b165, ftypes, sizes_by_nps):
                       "checked against a second source in three sizes only. "
                       "Confirm the hub length against the standard where a "
                       "spool dimension depends on it.</p>")
+    if cls in ft["class_notes"]:
+        type_note += ('<div class="callout warn"><p><strong>No table of its '
+                      f'own.</strong> {esc(ft["class_notes"][cls])}</p></div>')
     if cls in ft["unchecked"]:
         type_note += ('<div class="callout warn"><p><strong>Size range not '
                       f'confirmed.</strong> The sources we checked disagree on '
@@ -3869,8 +3874,6 @@ def ref_pt_ratings(pt):
              f'Ratings</h1><p class="lede">{esc(g["blurb"])}</p></div>'
              + facts([("Standard", "ASME B16.5"), ("Group", esc(g["name"])),
                       ("Materials", esc(g["materials"]))]
-                     + ([("Pipe normally used with it", esc(g["pipe"]))]
-                        if g.get("pipe") else [])
                      + [
                       ("Class 150 at 100 °F", psi_bar(r150[0])),
                       ("Class 150 at 600 °F", psi_bar(r150[5]))])
@@ -9595,9 +9598,13 @@ def about_page(pipes, ftypes, fittings):
             "<li><strong>Slip-on and socket weld flanges</strong> were "
             "shown in classes and sizes in which ASME B16.5 does not "
             "publish them. There is no Class 2500 slip-on flange, and no "
-            "socket weld flange in Class 400, 900 or 2500. Those pages "
-            "have been withdrawn and the remaining tables cut back to the "
+            "socket weld flange in Class 900 or 2500. Those pages have "
+            "been withdrawn and the remaining tables cut back to the "
             "published sizes.</li>"
+            "<li><strong>Pipe specifications</strong> such as A312 and "
+            "A335 were listed among the materials of the rating groups. "
+            "The groups are defined for forgings, castings and plate, and "
+            "the pipe specifications have been removed.</li>"
             "</ul>"
             "<p>The check was made against manufacturers' and distributors' "
             "reproductions of the tables, with two or more independent "
@@ -9605,7 +9612,8 @@ def about_page(pipes, ftypes, fittings):
             "itself. A few items could not be confirmed and are marked on "
             "the pages concerned: the Class 400 rows of four rating "
             "tables, the size range of threaded flanges in Classes 1500 "
-            "and 2500, and most of the Class 300 hub lengths. Raised face "
+            "and 2500, the Class 400 socket weld flange, and most of the "
+            "Class 300 hub lengths. Raised face "
             "diameters above NPS 3 have not been checked.</p>"
             '<h2 id="editions">Standards and editions</h2>'
             "<p>The table lists the standards these pages refer to and the "

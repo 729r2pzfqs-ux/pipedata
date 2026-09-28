@@ -19,8 +19,8 @@ ASME B16 and B36 standards. Imperial primary, metric alongside.
 | Compare | Schedule, flange type, flange class, material and fitting pairs | 24 + index |
 | Guides | Sizing, wall thickness, test pressure, torque, material choice | 10 + index |
 
-746 pages are built. 171 are indexed and in the sitemap; the rest are kept
-live as `noindex`: 570 single-row extracts (see below) and 4 notices for
+746 pages are built. 172 are indexed and in the sitemap; the rest are kept
+live as `noindex`: 570 single-row extracts (see below) and 3 notices for
 flanges B16.5 does not publish.
 
 ### Page granularity: what is indexed and what is not
@@ -112,6 +112,8 @@ Still unconfirmed, and marked as such in the YAML comments and on the pages:
 - Class 300 `y_wn` and `y_so` (three slip-on values confirmed; the rest follow
   from the same 1/16 in change).
 - Size range of threaded flanges in Classes 1500 and 2500 (sources disagree).
+- The Class 400 socket weld flange, to NPS 2 1/2 on Class 600 dimensions (one
+  source only).
 - Raised face diameters above NPS 3, and for Classes 900 and above.
 - Lap joint hub lengths are not in `data/` at all. The slip-on figure must not
   be shown under a lap joint heading.

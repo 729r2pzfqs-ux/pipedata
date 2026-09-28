@@ -15,8 +15,8 @@ temperatures: [100, 200, 300, 400, 500, 600, 650, 700, 750, 800, 850, 900, 950, 
 # says which part; the page prints the caveat.
 #
 # `materials` lists the forgings, castings and plate that B16.5 Table 1A puts
-# in the group. Pipe is not a Table 1A material, so the pipe normally used
-# with the group is carried separately in `pipe`.
+# in the group. Pipe specifications (A312, A335 and the like) are not Table 1A
+# materials and do not belong in this file.
 #
 # Corrected on 2026-09-28:
 #   - Group 1.1 Classes 300-2500 carried 1988/1996-edition values above 800 °F
@@ -30,7 +30,6 @@ groups:
   - slug: "1-1"
     name: "Group 1.1"
     materials: "A105, A350 LF2, A350 LF6 Cl. 1, A350 LF3, A216 WCB, A515 Gr. 70, A516 Gr. 70, A537 Cl. 1"
-    pipe: "A106 Gr. B, A53 Gr. B"
     checked: full
     blurb: >-
       The standard carbon steel group and by far the most common material in
@@ -68,7 +67,6 @@ groups:
   - slug: "2-1"
     name: "Group 2.1"
     materials: "A182 F304, A182 F304H, A351 CF3, A351 CF8, A240 304, A240 304H"
-    pipe: "A312 TP304, A312 TP304H"
     checked: full
     blurb: >-
       Type 304 austenitic stainless steel. It starts lower than carbon steel
@@ -85,7 +83,6 @@ groups:
   - slug: "2-2"
     name: "Group 2.2"
     materials: "A182 F316, A182 F316H, A182 F317, A351 CF3M, A351 CF8M, A351 CG8M, A240 316, A240 316H, A240 317"
-    pipe: "A312 TP316, A312 TP316H"
     checked: full
     caveat: >-
       One secondary source gives values that differ by 5 to 10 psig in a few
@@ -107,7 +104,6 @@ groups:
   - slug: "2-3"
     name: "Group 2.3"
     materials: "A182 F304L, A182 F316L, A182 F317L, A240 304L, A240 316L"
-    pipe: "A312 TP304L, A312 TP316L, A312 TP317L"
     checked: full
     caveat: >-
       Type 304L is not to be used above 800 °F, so the 850 °F column applies
@@ -129,7 +125,6 @@ groups:
   - slug: "1-9"
     name: "Group 1.9"
     materials: "A182 F11 Cl. 2, A217 WC6, A387 Gr. 11 Cl. 2"
-    pipe: "A335 P11"
     checked: partial
     caveat: >-
       The Class 400 row rests on a single secondary source. The other
@@ -150,7 +145,6 @@ groups:
   - slug: "1-10"
     name: "Group 1.10"
     materials: "A182 F22 Cl. 3, A217 WC9, A387 Gr. 22 Cl. 2"
-    pipe: "A335 P22"
     checked: partial
     caveat: >-
       The Class 400 row rests on a single secondary source. The other
@@ -171,7 +165,6 @@ groups:
   - slug: "1-15"
     name: "Group 1.15"
     materials: "A182 F91, A217 C12A, A387 Gr. 91 Cl. 2"
-    pipe: "A335 P91"
     checked: partial
     caveat: >-
       The Class 400 row rests on a single secondary source. The other

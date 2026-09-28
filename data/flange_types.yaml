@@ -13,7 +13,9 @@
 # seven classes and all sizes. Slip-on and socket weld are not:
 #   - slip-on: Class 1500 to NPS 2 1/2 only; no Class 2500.
 #   - socket weld: Classes 150, 300 and 600 to NPS 3; Class 1500 to NPS 2 1/2;
-#     no table of its own in Class 400 or 900; no Class 2500.
+#     Class 400 to NPS 2 1/2, made to the Class 600 dimensions (one source
+#     only); no table of its own in Class 900; no Class 2500.
+# `class_notes`  a caution printed on one class page of the type.
 # NOT CONFIRMED: the size range of threaded flanges in Classes 1500 and 2500,
 # where two sources disagree.
 
@@ -61,14 +63,21 @@ types:
     name: "Socket Weld Flange"
     short: "socket weld"
     abbrev: "SW"
-    classes: ["150", "300", "600", "1500"]
-    max_nps: {"150": "3", "300": "3", "600": "3", "1500": "2 1/2"}
-    unpublished: ["400", "900", "2500"]
+    classes: ["150", "300", "400", "600", "1500"]
+    max_nps: {"150": "3", "300": "3", "400": "2 1/2", "600": "3", "1500": "2 1/2"}
+    unpublished: ["900", "2500"]
+    class_notes:
+      "400": >-
+        ASME B16.5 has no separate table for the Class 400 socket weld
+        flange. It may be supplied in NPS 1/2 through NPS 2 1/2 using the
+        Class 600 dimensions, which is what the table on this page shows.
+        This rests on a single secondary source and has not been confirmed
+        against the standard.
     blurb: >-
       The pipe drops into a counterbored socket and is fillet-welded on the
       outside only. Published in NPS 1/2 through NPS 3 in Classes 150, 300 and
-      600 and through NPS 2 1/2 in Class 1500; the small-bore equivalent of a
-      slip-on.
+      600 and through NPS 2 1/2 in Classes 400 and 1500; the small-bore
+      equivalent of a slip-on.
     pros:
       - "Good static strength in small bore, and easy to fit up"
       - "No weld metal can protrude into the bore"
